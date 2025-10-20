@@ -52,3 +52,43 @@ export async function getYardSalesByCategory(category: string): Promise<YardSale
 	}
 	return response.json();
 }
+
+export async function getYardSaleById(id: number): Promise<YardSale> {
+	const response = await fetch(`/api/yard-sales/${id}`);
+	if (!response.ok) {
+		throw new Error('Failed to fetch yard sale');
+	}
+	return response.json();
+}
+
+export interface Comment {
+	id: number;
+	content: string;
+	created_at: string;
+	updated_at: string;
+	user_id: number;
+	username: string;
+	yard_sale_id: number;
+}
+
+export async function getComments(yardSaleId: number): Promise<Comment[]> {
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/comments`);
+	if (!response.ok) {
+		throw new Error('Failed to fetch comments');
+	}
+	return response.json();
+}
+
+export async function addComment(yardSaleId: number, content: string): Promise<Comment> {
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/comments`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ content })
+	});
+	if (!response.ok) {
+		throw new Error('Failed to add comment');
+	}
+	return response.json();
+}

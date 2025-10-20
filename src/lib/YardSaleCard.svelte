@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import type { YardSale } from './api';
 
 	let { yardSale }: { yardSale: YardSale } = $props();
@@ -33,10 +34,18 @@
 		const endTime = formatTime(yardSale.end_time);
 		return `${startTime} - ${endTime}`;
 	}
+
+	function handleCardClick() {
+		goto(`/yard-sale/${yardSale.id}`);
+	}
 </script>
 
 <div
-	class="overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg"
+	class="cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg"
+	onclick={handleCardClick}
+	onkeydown={(e) => e.key === 'Enter' && handleCardClick()}
+	role="button"
+	tabindex="0"
 >
 	<!-- Header -->
 	<div class="p-6 pb-4">
@@ -135,7 +144,12 @@
 	</div>
 
 	<!-- Footer -->
-	<div class="border-t bg-gray-50 px-6 py-4">
+	<div
+		class="border-t bg-gray-50 px-6 py-4"
+		onclick={(e) => e.stopPropagation()}
+		role="button"
+		tabindex="0"
+	>
 		<div class="flex items-center justify-between">
 			<div class="text-sm text-gray-600">
 				<span class="font-medium">Contact:</span>
