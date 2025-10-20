@@ -123,8 +123,9 @@
 				// Date filter
 				const matchesDate = !selectedDate || sale.start_date === selectedDate;
 
-				// Expired filter
-				const matchesExpired = showExpired || isYardSaleActive(sale);
+				// Expired filter: show all if showExpired is true, otherwise exclude expired
+				const isExpired = getYardSaleStatus(sale) === 'expired';
+				const matchesExpired = showExpired || !isExpired;
 
 				return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesExpired;
 			})
