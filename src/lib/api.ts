@@ -96,14 +96,13 @@ export async function addComment(yardSaleId: number, content: string): Promise<C
 export interface Message {
 	id: number;
 	content: string;
-	sender_id: number;
-	receiver_id: number;
-	yard_sale_id: number;
-	created_at: string;
-	updated_at: string;
-	sender_username: string;
-	receiver_username: string;
 	is_read: boolean;
+	created_at: string;
+	yard_sale_id: number;
+	sender_id: number;
+	sender_username: string;
+	recipient_id: number;
+	recipient_username: string;
 }
 
 export interface MessageThread {
@@ -115,18 +114,10 @@ export interface MessageThread {
 	unread_count: number;
 }
 
-export async function getMessageThreads(): Promise<MessageThread[]> {
-	const response = await fetch('/api/messages/threads');
+export async function getYardSaleMessages(yardSaleId: number): Promise<Message[]> {
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/messages`);
 	if (!response.ok) {
-		throw new Error('Failed to fetch message threads');
-	}
-	return response.json();
-}
-
-export async function getMessages(yardSaleId: number, otherUserId: number): Promise<Message[]> {
-	const response = await fetch(`/api/messages/${yardSaleId}/${otherUserId}`);
-	if (!response.ok) {
-		throw new Error('Failed to fetch messages');
+		throw new Error('Failed to fetch yard sale messages');
 	}
 	return response.json();
 }
@@ -136,14 +127,13 @@ export async function sendMessage(
 	receiverId: number,
 	content: string
 ): Promise<Message> {
-	const response = await fetch('/api/messages', {
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/messages`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			yard_sale_id: yardSaleId,
-			receiver_id: receiverId,
+			recipient_id: receiverId,
 			content: content.trim()
 		})
 	});
@@ -153,11 +143,27 @@ export async function sendMessage(
 	return response.json();
 }
 
-export async function markMessagesAsRead(yardSaleId: number, senderId: number): Promise<void> {
-	const response = await fetch(`/api/messages/${yardSaleId}/${senderId}/read`, {
+export async function getAllUserMessages(): Promise<Message[]> {
+	const response = await fetch('/api/messages');
+	if (!response.ok) {
+		throw new Error('Failed to fetch user messages');
+	}
+	return response.json();
+}
+
+export async function markMessageAsRead(messageId: number): Promise<void> {
+	const response = await fetch(`/api/messages/${messageId}/read`, {
 		method: 'PUT'
 	});
 	if (!response.ok) {
-		throw new Error('Failed to mark messages as read');
+		throw new Error('Failed to mark message as read');
 	}
+}
+
+export async function getUnreadCount(): Promise<{ count: number }> {
+	const response = await fetch('/api/messages/unread-count');
+	if (!response.ok) {
+		throw new Error('Failed to fetch unread count');
+	}
+	return response.json();
 }

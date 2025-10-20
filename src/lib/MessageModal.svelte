@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getMessages, sendMessage, markMessagesAsRead, type Message } from './api';
+	import { getYardSaleMessages, sendMessage, markMessageAsRead, type Message } from './api';
 
 	let { isOpen, yardSaleId, yardSaleTitle, otherUserId, otherUsername, currentUserId, onClose } =
 		$props<{
@@ -18,7 +18,7 @@
 	let loading = $state(true);
 	let sending = $state(false);
 	let error = $state<string | null>(null);
-	let messagesContainer: HTMLDivElement;
+	let messagesContainer = $state<HTMLDivElement>();
 
 	$effect(() => {
 		if (isOpen && yardSaleId && otherUserId) {
@@ -30,9 +30,14 @@
 		loading = true;
 		error = null;
 		try {
-			messages = await getMessages(yardSaleId, otherUserId);
-			// Mark messages as read
-			await markMessagesAsRead(yardSaleId, otherUserId);
+			messages = await getYardSaleMessages(yardSaleId);
+			// Mark unread messages as read
+			const unreadMessages = messages.filter(
+				(msg) => !msg.is_read && msg.sender_id !== currentUserId
+			);
+			for (const message of unreadMessages) {
+				await markMessageAsRead(message.id);
+			}
 			// Scroll to bottom
 			setTimeout(() => {
 				if (messagesContainer) {
