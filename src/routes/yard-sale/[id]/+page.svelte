@@ -312,6 +312,44 @@
 													</svg>
 													{statusMessage} - {timeRemaining}
 												</div>
+											{:else if status === 'on_break'}
+												<div
+													class="inline-flex items-center rounded-md bg-orange-50 px-3 py-2 text-sm font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-200"
+												>
+													<svg
+														class="mr-2 h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+														/>
+													</svg>
+													{statusMessage} - {timeRemaining}
+												</div>
+											{:else if status === 'closed'}
+												<div
+													class="inline-flex items-center rounded-md bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-200"
+												>
+													<svg
+														class="mr-2 h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M6 18L18 6M6 6l12 12"
+														/>
+													</svg>
+													{statusMessage} - {timeRemaining}
+												</div>
 											{/if}
 										</div>
 									{/if}
@@ -512,11 +550,11 @@
 							<!-- Action Buttons -->
 							<div class="mt-6 flex flex-wrap gap-3">
 								{#if yardSale.contact_phone}
-									{@const isExpired = !isYardSaleActive(yardSale)}
+									{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
 									<a
-										href={isExpired ? '#' : `tel:${yardSale.contact_phone}`}
-										onclick={isExpired ? (e) => e.preventDefault() : undefined}
-										class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 {isExpired
+										href={isDisabled ? '#' : `tel:${yardSale.contact_phone}`}
+										onclick={isDisabled ? (e) => e.preventDefault() : undefined}
+										class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 {isDisabled
 											? 'cursor-not-allowed opacity-50'
 											: ''}"
 									>
@@ -528,15 +566,19 @@
 												d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
 											></path>
 										</svg>
-										{isExpired ? 'Event Ended' : 'Call Now'}
+										{yardSale.status === 'closed'
+											? 'Closed'
+											: !isYardSaleActive(yardSale)
+												? 'Event Ended'
+												: 'Call Now'}
 									</a>
 								{/if}
 
 								{#if yardSale.allow_messages}
-									{@const isExpired = !isYardSaleActive(yardSale)}
+									{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
 									<button
-										onclick={isExpired ? undefined : handleSendMessage}
-										disabled={isExpired}
+										onclick={isDisabled ? undefined : handleSendMessage}
+										disabled={isDisabled}
 										class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 									>
 										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -547,7 +589,11 @@
 												d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 											></path>
 										</svg>
-										{isExpired ? 'Event Ended' : 'Send Message'}
+										{yardSale.status === 'closed'
+											? 'Closed'
+											: !isYardSaleActive(yardSale)
+												? 'Event Ended'
+												: 'Send Message'}
 									</button>
 								{/if}
 							</div>

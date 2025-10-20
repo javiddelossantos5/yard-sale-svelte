@@ -1,8 +1,10 @@
 import type { YardSale } from './api';
 
 /**
- * Check if a yard sale is currently active (not expired)
- * A yard sale is considered active if the end date hasn't passed
+ * Check if a yard sale is currently active (not expired and not closed)
+ * A yard sale is considered active if:
+ * 1. The end date hasn't passed AND
+ * 2. The status is 'active' or 'on_break' (not 'closed')
  */
 export function isYardSaleActive(yardSale: YardSale): boolean {
 	const now = new Date();
@@ -14,7 +16,13 @@ export function isYardSaleActive(yardSale: YardSale): boolean {
 		endDate.setHours(hours, minutes, 0, 0);
 	}
 
-	return endDate > now;
+	// Check if the event has ended by date
+	const hasEndedByDate = endDate <= now;
+
+	// Check if the event is closed by status
+	const isClosedByStatus = yardSale.status === 'closed';
+
+	return !hasEndedByDate && !isClosedByStatus;
 }
 
 /**
@@ -36,16 +44,32 @@ export function hasYardSaleStarted(yardSale: YardSale): boolean {
 
 /**
  * Get the status of a yard sale
+ * This combines date-based logic with backend status
  */
-export function getYardSaleStatus(yardSale: YardSale): 'upcoming' | 'active' | 'expired' {
+export function getYardSaleStatus(
+	yardSale: YardSale
+): 'upcoming' | 'active' | 'on_break' | 'closed' | 'expired' {
+	// If it hasn't started yet, it's upcoming
 	if (!hasYardSaleStarted(yardSale)) {
 		return 'upcoming';
 	}
 
-	if (isYardSaleActive(yardSale)) {
+	// If it's closed by backend status, it's closed
+	if (yardSale.status === 'closed') {
+		return 'closed';
+	}
+
+	// If it's on break by backend status, it's on break
+	if (yardSale.status === 'on_break') {
+		return 'on_break';
+	}
+
+	// If it's active by backend status and not expired by date, it's active
+	if (yardSale.status === 'active' && isYardSaleActive(yardSale)) {
 		return 'active';
 	}
 
+	// If the date has passed, it's expired
 	return 'expired';
 }
 
@@ -60,6 +84,10 @@ export function getYardSaleStatusMessage(yardSale: YardSale): string {
 			return "This yard sale hasn't started yet";
 		case 'active':
 			return 'This yard sale is currently active';
+		case 'on_break':
+			return yardSale.status_reason || 'This yard sale is currently on break';
+		case 'closed':
+			return yardSale.status_reason || 'This yard sale is currently closed';
 		case 'expired':
 			return 'This yard sale has ended';
 		default:
@@ -128,6 +156,10 @@ export function getTimeRemainingMessage(yardSale: YardSale): string {
 			} else {
 				return `Ends in ${days} days`;
 			}
+		case 'on_break':
+			return 'On break';
+		case 'closed':
+			return 'Closed';
 		case 'expired':
 			if (days === 0) {
 				return 'Ended today';

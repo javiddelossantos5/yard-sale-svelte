@@ -130,6 +130,34 @@
 					</svg>
 					{timeRemaining}
 				</div>
+			{:else if status === 'on_break'}
+				<div
+					class="inline-flex items-center rounded-full bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-200"
+				>
+					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					{timeRemaining}
+				</div>
+			{:else if status === 'closed'}
+				<div
+					class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-200"
+				>
+					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M6 18L18 6M6 6l12 12"
+						/>
+					</svg>
+					{timeRemaining}
+				</div>
 			{/if}
 		</div>
 
@@ -275,10 +303,10 @@
 				{/if}
 
 				{#if yardSale.allow_messages}
-					{@const isExpired = status === 'expired'}
+					{@const isDisabled = status === 'expired' || status === 'closed'}
 					<button
-						onclick={isExpired ? undefined : handleSendMessage}
-						disabled={isExpired}
+						onclick={isDisabled ? undefined : handleSendMessage}
+						disabled={isDisabled}
 						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 					>
 						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,7 +317,7 @@
 								d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 							></path>
 						</svg>
-						{isExpired ? 'Ended' : 'Message'}
+						{status === 'expired' ? 'Ended' : status === 'closed' ? 'Closed' : 'Message'}
 					</button>
 				{/if}
 			</div>

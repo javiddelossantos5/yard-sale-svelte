@@ -22,6 +22,8 @@ export interface YardSale {
 	photos: string[] | null;
 	featured_image: string | null;
 	is_active: boolean;
+	status: 'active' | 'on_break' | 'closed';
+	status_reason?: string;
 	created_at: string;
 	updated_at: string;
 	owner_id: number;
