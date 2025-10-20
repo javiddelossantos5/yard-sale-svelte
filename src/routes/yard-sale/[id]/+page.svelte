@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { getYardSaleById, getComments, addComment, type YardSale, type Comment } from '$lib/api';
+	import MessageModal from '$lib/MessageModal.svelte';
 
 	let yardSale: YardSale | null = null;
 	let comments: Comment[] = [];
@@ -10,6 +11,10 @@
 	let error: string | null = null;
 	let newComment = '';
 	let submittingComment = false;
+
+	// Message modal state
+	let showMessageModal = false;
+	let currentUserId = 1; // This should come from auth context in a real app
 
 	$: yardSaleId = parseInt($page.params.id || '0');
 
@@ -97,6 +102,16 @@
 			hour12: true
 		});
 	}
+
+	function handleSendMessage() {
+		if (yardSale && yardSale.allow_messages) {
+			showMessageModal = true;
+		}
+	}
+
+	function handleCloseMessageModal() {
+		showMessageModal = false;
+	}
 </script>
 
 <svelte:head>
@@ -110,7 +125,7 @@
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between py-4">
 				<button
-					on:click={() => goto('/')}
+					onclick={() => goto('/')}
 					class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
 				>
 					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,6 +333,7 @@
 
 								{#if yardSale.allow_messages}
 									<button
+										onclick={handleSendMessage}
 										class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 									>
 										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +362,12 @@
 
 					<!-- Add Comment Form -->
 					<div class="border-b border-gray-200 px-8 py-6">
-						<form on:submit|preventDefault={handleSubmitComment}>
+						<form
+							onsubmit={(e) => {
+								e.preventDefault();
+								handleSubmitComment();
+							}}
+						>
 							<div class="mb-4">
 								<label for="comment" class="mb-2 block text-sm font-medium text-gray-700">
 									Add a Comment
@@ -447,4 +468,17 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Message Modal -->
+	{#if yardSale}
+		<MessageModal
+			isOpen={showMessageModal}
+			yardSaleId={yardSale.id}
+			yardSaleTitle={yardSale.title}
+			otherUserId={yardSale.owner_id}
+			otherUsername={yardSale.owner_username}
+			{currentUserId}
+			onClose={handleCloseMessageModal}
+		/>
+	{/if}
 </div>

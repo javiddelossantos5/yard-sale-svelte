@@ -92,3 +92,72 @@ export async function addComment(yardSaleId: number, content: string): Promise<C
 	}
 	return response.json();
 }
+
+export interface Message {
+	id: number;
+	content: string;
+	sender_id: number;
+	receiver_id: number;
+	yard_sale_id: number;
+	created_at: string;
+	updated_at: string;
+	sender_username: string;
+	receiver_username: string;
+	is_read: boolean;
+}
+
+export interface MessageThread {
+	yard_sale_id: number;
+	yard_sale_title: string;
+	other_user_id: number;
+	other_username: string;
+	last_message: Message | null;
+	unread_count: number;
+}
+
+export async function getMessageThreads(): Promise<MessageThread[]> {
+	const response = await fetch('/api/messages/threads');
+	if (!response.ok) {
+		throw new Error('Failed to fetch message threads');
+	}
+	return response.json();
+}
+
+export async function getMessages(yardSaleId: number, otherUserId: number): Promise<Message[]> {
+	const response = await fetch(`/api/messages/${yardSaleId}/${otherUserId}`);
+	if (!response.ok) {
+		throw new Error('Failed to fetch messages');
+	}
+	return response.json();
+}
+
+export async function sendMessage(
+	yardSaleId: number,
+	receiverId: number,
+	content: string
+): Promise<Message> {
+	const response = await fetch('/api/messages', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			yard_sale_id: yardSaleId,
+			receiver_id: receiverId,
+			content: content.trim()
+		})
+	});
+	if (!response.ok) {
+		throw new Error('Failed to send message');
+	}
+	return response.json();
+}
+
+export async function markMessagesAsRead(yardSaleId: number, senderId: number): Promise<void> {
+	const response = await fetch(`/api/messages/${yardSaleId}/${senderId}/read`, {
+		method: 'PUT'
+	});
+	if (!response.ok) {
+		throw new Error('Failed to mark messages as read');
+	}
+}
