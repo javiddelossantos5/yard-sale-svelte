@@ -104,29 +104,43 @@
 
 	// Filter yard sales by search term, city, category, and date
 	let filteredYardSales = $derived(
-		yardSales.filter((sale) => {
-			// Search term filter
-			const matchesSearch =
-				!searchTerm ||
-				sale.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				sale.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				sale.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				sale.categories.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()));
+		yardSales
+			.filter((sale) => {
+				// Search term filter
+				const matchesSearch =
+					!searchTerm ||
+					sale.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					sale.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					sale.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					sale.categories.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()));
 
-			// City filter
-			const matchesCity = !selectedCity || sale.city === selectedCity;
+				// City filter
+				const matchesCity = !selectedCity || sale.city === selectedCity;
 
-			// Category filter
-			const matchesCategory = !selectedCategory || sale.categories.includes(selectedCategory);
+				// Category filter
+				const matchesCategory = !selectedCategory || sale.categories.includes(selectedCategory);
 
-			// Date filter
-			const matchesDate = !selectedDate || sale.start_date === selectedDate;
+				// Date filter
+				const matchesDate = !selectedDate || sale.start_date === selectedDate;
 
-			// Expired filter
-			const matchesExpired = showExpired || isYardSaleActive(sale);
+				// Expired filter
+				const matchesExpired = showExpired || isYardSaleActive(sale);
 
-			return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesExpired;
-		})
+				return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesExpired;
+			})
+			.sort((a, b) => {
+				// Sort by start date: closest starting date first, then descending
+				const dateA = new Date(a.start_date || '');
+				const dateB = new Date(b.start_date || '');
+
+				// If dates are the same, sort by title alphabetically
+				if (dateA.getTime() === dateB.getTime()) {
+					return a.title.localeCompare(b.title);
+				}
+
+				// Sort by start date (ascending - closest first)
+				return dateA.getTime() - dateB.getTime();
+			})
 	);
 </script>
 
