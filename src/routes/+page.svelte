@@ -17,6 +17,7 @@
 	let searchTerm = $state('');
 	let selectedCity = $state('');
 	let selectedCategory = $state('');
+	let selectedDate = $state('');
 
 	// Get unique cities and categories for filters
 	let cities = $state<string[]>([]);
@@ -66,9 +67,16 @@
 		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
+	function handleDateChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		selectedDate = target.value;
+		// No need to call loadYardSales() - filtering is handled by $derived
+	}
+
 	function clearFilters() {
 		selectedCity = '';
 		selectedCategory = '';
+		selectedDate = '';
 		searchTerm = '';
 		// No need to call loadYardSales() - filtering is handled by $derived
 	}
@@ -91,7 +99,7 @@
 		loadYardSales();
 	}
 
-	// Filter yard sales by search term, city, and category
+	// Filter yard sales by search term, city, category, and date
 	let filteredYardSales = $derived(
 		yardSales.filter((sale) => {
 			// Search term filter
@@ -108,7 +116,10 @@
 			// Category filter
 			const matchesCategory = !selectedCategory || sale.categories.includes(selectedCategory);
 
-			return matchesSearch && matchesCity && matchesCategory;
+			// Date filter
+			const matchesDate = !selectedDate || sale.start_date === selectedDate;
+
+			return matchesSearch && matchesCity && matchesCategory && matchesDate;
 		})
 	);
 </script>
@@ -179,7 +190,7 @@
 		<div
 			class="mb-6 rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 		>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
 				<!-- Search -->
 				<div class="md:col-span-2">
 					<label
@@ -235,10 +246,24 @@
 						{/each}
 					</select>
 				</div>
+
+				<!-- Date Filter -->
+				<div>
+					<label for="date" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+						Date
+					</label>
+					<input
+						id="date"
+						type="date"
+						bind:value={selectedDate}
+						onchange={handleDateChange}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
+					/>
+				</div>
 			</div>
 
 			<!-- Clear Filters -->
-			{#if selectedCity || selectedCategory}
+			{#if selectedCity || selectedCategory || selectedDate}
 				<div class="mt-4">
 					<button
 						onclick={clearFilters}
@@ -311,7 +336,7 @@
 						No yard sales found
 					</h3>
 					<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-						{searchTerm || selectedCity || selectedCategory
+						{searchTerm || selectedCity || selectedCategory || selectedDate
 							? 'Try adjusting your search or filters.'
 							: 'No yard sales are currently available.'}
 					</p>
