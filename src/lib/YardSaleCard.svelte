@@ -90,9 +90,9 @@
 		<div class="mb-3">
 			{#if status === 'expired'}
 				<div
-					class="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/20 dark:text-red-200"
+					class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-medium text-red-800 dark:bg-red-900/20 dark:text-red-200"
 				>
-					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -100,13 +100,14 @@
 							d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 						/>
 					</svg>
-					{timeRemaining}
+					<span class="font-semibold">EXPIRED</span>
+					<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'upcoming'}
 				<div
-					class="inline-flex items-center rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+					class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1.5 text-sm font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
 				>
-					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -114,13 +115,14 @@
 							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 						/>
 					</svg>
-					{timeRemaining}
+					<span class="font-semibold">UPCOMING</span>
+					<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'active'}
 				<div
-					class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-200"
+					class="inline-flex items-center rounded-full bg-green-100 px-3 py-1.5 text-sm font-medium text-green-800 dark:bg-green-900/20 dark:text-green-200"
 				>
-					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -128,35 +130,52 @@
 							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
 						/>
 					</svg>
-					{timeRemaining}
+					<span class="font-semibold">ACTIVE NOW</span>
+					<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'on_break'}
-				<div
-					class="inline-flex items-center rounded-full bg-orange-100 px-2 py-1 text-xs font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-200"
-				>
-					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
-					{timeRemaining}
+				<div class="space-y-1">
+					<div
+						class="inline-flex items-center rounded-full bg-orange-100 px-3 py-1.5 text-sm font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-200"
+					>
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+						<span class="font-semibold">ON BREAK</span>
+						<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+					</div>
+					{#if yardSale.status_reason}
+						<div class="text-xs text-orange-700 italic dark:text-orange-300">
+							"{yardSale.status_reason}"
+						</div>
+					{/if}
 				</div>
 			{:else if status === 'closed'}
-				<div
-					class="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-200"
-				>
-					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M6 18L18 6M6 6l12 12"
-						/>
-					</svg>
-					{timeRemaining}
+				<div class="space-y-1">
+					<div
+						class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-200"
+					>
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18L18 6M6 6l12 12"
+							/>
+						</svg>
+						<span class="font-semibold">CLOSED</span>
+						<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+					</div>
+					{#if yardSale.status_reason}
+						<div class="text-xs text-gray-600 italic dark:text-gray-400">
+							"{yardSale.status_reason}"
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>
