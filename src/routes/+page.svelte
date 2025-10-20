@@ -8,7 +8,7 @@
 		type YardSale
 	} from '$lib/api';
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
-	import CreateYardSaleModal from '$lib/CreateYardSaleModal.svelte';
+	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import { logout } from '$lib/auth';
 
 	let yardSales = $state<YardSale[]>([]);
@@ -352,7 +352,7 @@
 	</div>
 
 	<!-- Create Yard Sale Modal -->
-	<CreateYardSaleModal
+	<EditYardSaleModal
 		isOpen={showCreateModal}
 		onClose={handleCloseCreateModal}
 		onSuccess={handleCreateSuccess}

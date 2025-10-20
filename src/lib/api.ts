@@ -232,3 +232,28 @@ export async function createYardSale(yardSaleData: YardSaleCreate): Promise<Yard
 	}
 	return response.json();
 }
+
+export async function updateYardSale(id: number, yardSaleData: YardSaleCreate): Promise<YardSale> {
+	const response = await fetch(`/api/yard-sales/${id}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(yardSaleData)
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Failed to update yard sale');
+	}
+	return response.json();
+}
+
+export async function deleteYardSale(id: number): Promise<void> {
+	const response = await fetch(`/api/yard-sales/${id}`, {
+		method: 'DELETE'
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Failed to delete yard sale');
+	}
+}

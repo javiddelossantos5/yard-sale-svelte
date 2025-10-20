@@ -2,8 +2,18 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { getYardSaleById, getComments, addComment, type YardSale, type Comment } from '$lib/api';
+	import {
+		getYardSaleById,
+		getComments,
+		addComment,
+		deleteYardSale,
+		type YardSale,
+		type Comment
+	} from '$lib/api';
 	import MessageModal from '$lib/MessageModal.svelte';
+	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
+	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
+	import { getAccessToken } from '$lib/auth';
 
 	let yardSale: YardSale | null = null;
 	let comments: Comment[] = [];
@@ -15,6 +25,13 @@
 	// Message modal state
 	let showMessageModal = false;
 	let currentUserId = 1; // This should come from auth context in a real app
+
+	// Edit modal state
+	let showEditModal = false;
+	let isOwner = false;
+
+	// Delete confirmation modal state
+	let showDeleteModal = false;
 
 	$: yardSaleId = parseInt($page.params.id || '0');
 
@@ -37,6 +54,10 @@
 
 	async function loadYardSale() {
 		yardSale = await getYardSaleById(yardSaleId);
+		// Check if current user is the owner
+		// For now, we'll assume user ID 1 is the current user
+		// In a real app, this would come from the auth context
+		isOwner = yardSale?.owner_id === currentUserId;
 	}
 
 	async function loadComments() {
@@ -112,6 +133,40 @@
 	function handleCloseMessageModal() {
 		showMessageModal = false;
 	}
+
+	function handleEditYardSale() {
+		showEditModal = true;
+	}
+
+	function handleCloseEditModal() {
+		showEditModal = false;
+	}
+
+	async function handleEditSuccess() {
+		// Reload yard sale data after successful edit
+		await loadYardSale();
+	}
+
+	function handleDeleteYardSale() {
+		showDeleteModal = true;
+	}
+
+	function handleCloseDeleteModal() {
+		showDeleteModal = false;
+	}
+
+	async function handleConfirmDelete() {
+		if (!yardSale) return;
+
+		try {
+			await deleteYardSale(yardSale.id);
+			// Redirect to main page after successful deletion
+			goto('/');
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to delete yard sale';
+			// Keep the modal open so user can try again or cancel
+		}
+	}
 </script>
 
 <svelte:head>
@@ -179,7 +234,57 @@
 					<div class="p-8">
 						<!-- Title and Location -->
 						<div class="mb-6">
-							<h1 class="mb-4 text-3xl font-bold text-gray-900">{yardSale.title}</h1>
+							<div class="flex items-start justify-between">
+								<div class="flex-1">
+									<h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+										{yardSale.title}
+									</h1>
+								</div>
+
+								<!-- Owner Actions -->
+								{#if isOwner}
+									<div class="ml-4 flex space-x-2">
+										<button
+											onclick={handleEditYardSale}
+											class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+										>
+											<svg
+												class="mr-2 h-4 w-4"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+												></path>
+											</svg>
+											Edit
+										</button>
+										<button
+											onclick={handleDeleteYardSale}
+											class="inline-flex items-center rounded-md border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none dark:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
+										>
+											<svg
+												class="mr-2 h-4 w-4"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+												></path>
+											</svg>
+											Delete
+										</button>
+									</div>
+								{/if}
+							</div>
 
 							<div class="flex items-center text-gray-600">
 								<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -481,4 +586,22 @@
 			onClose={handleCloseMessageModal}
 		/>
 	{/if}
+
+	<!-- Edit Yard Sale Modal -->
+	{#if yardSale && showEditModal}
+		<EditYardSaleModal
+			isOpen={showEditModal}
+			{yardSale}
+			onClose={handleCloseEditModal}
+			onSuccess={handleEditSuccess}
+		/>
+	{/if}
+
+	<!-- Delete Confirmation Modal -->
+	<DeleteConfirmationModal
+		isOpen={showDeleteModal}
+		itemName="yard sale"
+		onClose={handleCloseDeleteModal}
+		onConfirm={handleConfirmDelete}
+	/>
 </div>
