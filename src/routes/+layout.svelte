@@ -4,7 +4,7 @@
 	import { page } from '$app/stores';
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { setupAuthFetch, isLoggedIn, isTokenExpired, handleTokenExpiration } from '$lib/auth';
+	import { setupAuthFetch, isLoggedIn } from '$lib/auth';
 	import { darkMode, toggleDarkMode } from '$lib/darkMode';
 
 	let { children } = $props();
@@ -14,22 +14,6 @@
 
 		// Check authentication on every page load
 		checkAuth();
-
-		// Set up periodic token expiry check (every 5 minutes)
-		const tokenCheckInterval = setInterval(
-			() => {
-				if (isTokenExpired() && $page.url.pathname !== '/login') {
-					handleTokenExpiration();
-					clearInterval(tokenCheckInterval);
-				}
-			},
-			5 * 60 * 1000
-		); // 5 minutes
-
-		// Cleanup interval on component destroy
-		return () => {
-			clearInterval(tokenCheckInterval);
-		};
 	});
 
 	// Reactive check for authentication (only when path changes)
@@ -40,12 +24,6 @@
 	function checkAuth() {
 		const currentPath = $page.url.pathname;
 		const isLoginPage = currentPath === '/login';
-
-		// Check if token is expired
-		if (isTokenExpired() && !isLoginPage) {
-			handleTokenExpiration();
-			return;
-		}
 
 		// If not logged in and not on login page, redirect to login
 		if (!isLoggedIn() && !isLoginPage) {
@@ -67,10 +45,10 @@
 <div class="fixed top-4 right-4 z-50">
 	<button
 		onclick={toggleDarkMode}
-		class="rounded-full bg-white/90 p-2 shadow-lg ring-1 ring-gray-900/5 transition-all hover:bg-white/100 dark:bg-gray-800/90 dark:ring-gray-100/10 dark:hover:bg-gray-800/100"
+		class="rounded-full bg-white/90 p-2 shadow-lg ring-1 ring-gray-900/5 transition-all hover:bg-white dark:bg-gray-800/90 dark:ring-gray-100/10 dark:hover:bg-gray-800"
 		aria-label="Toggle dark mode"
 	>
-		{#if darkMode}
+		{#if $darkMode}
 			<!-- Sun icon for light mode -->
 			<svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path

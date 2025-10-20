@@ -1,9 +1,10 @@
+import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 const DARK_MODE_KEY = 'dark-mode';
 
-// Create a reactive dark mode state
-let darkMode = $state(false);
+// Create a writable store for dark mode state
+export const darkMode = writable(false);
 
 // Initialize dark mode from localStorage or system preference
 function initializeDarkMode() {
@@ -11,10 +12,10 @@ function initializeDarkMode() {
 
 	const stored = localStorage.getItem(DARK_MODE_KEY);
 	if (stored !== null) {
-		darkMode = stored === 'true';
+		darkMode.set(stored === 'true');
 	} else {
 		// Check system preference
-		darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		darkMode.set(window.matchMedia('(prefers-color-scheme: dark)').matches);
 	}
 
 	applyDarkMode();
@@ -24,36 +25,41 @@ function initializeDarkMode() {
 function applyDarkMode() {
 	if (!browser) return;
 
-	if (darkMode) {
-		document.documentElement.classList.add('dark');
-	} else {
-		document.documentElement.classList.remove('dark');
-	}
+	darkMode.subscribe((isDark) => {
+		if (isDark) {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	});
 }
 
 // Toggle dark mode
 export function toggleDarkMode() {
-	darkMode = !darkMode;
-	applyDarkMode();
-
-	if (browser) {
-		localStorage.setItem(DARK_MODE_KEY, darkMode.toString());
-	}
+	darkMode.update((current) => {
+		const newValue = !current;
+		if (browser) {
+			localStorage.setItem(DARK_MODE_KEY, newValue.toString());
+		}
+		return newValue;
+	});
 }
 
 // Set dark mode
 export function setDarkMode(isDark: boolean) {
-	darkMode = isDark;
-	applyDarkMode();
-
+	darkMode.set(isDark);
 	if (browser) {
-		localStorage.setItem(DARK_MODE_KEY, darkMode.toString());
+		localStorage.setItem(DARK_MODE_KEY, isDark.toString());
 	}
 }
 
 // Get current dark mode state
 export function isDarkMode() {
-	return darkMode;
+	let current = false;
+	darkMode.subscribe((value) => {
+		current = value;
+	})();
+	return current;
 }
 
 // Initialize on module load
@@ -63,11 +69,7 @@ if (browser) {
 	// Listen for system theme changes
 	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
 		if (localStorage.getItem(DARK_MODE_KEY) === null) {
-			darkMode = e.matches;
-			applyDarkMode();
+			darkMode.set(e.matches);
 		}
 	});
 }
-
-// Export the reactive state
-export { darkMode };
