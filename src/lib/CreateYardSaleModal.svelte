@@ -213,7 +213,7 @@
 
 			<!-- Modal panel -->
 			<div
-				class="relative inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle"
+				class="relative inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle"
 			>
 				<!-- Header -->
 				<div class="border-b border-gray-200 bg-white px-6 py-4">
@@ -238,7 +238,7 @@
 				</div>
 
 				<!-- Form -->
-				<form onsubmit={handleSubmit} class="max-h-96 overflow-y-auto">
+				<form onsubmit={handleSubmit} class="max-h-[70vh] overflow-y-auto">
 					<div class="bg-white px-6 py-4">
 						<!-- Error Message -->
 						{#if error}
@@ -269,9 +269,9 @@
 							</div>
 						{/if}
 
-						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 							<!-- Title -->
-							<div class="sm:col-span-2">
+							<div class="sm:col-span-2 lg:col-span-3">
 								<label for="title" class="block text-sm font-medium text-gray-700">Title *</label>
 								<input
 									type="text"
@@ -284,14 +284,14 @@
 							</div>
 
 							<!-- Description -->
-							<div class="sm:col-span-2">
+							<div class="sm:col-span-2 lg:col-span-3">
 								<label for="description" class="block text-sm font-medium text-gray-700"
 									>Description</label
 								>
 								<textarea
 									id="description"
 									bind:value={formData.description}
-									rows="3"
+									rows="4"
 									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
 									placeholder="Describe what you're selling..."
 								></textarea>
@@ -353,7 +353,7 @@
 							</div>
 
 							<!-- Address -->
-							<div class="sm:col-span-2">
+							<div class="sm:col-span-2 lg:col-span-3">
 								<label for="address" class="block text-sm font-medium text-gray-700"
 									>Address *</label
 								>
@@ -472,9 +472,11 @@
 							</div>
 
 							<!-- Categories -->
-							<div class="sm:col-span-2">
-								<label class="block text-sm font-medium text-gray-700">Categories</label>
-								<div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+							<div class="sm:col-span-2 lg:col-span-3">
+								<label class="block text-sm font-medium text-gray-700" for="categories"
+									>Categories</label
+								>
+								<div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
 									{#each categories as category}
 										<label class="flex items-center" for="category-{category}">
 											<input
@@ -491,9 +493,11 @@
 							</div>
 
 							<!-- Payment Methods -->
-							<div class="sm:col-span-2">
-								<label class="block text-sm font-medium text-gray-700">Payment Methods</label>
-								<div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+							<div class="sm:col-span-2 lg:col-span-3">
+								<label class="block text-sm font-medium text-gray-700" for="payment-methods"
+									>Payment Methods</label
+								>
+								<div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
 									{#each paymentMethods as method}
 										<label class="flex items-center" for="payment-{method}">
 											<input
@@ -510,7 +514,7 @@
 							</div>
 
 							<!-- Allow Messages -->
-							<div class="sm:col-span-2">
+							<div class="sm:col-span-2 lg:col-span-3">
 								<label class="flex items-center">
 									<input
 										type="checkbox"
