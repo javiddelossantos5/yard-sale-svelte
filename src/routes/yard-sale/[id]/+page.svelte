@@ -418,8 +418,8 @@
 
 						<!-- Title -->
 						<div class="mb-6">
-							<h2 class="mb-3 text-xl font-semibold text-gray-900">Title</h2>
-							<p class="leading-relaxed text-gray-700">{yardSale.title}</p>
+							<h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-white">Title</h2>
+							<p class="leading-relaxed text-gray-700 dark:text-gray-300">{yardSale.title}</p>
 						</div>
 
 						<!-- Description -->
