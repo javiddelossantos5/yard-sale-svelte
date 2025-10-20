@@ -610,31 +610,6 @@
 				</div>
 			{/if}
 
-			<!-- Demo Credentials (only show in login mode) -->
-			{#if !isRegisterMode}
-				<div class="mt-6">
-					<div class="relative">
-						<div class="absolute inset-0 flex items-center">
-							<div class="w-full border-t border-gray-300"></div>
-						</div>
-						<div class="relative flex justify-center text-sm">
-							<span class="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
-								>Demo Credentials</span
-							>
-						</div>
-					</div>
-
-					<div class="mt-4 rounded-md bg-gray-50 p-4 dark:bg-gray-700">
-						<p class="mb-2 text-sm text-gray-600 dark:text-gray-300">Try these credentials:</p>
-						<div class="text-sm">
-							<p class="text-gray-700 dark:text-gray-200">
-								<strong>Username:</strong> javiddelossantos
-							</p>
-							<p class="text-gray-700 dark:text-gray-200"><strong>Password:</strong> Password</p>
-						</div>
-					</div>
-				</div>
-			{/if}
 		</div>
 	</div>
 </div>
