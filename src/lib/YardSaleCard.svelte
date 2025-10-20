@@ -1,8 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { YardSale } from './api';
+	import MessageModal from './MessageModal.svelte';
 
 	let { yardSale }: { yardSale: YardSale } = $props();
+
+	// Message modal state
+	let showMessageModal = $state(false);
+	let currentUserId = 1; // This should come from auth context in a real app
 
 	function formatDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -37,6 +42,17 @@
 
 	function handleCardClick() {
 		goto(`/yard-sale/${yardSale.id}`);
+	}
+
+	function handleSendMessage(event: Event) {
+		event.stopPropagation();
+		if (yardSale.allow_messages) {
+			showMessageModal = true;
+		}
+	}
+
+	function handleCloseMessageModal() {
+		showMessageModal = false;
 	}
 </script>
 
@@ -147,6 +163,7 @@
 	<div
 		class="border-t bg-gray-50 px-6 py-4"
 		onclick={(e) => e.stopPropagation()}
+		onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 		role="button"
 		tabindex="0"
 	>
@@ -176,6 +193,7 @@
 
 				{#if yardSale.allow_messages}
 					<button
+						onclick={handleSendMessage}
 						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
 					>
 						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,4 +216,15 @@
 			{yardSale.payment_methods.join(', ')}
 		</div>
 	</div>
+
+	<!-- Message Modal -->
+	<MessageModal
+		isOpen={showMessageModal}
+		yardSaleId={yardSale.id}
+		yardSaleTitle={yardSale.title}
+		otherUserId={yardSale.owner_id}
+		otherUsername={yardSale.owner_username}
+		{currentUserId}
+		onClose={handleCloseMessageModal}
+	/>
 </div>
