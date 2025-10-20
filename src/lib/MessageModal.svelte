@@ -26,6 +26,21 @@
 	// Check if owner can reply (has messages from customers)
 	let canOwnerReply = $derived(!isOwner || messages.some((msg) => msg.sender_id !== currentUserId));
 
+	// Get the username of the person you're currently chatting with
+	let currentChatPartner = $derived(() => {
+		if (!isOwner) {
+			// If you're not the owner, you're chatting with the owner
+			return otherUsername;
+		} else {
+			// If you're the owner, find the most recent customer you're replying to
+			const lastMessageFromCustomer = messages
+				.filter((msg) => msg.sender_id !== currentUserId)
+				.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+			return lastMessageFromCustomer ? lastMessageFromCustomer.sender_username : 'No one yet';
+		}
+	});
+
 	$effect(() => {
 		if (isOpen && yardSaleId && otherUserId) {
 			loadMessages();
@@ -176,8 +191,8 @@
 					<div class="flex items-center justify-between">
 						<div>
 							<h3 class="text-lg font-medium text-gray-900 dark:text-white" id="modal-title">
-								{isOwner ? 'Messages for' : 'Message'}
-								{otherUsername}
+								{isOwner ? 'Chat with' : 'Message'}
+								{currentChatPartner()}
 							</h3>
 							<p class="text-sm text-gray-500 dark:text-gray-400">About: {yardSaleTitle}</p>
 						</div>
@@ -239,6 +254,26 @@
 							</div>
 						</div>
 					{:else}
+						<!-- Chat Partner Info -->
+						{#if messages.length > 0}
+							<div
+								class="border-b border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-600 dark:bg-gray-700"
+							>
+								<div class="flex items-center space-x-2">
+									<div
+										class="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900"
+									>
+										<span class="text-xs font-medium text-blue-600 dark:text-blue-300">
+											{currentChatPartner().charAt(0).toUpperCase()}
+										</span>
+									</div>
+									<span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+										Chatting with {currentChatPartner()}
+									</span>
+								</div>
+							</div>
+						{/if}
+
 						<!-- Messages List -->
 						<div bind:this={messagesContainer} class="flex-1 space-y-4 overflow-y-auto p-4">
 							{#if messages.length === 0}
@@ -257,9 +292,13 @@
 												d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 											></path>
 										</svg>
-										<h3 class="mt-2 text-sm font-medium text-gray-900">No messages yet</h3>
-										<p class="mt-1 text-sm text-gray-500">
-											Start a conversation about this yard sale!
+										<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+											No messages yet
+										</h3>
+										<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+											{isOwner
+												? 'Wait for customers to message you about this yard sale!'
+												: 'Start a conversation about this yard sale!'}
 										</p>
 									</div>
 								</div>
