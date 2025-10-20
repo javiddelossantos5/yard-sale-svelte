@@ -196,6 +196,40 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
 	return response.json();
 }
 
+export interface RegisterRequest {
+	username: string;
+	email: string;
+	password: string;
+	full_name: string;
+	phone_number: string;
+	location: {
+		city: string;
+		state: string;
+		zip: string;
+	};
+	bio: string;
+}
+
+export interface RegisterResponse {
+	message: string;
+	user_id: number;
+}
+
+export async function register(userData: RegisterRequest): Promise<RegisterResponse> {
+	const response = await fetch('/api/register', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(userData)
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Registration failed');
+	}
+	return response.json();
+}
+
 export interface YardSaleCreate {
 	title: string;
 	description?: string;
