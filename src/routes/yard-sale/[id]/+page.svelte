@@ -769,8 +769,8 @@
 			isOpen={showMessageModal}
 			yardSaleId={yardSale.id}
 			yardSaleTitle={yardSale.title}
-			otherUserId={yardSale.owner_id}
-			otherUsername={yardSale.owner_username}
+			otherUserId={isOwner ? currentUserId : yardSale.owner_id}
+			otherUsername={isOwner ? 'You' : yardSale.owner_username}
 			{currentUserId}
 			onClose={handleCloseMessageModal}
 		/>

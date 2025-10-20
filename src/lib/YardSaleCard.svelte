@@ -13,6 +13,7 @@
 	let status = $derived(getYardSaleStatus(yardSale));
 	let timeRemaining = $derived(getTimeRemainingMessage(yardSale));
 	let currentUserId = 1; // This should come from auth context in a real app
+	let isOwner = $derived(currentUserId === yardSale.owner_id);
 
 	function formatDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -354,8 +355,8 @@
 		isOpen={showMessageModal}
 		yardSaleId={yardSale.id}
 		yardSaleTitle={yardSale.title}
-		otherUserId={yardSale.owner_id}
-		otherUsername={yardSale.owner_username}
+		otherUserId={isOwner ? currentUserId : yardSale.owner_id}
+		otherUsername={isOwner ? 'You' : yardSale.owner_username}
 		{currentUserId}
 		onClose={handleCloseMessageModal}
 	/>

@@ -13,6 +13,9 @@
 			onClose: () => void;
 		}>();
 
+	// Determine if current user is the yard sale owner
+	let isOwner = $derived(currentUserId === otherUserId);
+
 	let messages = $state<Message[]>([]);
 	let newMessage = $state('');
 	let loading = $state(true);
@@ -56,7 +59,22 @@
 
 		sending = true;
 		try {
-			const message = await sendMessage(yardSaleId, otherUserId, newMessage.trim());
+			// If the current user is the owner, they need to reply to someone who messaged them
+			// Find the most recent message from a non-owner to reply to
+			let recipientId = otherUserId;
+
+			if (isOwner) {
+				// Find the most recent message from someone other than the owner
+				const lastMessageFromCustomer = messages
+					.filter((msg) => msg.sender_id !== currentUserId)
+					.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+				if (lastMessageFromCustomer) {
+					recipientId = lastMessageFromCustomer.sender_id;
+				}
+			}
+
+			const message = await sendMessage(yardSaleId, recipientId, newMessage.trim());
 			messages = [...messages, message];
 			newMessage = '';
 			// Scroll to bottom
@@ -131,24 +149,27 @@
 
 			<!-- Modal panel -->
 			<div
-				class="relative inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
+				class="relative inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle dark:bg-gray-800"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 				role="dialog"
 				tabindex="-1"
 			>
 				<!-- Header -->
-				<div class="border-b border-gray-200 bg-white px-6 py-4">
+				<div
+					class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-600 dark:bg-gray-800"
+				>
 					<div class="flex items-center justify-between">
 						<div>
-							<h3 class="text-lg font-medium text-gray-900" id="modal-title">
-								Message {otherUsername}
+							<h3 class="text-lg font-medium text-gray-900 dark:text-white" id="modal-title">
+								{isOwner ? 'Messages for' : 'Message'}
+								{otherUsername}
 							</h3>
-							<p class="text-sm text-gray-500">About: {yardSaleTitle}</p>
+							<p class="text-sm text-gray-500 dark:text-gray-400">About: {yardSaleTitle}</p>
 						</div>
 						<button
 							type="button"
-							class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+							class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:hover:text-gray-300"
 							onclick={closeModal}
 						>
 							<span class="sr-only">Close</span>
@@ -165,14 +186,14 @@
 				</div>
 
 				<!-- Messages Container -->
-				<div class="flex h-96 flex-col">
+				<div class="flex h-96 flex-col dark:bg-gray-800">
 					{#if loading}
 						<div class="flex flex-1 items-center justify-center">
 							<div class="flex items-center space-x-2">
 								<div
 									class="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"
 								></div>
-								<span class="text-sm text-gray-600">Loading messages...</span>
+								<span class="text-sm text-gray-600 dark:text-gray-400">Loading messages...</span>
 							</div>
 						</div>
 					{:else if error}
@@ -191,8 +212,10 @@
 										d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 									></path>
 								</svg>
-								<h3 class="mt-2 text-sm font-medium text-gray-900">Error loading messages</h3>
-								<p class="mt-1 text-sm text-gray-500">{error}</p>
+								<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+									Error loading messages
+								</h3>
+								<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{error}</p>
 								<button
 									onclick={loadMessages}
 									class="mt-3 inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -271,20 +294,21 @@
 						</div>
 
 						<!-- Message Input -->
-						<div class="border-t border-gray-200 p-4">
+						<div class="border-t border-gray-200 p-4 dark:border-gray-600 dark:bg-gray-800">
 							<div class="flex space-x-2">
 								<textarea
 									bind:value={newMessage}
 									onkeydown={handleKeyPress}
-									placeholder="Type your message..."
+									placeholder={isOwner ? 'Reply to customer...' : 'Type your message...'}
 									rows="2"
-									class="flex-1 resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
+									class="flex-1 resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
 									disabled={sending}
 								></textarea>
 								<button
 									onclick={handleSendMessage}
 									disabled={sending || !newMessage.trim()}
 									class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+									title={isOwner ? 'Reply to customer' : 'Send message'}
 								>
 									{#if sending}
 										<svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
