@@ -150,7 +150,7 @@
 
 				<div class="flex items-center space-x-4">
 					<div class="text-sm text-gray-500 dark:text-gray-400">
-						{yardSales.length} yard sales found
+						{filteredYardSales.length} yard sales found
 					</div>
 					<button
 						onclick={handleCreateYardSale}
