@@ -13,15 +13,18 @@
 			onClose: () => void;
 		}>();
 
-	// Determine if current user is the yard sale owner
-	let isOwner = $derived(currentUserId === otherUserId);
-
 	let messages = $state<Message[]>([]);
 	let newMessage = $state('');
 	let loading = $state(true);
 	let sending = $state(false);
 	let error = $state<string | null>(null);
 	let messagesContainer = $state<HTMLDivElement>();
+
+	// Determine if current user is the yard sale owner
+	let isOwner = $derived(currentUserId === otherUserId);
+
+	// Check if owner can reply (has messages from customers)
+	let canOwnerReply = $derived(!isOwner || messages.some((msg) => msg.sender_id !== currentUserId));
 
 	$effect(() => {
 		if (isOpen && yardSaleId && otherUserId) {
@@ -59,19 +62,30 @@
 
 		sending = true;
 		try {
-			// If the current user is the owner, they need to reply to someone who messaged them
-			// Find the most recent message from a non-owner to reply to
-			let recipientId = otherUserId;
+			let recipientId: number;
 
 			if (isOwner) {
+				// If the current user is the owner, they need to reply to someone who messaged them
 				// Find the most recent message from someone other than the owner
 				const lastMessageFromCustomer = messages
 					.filter((msg) => msg.sender_id !== currentUserId)
 					.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
-				if (lastMessageFromCustomer) {
-					recipientId = lastMessageFromCustomer.sender_id;
+				if (!lastMessageFromCustomer) {
+					error = 'No messages to reply to. Wait for someone to message you first.';
+					return;
 				}
+
+				recipientId = lastMessageFromCustomer.sender_id;
+			} else {
+				// If the current user is not the owner, they message the owner
+				recipientId = otherUserId;
+			}
+
+			// Double-check that we're not trying to message ourselves
+			if (recipientId === currentUserId) {
+				error = 'Cannot send message to yourself.';
+				return;
 			}
 
 			const message = await sendMessage(yardSaleId, recipientId, newMessage.trim());
@@ -299,14 +313,18 @@
 								<textarea
 									bind:value={newMessage}
 									onkeydown={handleKeyPress}
-									placeholder={isOwner ? 'Reply to customer...' : 'Type your message...'}
+									placeholder={isOwner
+										? canOwnerReply
+											? 'Reply to customer...'
+											: 'Wait for someone to message you first...'
+										: 'Type your message...'}
 									rows="2"
 									class="flex-1 resize-none rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-									disabled={sending}
+									disabled={sending || !canOwnerReply}
 								></textarea>
 								<button
 									onclick={handleSendMessage}
-									disabled={sending || !newMessage.trim()}
+									disabled={sending || !newMessage.trim() || !canOwnerReply}
 									class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 									title={isOwner ? 'Reply to customer' : 'Send message'}
 								>
