@@ -119,14 +119,14 @@
 	<meta name="description" content={yardSale?.description || 'View yard sale details'} />
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<header class="border-b bg-white shadow-sm">
+	<header class="border-b bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between py-4">
 				<button
 					onclick={() => goto('/')}
-					class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700"
+					class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
 				>
 					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -147,7 +147,7 @@
 		{#if loading}
 			<div class="flex items-center justify-center py-12">
 				<div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-				<span class="ml-3 text-gray-600">Loading yard sale...</span>
+				<span class="ml-3 text-gray-600 dark:text-gray-300">Loading yard sale...</span>
 			</div>
 		{/if}
 

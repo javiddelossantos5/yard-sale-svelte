@@ -65,7 +65,7 @@
 </script>
 
 <div
-	class="cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg"
+	class="cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600"
 	onclick={handleCardClick}
 	onkeydown={(e) => e.key === 'Enter' && handleCardClick()}
 	role="button"
@@ -73,13 +73,13 @@
 >
 	<!-- Header -->
 	<div class="p-6 pb-4">
-		<h3 class="mb-2 line-clamp-2 text-xl font-bold text-gray-900">
+		<h3 class="mb-2 line-clamp-2 text-xl font-bold text-gray-900 dark:text-white">
 			{yardSale.title}
 		</h3>
 
 		<!-- Location -->
 		<div class="mb-3">
-			<div class="flex items-start text-gray-600">
+			<div class="flex items-start text-gray-600 dark:text-gray-300">
 				<svg
 					class="mt-0.5 mr-2 h-4 w-4 shrink-0"
 					fill="none"
@@ -106,14 +106,17 @@
 						title="Click to open in Google Maps"
 					>
 						<div class="font-medium">{yardSale.address}</div>
-						<div class="text-gray-500">{yardSale.city}, {yardSale.state} {yardSale.zip_code}</div>
+						<div class="text-gray-500 dark:text-gray-400">
+							{yardSale.city}, {yardSale.state}
+							{yardSale.zip_code}
+						</div>
 					</button>
 				</div>
 			</div>
 		</div>
 
 		<!-- Date & Time -->
-		<div class="mb-3 flex items-center text-gray-600">
+		<div class="mb-3 flex items-center text-gray-600 dark:text-gray-300">
 			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
 					stroke-linecap="round"
@@ -125,7 +128,7 @@
 			<span class="text-sm">{getDateRange()}</span>
 		</div>
 
-		<div class="mb-4 flex items-center text-gray-600">
+		<div class="mb-4 flex items-center text-gray-600 dark:text-gray-300">
 			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
 					stroke-linecap="round"
@@ -138,7 +141,7 @@
 		</div>
 
 		<!-- Description -->
-		<p class="mb-4 line-clamp-3 text-sm text-gray-700">
+		<p class="mb-4 line-clamp-3 text-sm text-gray-700 dark:text-gray-300">
 			{yardSale.description}
 		</p>
 	</div>
@@ -185,14 +188,14 @@
 
 	<!-- Footer -->
 	<div
-		class="border-t bg-gray-50 px-6 py-4"
+		class="border-t bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-700"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 		role="button"
 		tabindex="0"
 	>
 		<div class="flex items-center justify-between">
-			<div class="text-sm text-gray-600">
+			<div class="text-sm text-gray-600 dark:text-gray-300">
 				<span class="font-medium">Contact:</span>
 				{yardSale.contact_name}
 			</div>
@@ -218,7 +221,7 @@
 				{#if yardSale.allow_messages}
 					<button
 						onclick={handleSendMessage}
-						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 					>
 						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -235,7 +238,7 @@
 		</div>
 
 		<!-- Payment Methods -->
-		<div class="mt-2 text-xs text-gray-500">
+		<div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 			<span class="font-medium">Payment:</span>
 			{yardSale.payment_methods.join(', ')}
 		</div>

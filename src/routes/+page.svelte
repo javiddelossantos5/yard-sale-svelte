@@ -118,18 +118,20 @@
 	<meta name="description" content="Find yard sales in your area" />
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<header class="border-b bg-white shadow-sm">
+	<header class="border-b bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between py-6">
 				<div>
-					<h1 class="text-3xl font-bold text-gray-900">Yard Sale Finder</h1>
-					<p class="mt-1 text-gray-600">Discover amazing deals in your neighborhood</p>
+					<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
+					<p class="mt-1 text-gray-600 dark:text-gray-300">
+						Discover amazing deals in your neighborhood
+					</p>
 				</div>
 
 				<div class="flex items-center space-x-4">
-					<div class="text-sm text-gray-500">
+					<div class="text-sm text-gray-500 dark:text-gray-400">
 						{yardSales.length} yard sales found
 					</div>
 					<button
@@ -148,7 +150,7 @@
 					</button>
 					<button
 						onclick={handleLogout}
-						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 					>
 						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -167,28 +169,37 @@
 
 	<!-- Search and Filters -->
 	<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-		<div class="mb-6 rounded-lg bg-white p-6 shadow-sm">
+		<div
+			class="mb-6 rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+		>
 			<div class="grid grid-cols-1 gap-4 md:grid-cols-4">
 				<!-- Search -->
 				<div class="md:col-span-2">
-					<label for="search" class="mb-2 block text-sm font-medium text-gray-700"> Search </label>
+					<label
+						for="search"
+						class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+					>
+						Search
+					</label>
 					<input
 						id="search"
 						type="text"
 						bind:value={searchTerm}
 						placeholder="Search by title, description, city, or category..."
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
 					/>
 				</div>
 
 				<!-- City Filter -->
 				<div>
-					<label for="city" class="mb-2 block text-sm font-medium text-gray-700"> City </label>
+					<label for="city" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+						City
+					</label>
 					<select
 						id="city"
 						bind:value={selectedCity}
 						onchange={handleCityChange}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
 					>
 						<option value="">All Cities</option>
 						{#each cities as city}
@@ -199,14 +210,17 @@
 
 				<!-- Category Filter -->
 				<div>
-					<label for="category" class="mb-2 block text-sm font-medium text-gray-700">
+					<label
+						for="category"
+						class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+					>
 						Category
 					</label>
 					<select
 						id="category"
 						bind:value={selectedCategory}
 						onchange={handleCategoryChange}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
+						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
 					>
 						<option value="">All Categories</option>
 						{#each categories as category}
@@ -221,7 +235,7 @@
 				<div class="mt-4">
 					<button
 						onclick={clearFilters}
-						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 					>
 						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -241,13 +255,15 @@
 		{#if loading}
 			<div class="flex items-center justify-center py-12">
 				<div class="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-				<span class="ml-3 text-gray-600">Loading yard sales...</span>
+				<span class="ml-3 text-gray-600 dark:text-gray-300">Loading yard sales...</span>
 			</div>
 		{/if}
 
 		<!-- Error State -->
 		{#if error}
-			<div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
+			<div
+				class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
+			>
 				<div class="flex">
 					<svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -258,8 +274,10 @@
 						></path>
 					</svg>
 					<div class="ml-3">
-						<h3 class="text-sm font-medium text-red-800">Error loading yard sales</h3>
-						<p class="mt-1 text-sm text-red-700">{error}</p>
+						<h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+							Error loading yard sales
+						</h3>
+						<p class="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
 					</div>
 				</div>
 			</div>
@@ -282,8 +300,10 @@
 							d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
 						></path>
 					</svg>
-					<h3 class="mt-2 text-sm font-medium text-gray-900">No yard sales found</h3>
-					<p class="mt-1 text-sm text-gray-500">
+					<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+						No yard sales found
+					</h3>
+					<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						{searchTerm || selectedCity || selectedCategory
 							? 'Try adjusting your search or filters.'
 							: 'No yard sales are currently available.'}

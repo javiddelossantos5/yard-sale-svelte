@@ -44,21 +44,27 @@
 	<meta name="description" content="Login to Yard Sale Finder" />
 </svelte:head>
 
-<div class="flex min-h-screen flex-col justify-center bg-gray-50 py-12 sm:px-6 lg:px-8">
+<div
+	class="flex min-h-screen flex-col justify-center bg-gray-50 py-12 sm:px-6 lg:px-8 dark:bg-gray-900"
+>
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
 		<div class="text-center">
-			<h1 class="mb-2 text-4xl font-bold text-gray-900">🏠</h1>
-			<h2 class="text-3xl font-bold text-gray-900">Yard Sale Finder</h2>
-			<p class="mt-2 text-sm text-gray-600">Sign in to your account</p>
+			<h1 class="mb-2 text-4xl font-bold text-gray-900 dark:text-white">🏠</h1>
+			<h2 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h2>
+			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Sign in to your account</p>
 		</div>
 	</div>
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-		<div class="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
+		<div
+			class="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+		>
 			<form class="space-y-6" onsubmit={handleLogin}>
 				<!-- Username Field -->
 				<div>
-					<label for="username" class="block text-sm font-medium text-gray-700"> Username </label>
+					<label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+						Username
+					</label>
 					<div class="mt-1">
 						<input
 							id="username"
@@ -67,7 +73,7 @@
 							autocomplete="username"
 							required
 							bind:value={username}
-							class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
+							class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
 							placeholder="Enter your username"
 							disabled={loading}
 						/>
@@ -76,7 +82,9 @@
 
 				<!-- Password Field -->
 				<div>
-					<label for="password" class="block text-sm font-medium text-gray-700"> Password </label>
+					<label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+						Password
+					</label>
 					<div class="mt-1">
 						<input
 							id="password"
@@ -85,7 +93,7 @@
 							autocomplete="current-password"
 							required
 							bind:value={password}
-							class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
+							class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
 							placeholder="Enter your password"
 							disabled={loading}
 						/>
@@ -94,7 +102,7 @@
 
 				<!-- Error Message -->
 				{#if error}
-					<div class="rounded-md bg-red-50 p-4">
+					<div class="rounded-md bg-red-50 p-4 dark:border dark:border-red-800 dark:bg-red-900/20">
 						<div class="flex">
 							<div class="shrink-0">
 								<svg
@@ -112,8 +120,8 @@
 								</svg>
 							</div>
 							<div class="ml-3">
-								<h3 class="text-sm font-medium text-red-800">Login Error</h3>
-								<div class="mt-2 text-sm text-red-700">
+								<h3 class="text-sm font-medium text-red-800 dark:text-red-200">Login Error</h3>
+								<div class="mt-2 text-sm text-red-700 dark:text-red-300">
 									<p>{error}</p>
 								</div>
 							</div>
@@ -171,15 +179,19 @@
 						<div class="w-full border-t border-gray-300"></div>
 					</div>
 					<div class="relative flex justify-center text-sm">
-						<span class="bg-white px-2 text-gray-500">Demo Credentials</span>
+						<span class="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+							>Demo Credentials</span
+						>
 					</div>
 				</div>
 
-				<div class="mt-4 rounded-md bg-gray-50 p-4">
-					<p class="mb-2 text-sm text-gray-600">Try these credentials:</p>
+				<div class="mt-4 rounded-md bg-gray-50 p-4 dark:bg-gray-700">
+					<p class="mb-2 text-sm text-gray-600 dark:text-gray-300">Try these credentials:</p>
 					<div class="text-sm">
-						<p class="text-gray-700"><strong>Username:</strong> javiddelossantos</p>
-						<p class="text-gray-700"><strong>Password:</strong> Password</p>
+						<p class="text-gray-700 dark:text-gray-200">
+							<strong>Username:</strong> javiddelossantos
+						</p>
+						<p class="text-gray-700 dark:text-gray-200"><strong>Password:</strong> Password</p>
 					</div>
 				</div>
 			</div>
