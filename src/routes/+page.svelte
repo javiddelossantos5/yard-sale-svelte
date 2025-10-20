@@ -123,11 +123,13 @@
 				// Date filter
 				const matchesDate = !selectedDate || sale.start_date === selectedDate;
 
-				// Expired filter: show all if showExpired is true, otherwise exclude expired
-				const isExpired = getYardSaleStatus(sale) === 'expired';
-				const matchesExpired = showExpired || !isExpired;
+				// Status filter: show all if showExpired is true, otherwise exclude expired and on_break
+				const status = getYardSaleStatus(sale);
+				const isExpired = status === 'expired';
+				const isOnBreak = status === 'on_break';
+				const matchesStatus = showExpired || (!isExpired && !isOnBreak);
 
-				return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesExpired;
+				return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesStatus;
 			})
 			.sort((a, b) => {
 				// Sort by start date: closest starting date first, then descending
@@ -295,7 +297,7 @@
 							for="show-expired"
 							class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
 						>
-							Show Expired
+							Show All (Including Expired & On Break)
 						</label>
 					</div>
 				</div>
