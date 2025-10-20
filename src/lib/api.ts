@@ -167,3 +167,29 @@ export async function getUnreadCount(): Promise<{ count: number }> {
 	}
 	return response.json();
 }
+
+export interface LoginRequest {
+	username: string;
+	password: string;
+}
+
+export interface LoginResponse {
+	access_token: string;
+	token_type: string;
+	expires_in: number;
+}
+
+export async function login(credentials: LoginRequest): Promise<LoginResponse> {
+	const response = await fetch('/api/login', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(credentials)
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Login failed');
+	}
+	return response.json();
+}

@@ -69,6 +69,16 @@ async function login(username: string, password: string): Promise<LoginResponse>
 	return res.json();
 }
 
+export function isLoggedIn(): boolean {
+	return getAccessToken() !== null;
+}
+
+export function logout(): void {
+	if (typeof localStorage !== 'undefined') {
+		localStorage.removeItem(ACCESS_TOKEN_KEY);
+	}
+}
+
 export async function ensureDevLogin(username: string, password: string): Promise<void> {
 	if (!import.meta.env.DEV) return;
 	const existing = getAccessToken();

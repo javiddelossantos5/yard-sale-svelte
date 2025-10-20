@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import {
 		getYardSales,
 		getYardSalesByCity,
@@ -7,6 +8,7 @@
 		type YardSale
 	} from '$lib/api';
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
+	import { logout } from '$lib/auth';
 
 	let yardSales: YardSale[] = [];
 	let loading = true;
@@ -75,6 +77,11 @@
 		loadYardSales();
 	}
 
+	function handleLogout() {
+		logout();
+		goto('/login');
+	}
+
 	// Filter yard sales by search term
 	$: filteredYardSales = yardSales.filter(
 		(sale) =>
@@ -104,6 +111,20 @@
 					<div class="text-sm text-gray-500">
 						{yardSales.length} yard sales found
 					</div>
+					<button
+						onclick={handleLogout}
+						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+					>
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+							></path>
+						</svg>
+						Logout
+					</button>
 				</div>
 			</div>
 		</div>
@@ -131,7 +152,7 @@
 					<select
 						id="city"
 						bind:value={selectedCity}
-						on:change={handleCityChange}
+						onchange={handleCityChange}
 						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
 					>
 						<option value="">All Cities</option>
@@ -149,7 +170,7 @@
 					<select
 						id="category"
 						bind:value={selectedCategory}
-						on:change={handleCategoryChange}
+						onchange={handleCategoryChange}
 						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
 					>
 						<option value="">All Categories</option>
@@ -164,7 +185,7 @@
 			{#if selectedCity || selectedCategory}
 				<div class="mt-4">
 					<button
-						on:click={clearFilters}
+						onclick={clearFilters}
 						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 					>
 						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
