@@ -236,7 +236,9 @@
 		{#if yardSale && !loading}
 			<div class="space-y-8">
 				<!-- Main Content -->
-				<div class="rounded-lg bg-white shadow-sm">
+				<div
+					class="rounded-lg bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+				>
 					<div class="p-8">
 						<!-- Title and Location -->
 						<div class="mb-6">
@@ -360,7 +362,7 @@
 								{/if}
 							</div>
 
-							<div class="flex items-center text-gray-600">
+							<div class="flex items-center text-gray-600 dark:text-gray-300">
 								<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
@@ -383,7 +385,7 @@
 
 						<!-- Date and Time -->
 						<div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-							<div class="flex items-center text-gray-600">
+							<div class="flex items-center text-gray-600 dark:text-gray-300">
 								<svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
@@ -393,12 +395,12 @@
 									></path>
 								</svg>
 								<div>
-									<div class="font-medium text-gray-900">Date</div>
+									<div class="font-medium text-gray-900 dark:text-white">Date</div>
 									<div class="text-sm">{getDateRange()}</div>
 								</div>
 							</div>
 
-							<div class="flex items-center text-gray-600">
+							<div class="flex items-center text-gray-600 dark:text-gray-300">
 								<svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
@@ -408,7 +410,7 @@
 									></path>
 								</svg>
 								<div>
-									<div class="font-medium text-gray-900">Time</div>
+									<div class="font-medium text-gray-900 dark:text-white">Time</div>
 									<div class="text-sm">{getTimeRange()}</div>
 								</div>
 							</div>
@@ -422,17 +424,17 @@
 
 						<!-- Description -->
 						<div class="mb-6">
-							<h2 class="mb-3 text-xl font-semibold text-gray-900">Description</h2>
-							<p class="leading-relaxed text-gray-700">{yardSale.description}</p>
+							<h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-white">Description</h2>
+							<p class="leading-relaxed text-gray-700 dark:text-gray-300">{yardSale.description}</p>
 						</div>
 
 						<!-- Categories -->
 						<div class="mb-6">
-							<h2 class="mb-3 text-xl font-semibold text-gray-900">Categories</h2>
+							<h2 class="mb-3 text-xl font-semibold text-gray-900 dark:text-white">Categories</h2>
 							<div class="flex flex-wrap gap-2">
 								{#each yardSale.categories as category}
 									<span
-										class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800"
+										class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
 									>
 										{category}
 									</span>
@@ -443,8 +445,10 @@
 						<!-- Price and Payment -->
 						<div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div>
-								<h3 class="mb-2 text-lg font-semibold text-gray-900">Price Range</h3>
-								<div class="flex items-center text-green-600">
+								<h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+									Price Range
+								</h3>
+								<div class="flex items-center text-green-600 dark:text-green-400">
 									<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path
 											stroke-linecap="round"
@@ -458,26 +462,34 @@
 							</div>
 
 							<div>
-								<h3 class="mb-2 text-lg font-semibold text-gray-900">Payment Methods</h3>
-								<div class="text-gray-700">{yardSale.payment_methods.join(', ')}</div>
+								<h3 class="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+									Payment Methods
+								</h3>
+								<div class="text-gray-700 dark:text-gray-300">
+									{yardSale.payment_methods.join(', ')}
+								</div>
 							</div>
 						</div>
 
 						<!-- Contact Information -->
-						<div class="border-t pt-6">
-							<h2 class="mb-4 text-xl font-semibold text-gray-900">Contact Information</h2>
+						<div class="border-t border-gray-200 pt-6 dark:border-gray-700">
+							<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+								Contact Information
+							</h2>
 							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 								<div>
-									<div class="text-sm font-medium text-gray-500">Contact Person</div>
-									<div class="text-lg text-gray-900">{yardSale.contact_name}</div>
+									<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
+										Contact Person
+									</div>
+									<div class="text-lg text-gray-900 dark:text-white">{yardSale.contact_name}</div>
 								</div>
 
 								{#if yardSale.contact_phone}
 									<div>
-										<div class="text-sm font-medium text-gray-500">Phone</div>
+										<div class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</div>
 										<a
 											href="tel:{yardSale.contact_phone}"
-											class="text-lg text-blue-600 hover:text-blue-800"
+											class="text-lg text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
 										>
 											{yardSale.contact_phone}
 										</a>
@@ -486,10 +498,10 @@
 
 								{#if yardSale.contact_email}
 									<div>
-										<div class="text-sm font-medium text-gray-500">Email</div>
+										<div class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</div>
 										<a
 											href="mailto:{yardSale.contact_email}"
-											class="text-lg text-blue-600 hover:text-blue-800"
+											class="text-lg text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
 										>
 											{yardSale.contact_email}
 										</a>
@@ -544,16 +556,18 @@
 				</div>
 
 				<!-- Comments Section -->
-				<div class="rounded-lg bg-white shadow-sm">
-					<div class="border-b border-gray-200 px-8 py-6">
-						<h2 class="text-xl font-semibold text-gray-900">
+				<div
+					class="rounded-lg bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+				>
+					<div class="border-b border-gray-200 px-8 py-6 dark:border-gray-700">
+						<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
 							Comments ({comments.length})
 						</h2>
 					</div>
 
 					<!-- Add Comment Form -->
 					{#if yardSale && isYardSaleActive(yardSale)}
-						<div class="border-b border-gray-200 px-8 py-6">
+						<div class="border-b border-gray-200 px-8 py-6 dark:border-gray-700">
 							<form
 								onsubmit={(e) => {
 									e.preventDefault();
@@ -561,7 +575,10 @@
 								}}
 							>
 								<div class="mb-4">
-									<label for="comment" class="mb-2 block text-sm font-medium text-gray-700">
+									<label
+										for="comment"
+										class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+									>
 										Add a Comment
 									</label>
 									<textarea
@@ -569,7 +586,7 @@
 										bind:value={newComment}
 										rows="3"
 										placeholder="Ask a question or share your thoughts about this yard sale..."
-										class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
+										class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
 										required
 									></textarea>
 								</div>
@@ -603,7 +620,7 @@
 						</div>
 					{:else if yardSale}
 						<!-- Expired Event Message -->
-						<div class="border-b border-gray-200 px-8 py-6">
+						<div class="border-b border-gray-200 px-8 py-6 dark:border-gray-700">
 							<div class="rounded-md bg-gray-50 p-4 dark:bg-gray-800">
 								<div class="flex">
 									<svg
@@ -649,34 +666,43 @@
 										d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 									></path>
 								</svg>
-								<h3 class="mt-2 text-sm font-medium text-gray-900">No comments yet</h3>
-								<p class="mt-1 text-sm text-gray-500">
+								<h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+									No comments yet
+								</h3>
+								<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 									Be the first to ask a question or share your thoughts!
 								</p>
 							</div>
 						{:else}
 							<div class="space-y-6">
 								{#each comments as comment (comment.id)}
-									<div class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+									<div
+										class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0 dark:border-gray-700"
+									>
 										<div class="flex items-start space-x-3">
 											<div class="shrink-0">
 												<div
-													class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100"
+													class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20"
 												>
-													<span class="text-sm font-medium text-blue-600">
+													<span class="text-sm font-medium text-blue-600 dark:text-blue-400">
 														{comment.username.charAt(0).toUpperCase()}
 													</span>
 												</div>
 											</div>
 											<div class="min-w-0 flex-1">
 												<div class="flex items-center space-x-2">
-													<p class="text-sm font-medium text-gray-900">{comment.username}</p>
-													<span class="text-sm text-gray-500">•</span>
-													<time class="text-sm text-gray-500" datetime={comment.created_at}>
+													<p class="text-sm font-medium text-gray-900 dark:text-white">
+														{comment.username}
+													</p>
+													<span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+													<time
+														class="text-sm text-gray-500 dark:text-gray-400"
+														datetime={comment.created_at}
+													>
 														{formatCommentDate(comment.created_at)}
 													</time>
 												</div>
-												<div class="mt-1 text-sm text-gray-700">
+												<div class="mt-1 text-sm text-gray-700 dark:text-gray-300">
 													<p>{comment.content}</p>
 												</div>
 											</div>
