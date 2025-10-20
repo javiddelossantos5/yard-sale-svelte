@@ -1,0 +1,187 @@
+<script lang="ts">
+	import type { YardSale } from './api';
+
+	let { yardSale }: { yardSale: YardSale } = $props();
+
+	function formatDate(dateString: string): string {
+		return new Date(dateString).toLocaleDateString('en-US', {
+			weekday: 'short',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
+
+	function formatTime(timeString: string): string {
+		return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		});
+	}
+
+	function getDateRange(): string {
+		const startDate = formatDate(yardSale.start_date);
+		if (yardSale.end_date) {
+			const endDate = formatDate(yardSale.end_date);
+			return `${startDate} - ${endDate}`;
+		}
+		return startDate;
+	}
+
+	function getTimeRange(): string {
+		const startTime = formatTime(yardSale.start_time);
+		const endTime = formatTime(yardSale.end_time);
+		return `${startTime} - ${endTime}`;
+	}
+</script>
+
+<div
+	class="overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg"
+>
+	<!-- Header -->
+	<div class="p-6 pb-4">
+		<h3 class="mb-2 line-clamp-2 text-xl font-bold text-gray-900">
+			{yardSale.title}
+		</h3>
+
+		<!-- Location -->
+		<div class="mb-3 flex items-center text-gray-600">
+			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+				></path>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+				></path>
+			</svg>
+			<span class="text-sm">{yardSale.city}, {yardSale.state}</span>
+		</div>
+
+		<!-- Date & Time -->
+		<div class="mb-3 flex items-center text-gray-600">
+			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+				></path>
+			</svg>
+			<span class="text-sm">{getDateRange()}</span>
+		</div>
+
+		<div class="mb-4 flex items-center text-gray-600">
+			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+				></path>
+			</svg>
+			<span class="text-sm">{getTimeRange()}</span>
+		</div>
+
+		<!-- Description -->
+		<p class="mb-4 line-clamp-3 text-sm text-gray-700">
+			{yardSale.description}
+		</p>
+	</div>
+
+	<!-- Categories -->
+	<div class="px-6 pb-4">
+		<div class="mb-4 flex flex-wrap gap-2">
+			{#each yardSale.categories as category}
+				<span
+					class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
+				>
+					{category}
+				</span>
+			{/each}
+		</div>
+
+		<!-- Price Range & Payment Methods -->
+		<div class="flex items-center justify-between text-sm">
+			<div class="flex items-center font-medium text-green-600">
+				<svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+					></path>
+				</svg>
+				{yardSale.price_range}
+			</div>
+
+			<div class="flex items-center text-gray-500">
+				<svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+					></path>
+				</svg>
+				{yardSale.comment_count} comments
+			</div>
+		</div>
+	</div>
+
+	<!-- Footer -->
+	<div class="border-t bg-gray-50 px-6 py-4">
+		<div class="flex items-center justify-between">
+			<div class="text-sm text-gray-600">
+				<span class="font-medium">Contact:</span>
+				{yardSale.contact_name}
+			</div>
+
+			<div class="flex space-x-2">
+				{#if yardSale.contact_phone}
+					<a
+						href="tel:{yardSale.contact_phone}"
+						class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+					>
+						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+							></path>
+						</svg>
+						Call
+					</a>
+				{/if}
+
+				{#if yardSale.allow_messages}
+					<button
+						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+					>
+						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+							></path>
+						</svg>
+						Message
+					</button>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Payment Methods -->
+		<div class="mt-2 text-xs text-gray-500">
+			<span class="font-medium">Payment:</span>
+			{yardSale.payment_methods.join(', ')}
+		</div>
+	</div>
+</div>
