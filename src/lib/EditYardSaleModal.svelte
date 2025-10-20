@@ -33,7 +33,9 @@
 		allow_messages: true,
 		categories: [],
 		price_range: '',
-		payment_methods: []
+		payment_methods: [],
+		status: 'active',
+		status_reason: ''
 	});
 
 	let loading = $state(false);
@@ -144,7 +146,9 @@
 				allow_messages: yardSale.allow_messages,
 				categories: yardSale.categories || [],
 				price_range: yardSale.price_range || '',
-				payment_methods: yardSale.payment_methods || []
+				payment_methods: yardSale.payment_methods || [],
+				status: yardSale.status || 'active',
+				status_reason: yardSale.status_reason || ''
 			};
 		} else if (!yardSale && isOpen) {
 			resetForm();
@@ -210,7 +214,9 @@
 			allow_messages: true,
 			categories: [],
 			price_range: '',
-			payment_methods: []
+			payment_methods: [],
+			status: 'active',
+			status_reason: ''
 		};
 	}
 
@@ -603,6 +609,44 @@
 									>
 								</label>
 							</div>
+
+							<!-- Status -->
+							<div class="sm:col-span-2 lg:col-span-3">
+								<label
+									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+									for="status"
+								>
+									Status
+								</label>
+								<select
+									id="status"
+									bind:value={formData.status}
+									class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+								>
+									<option value="active">Active</option>
+									<option value="on_break">On Break</option>
+									<option value="closed">Closed</option>
+								</select>
+							</div>
+
+							<!-- Status Reason -->
+							{#if formData.status === 'on_break' || formData.status === 'closed'}
+								<div class="sm:col-span-2 lg:col-span-3">
+									<label
+										class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+										for="status-reason"
+									>
+										Status Reason (Optional)
+									</label>
+									<input
+										id="status-reason"
+										type="text"
+										bind:value={formData.status_reason}
+										placeholder="e.g., Taking a lunch break, All items sold, etc."
+										class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+									/>
+								</div>
+							{/if}
 						</div>
 					</div>
 

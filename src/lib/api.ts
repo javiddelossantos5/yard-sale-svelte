@@ -218,6 +218,8 @@ export interface YardSaleCreate {
 	payment_methods?: string[];
 	photos?: string[];
 	featured_image?: string;
+	status?: 'active' | 'on_break' | 'closed';
+	status_reason?: string;
 }
 
 export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
