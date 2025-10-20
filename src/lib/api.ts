@@ -193,3 +193,42 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
 	}
 	return response.json();
 }
+
+export interface YardSaleCreate {
+	title: string;
+	description?: string;
+	start_date: string;
+	end_date?: string;
+	start_time: string;
+	end_time: string;
+	address: string;
+	city: string;
+	state: string;
+	zip_code: string;
+	latitude?: number;
+	longitude?: number;
+	contact_name: string;
+	contact_phone?: string;
+	contact_email?: string;
+	allow_messages?: boolean;
+	categories?: string[];
+	price_range?: string;
+	payment_methods?: string[];
+	photos?: string[];
+	featured_image?: string;
+}
+
+export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
+	const response = await fetch('/api/yard-sales', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(yardSaleData)
+	});
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Failed to create yard sale');
+	}
+	return response.json();
+}

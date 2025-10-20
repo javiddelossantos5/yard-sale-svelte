@@ -8,18 +8,22 @@
 		type YardSale
 	} from '$lib/api';
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
+	import CreateYardSaleModal from '$lib/CreateYardSaleModal.svelte';
 	import { logout } from '$lib/auth';
 
-	let yardSales: YardSale[] = [];
-	let loading = true;
-	let error: string | null = null;
-	let searchTerm = '';
-	let selectedCity = '';
-	let selectedCategory = '';
+	let yardSales = $state<YardSale[]>([]);
+	let loading = $state(true);
+	let error = $state<string | null>(null);
+	let searchTerm = $state('');
+	let selectedCity = $state('');
+	let selectedCategory = $state('');
 
 	// Get unique cities and categories for filters
-	let cities: string[] = [];
-	let categories: string[] = [];
+	let cities = $state<string[]>([]);
+	let categories = $state<string[]>([]);
+
+	// Create yard sale modal state
+	let showCreateModal = $state(false);
 
 	onMount(async () => {
 		try {
@@ -82,13 +86,28 @@
 		goto('/login');
 	}
 
+	function handleCreateYardSale() {
+		showCreateModal = true;
+	}
+
+	function handleCloseCreateModal() {
+		showCreateModal = false;
+	}
+
+	function handleCreateSuccess() {
+		// Reload yard sales to show the new one
+		loadYardSales();
+	}
+
 	// Filter yard sales by search term
-	$: filteredYardSales = yardSales.filter(
-		(sale) =>
-			sale.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			sale.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			sale.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			sale.categories.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()))
+	let filteredYardSales = $derived(
+		yardSales.filter(
+			(sale) =>
+				sale.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				sale.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				sale.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+				sale.categories.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()))
+		)
 	);
 </script>
 
@@ -111,6 +130,20 @@
 					<div class="text-sm text-gray-500">
 						{yardSales.length} yard sales found
 					</div>
+					<button
+						onclick={handleCreateYardSale}
+						class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+					>
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+							></path>
+						</svg>
+						Post New Yard Sale
+					</button>
 					<button
 						onclick={handleLogout}
 						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
@@ -263,4 +296,11 @@
 			{/if}
 		{/if}
 	</div>
+
+	<!-- Create Yard Sale Modal -->
+	<CreateYardSaleModal
+		isOpen={showCreateModal}
+		onClose={handleCloseCreateModal}
+		onSuccess={handleCreateSuccess}
+	/>
 </div>
