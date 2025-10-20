@@ -54,6 +54,14 @@
 	function handleCloseMessageModal() {
 		showMessageModal = false;
 	}
+
+	function handleAddressClick(event: Event) {
+		event.stopPropagation();
+		const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
+		const encodedAddress = encodeURIComponent(fullAddress);
+		const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+		window.open(googleMapsUrl, '_blank');
+	}
 </script>
 
 <div
@@ -70,22 +78,38 @@
 		</h3>
 
 		<!-- Location -->
-		<div class="mb-3 flex items-center text-gray-600">
-			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-				></path>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-				></path>
-			</svg>
-			<span class="text-sm">{yardSale.city}, {yardSale.state}</span>
+		<div class="mb-3">
+			<div class="flex items-start text-gray-600">
+				<svg
+					class="mt-0.5 mr-2 h-4 w-4 shrink-0"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+					></path>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+					></path>
+				</svg>
+				<div class="flex-1">
+					<button
+						onclick={handleAddressClick}
+						class="text-left text-sm text-blue-600 hover:text-blue-800 hover:underline focus:underline focus:outline-none"
+						title="Click to open in Google Maps"
+					>
+						<div class="font-medium">{yardSale.address}</div>
+						<div class="text-gray-500">{yardSale.city}, {yardSale.state} {yardSale.zip_code}</div>
+					</button>
+				</div>
+			</div>
 		</div>
 
 		<!-- Date & Time -->
