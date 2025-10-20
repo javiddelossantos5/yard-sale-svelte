@@ -10,6 +10,7 @@
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import { logout } from '$lib/auth';
+	import { getYardSaleStatus, isYardSaleActive } from '$lib/yardSaleUtils';
 
 	let yardSales = $state<YardSale[]>([]);
 	let loading = $state(true);
@@ -18,6 +19,7 @@
 	let selectedCity = $state('');
 	let selectedCategory = $state('');
 	let selectedDate = $state('');
+	let showExpired = $state(false);
 
 	// Get unique cities and categories for filters
 	let cities = $state<string[]>([]);
@@ -78,6 +80,7 @@
 		selectedCategory = '';
 		selectedDate = '';
 		searchTerm = '';
+		showExpired = false;
 		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
@@ -119,7 +122,10 @@
 			// Date filter
 			const matchesDate = !selectedDate || sale.start_date === selectedDate;
 
-			return matchesSearch && matchesCity && matchesCategory && matchesDate;
+			// Expired filter
+			const matchesExpired = showExpired || isYardSaleActive(sale);
+
+			return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesExpired;
 		})
 	);
 </script>
@@ -190,7 +196,7 @@
 		<div
 			class="mb-6 rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 		>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
 				<!-- Search -->
 				<div class="md:col-span-2">
 					<label
@@ -260,10 +266,28 @@
 						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
 					/>
 				</div>
+
+				<!-- Show Expired Toggle -->
+				<div class="flex items-end">
+					<div class="flex items-center">
+						<input
+							id="show-expired"
+							type="checkbox"
+							bind:checked={showExpired}
+							class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+						/>
+						<label
+							for="show-expired"
+							class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+						>
+							Show Expired
+						</label>
+					</div>
+				</div>
 			</div>
 
 			<!-- Clear Filters -->
-			{#if selectedCity || selectedCategory || selectedDate}
+			{#if selectedCity || selectedCategory || selectedDate || showExpired}
 				<div class="mt-4">
 					<button
 						onclick={clearFilters}

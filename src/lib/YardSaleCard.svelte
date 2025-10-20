@@ -2,11 +2,16 @@
 	import { goto } from '$app/navigation';
 	import type { YardSale } from './api';
 	import MessageModal from './MessageModal.svelte';
+	import { getYardSaleStatus, getTimeRemainingMessage } from './yardSaleUtils';
 
 	let { yardSale }: { yardSale: YardSale } = $props();
 
 	// Message modal state
 	let showMessageModal = $state(false);
+
+	// Status calculations
+	let status = $derived(getYardSaleStatus(yardSale));
+	let timeRemaining = $derived(getTimeRemainingMessage(yardSale));
 	let currentUserId = 1; // This should come from auth context in a real app
 
 	function formatDate(dateString: string): string {
@@ -76,6 +81,53 @@
 		<h3 class="mb-2 line-clamp-2 text-xl font-bold text-gray-900 dark:text-white">
 			{yardSale.title}
 		</h3>
+
+		<!-- Status Indicator -->
+		<div class="mb-3">
+			{#if status === 'expired'}
+				<div
+					class="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/20 dark:text-red-200"
+				>
+					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					{timeRemaining}
+				</div>
+			{:else if status === 'upcoming'}
+				<div
+					class="inline-flex items-center rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+				>
+					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					{timeRemaining}
+				</div>
+			{:else if status === 'active'}
+				<div
+					class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/20 dark:text-green-200"
+				>
+					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+						/>
+					</svg>
+					{timeRemaining}
+				</div>
+			{/if}
+		</div>
 
 		<!-- Location -->
 		<div class="mb-3">
@@ -219,9 +271,11 @@
 				{/if}
 
 				{#if yardSale.allow_messages}
+					{@const isExpired = status === 'expired'}
 					<button
-						onclick={handleSendMessage}
-						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+						onclick={isExpired ? undefined : handleSendMessage}
+						disabled={isExpired}
+						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 					>
 						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -231,7 +285,7 @@
 								d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 							></path>
 						</svg>
-						Message
+						{isExpired ? 'Ended' : 'Message'}
 					</button>
 				{/if}
 			</div>

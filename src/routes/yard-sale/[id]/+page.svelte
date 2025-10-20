@@ -14,6 +14,12 @@
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
 	import { getAccessToken } from '$lib/auth';
+	import {
+		getYardSaleStatus,
+		getYardSaleStatusMessage,
+		getTimeRemainingMessage,
+		isYardSaleActive
+	} from '$lib/yardSaleUtils';
 
 	let yardSale: YardSale | null = null;
 	let comments: Comment[] = [];
@@ -239,6 +245,74 @@
 									<h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
 										{yardSale.title}
 									</h1>
+
+									<!-- Status Banner -->
+									{#if yardSale}
+										{@const status = getYardSaleStatus(yardSale)}
+										{@const statusMessage = getYardSaleStatusMessage(yardSale)}
+										{@const timeRemaining = getTimeRemainingMessage(yardSale)}
+
+										<div class="mb-4">
+											{#if status === 'expired'}
+												<div
+													class="inline-flex items-center rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-800 dark:bg-red-900/20 dark:text-red-200"
+												>
+													<svg
+														class="mr-2 h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+														/>
+													</svg>
+													{statusMessage} - {timeRemaining}
+												</div>
+											{:else if status === 'upcoming'}
+												<div
+													class="inline-flex items-center rounded-md bg-yellow-50 px-3 py-2 text-sm font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+												>
+													<svg
+														class="mr-2 h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+														/>
+													</svg>
+													{statusMessage} - {timeRemaining}
+												</div>
+											{:else if status === 'active'}
+												<div
+													class="inline-flex items-center rounded-md bg-green-50 px-3 py-2 text-sm font-medium text-green-800 dark:bg-green-900/20 dark:text-green-200"
+												>
+													<svg
+														class="mr-2 h-4 w-4"
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+														/>
+													</svg>
+													{statusMessage} - {timeRemaining}
+												</div>
+											{/if}
+										</div>
+									{/if}
 								</div>
 
 								<!-- Owner Actions -->
@@ -426,9 +500,13 @@
 							<!-- Action Buttons -->
 							<div class="mt-6 flex flex-wrap gap-3">
 								{#if yardSale.contact_phone}
+									{@const isExpired = !isYardSaleActive(yardSale)}
 									<a
-										href="tel:{yardSale.contact_phone}"
-										class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+										href={isExpired ? '#' : `tel:${yardSale.contact_phone}`}
+										onclick={isExpired ? (e) => e.preventDefault() : undefined}
+										class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 {isExpired
+											? 'cursor-not-allowed opacity-50'
+											: ''}"
 									>
 										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
@@ -438,14 +516,16 @@
 												d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
 											></path>
 										</svg>
-										Call Now
+										{isExpired ? 'Event Ended' : 'Call Now'}
 									</a>
 								{/if}
 
 								{#if yardSale.allow_messages}
+									{@const isExpired = !isYardSaleActive(yardSale)}
 									<button
-										onclick={handleSendMessage}
-										class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+										onclick={isExpired ? undefined : handleSendMessage}
+										disabled={isExpired}
+										class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 									>
 										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
@@ -455,7 +535,7 @@
 												d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 											></path>
 										</svg>
-										Send Message
+										{isExpired ? 'Event Ended' : 'Send Message'}
 									</button>
 								{/if}
 							</div>
@@ -472,54 +552,85 @@
 					</div>
 
 					<!-- Add Comment Form -->
-					<div class="border-b border-gray-200 px-8 py-6">
-						<form
-							onsubmit={(e) => {
-								e.preventDefault();
-								handleSubmitComment();
-							}}
-						>
-							<div class="mb-4">
-								<label for="comment" class="mb-2 block text-sm font-medium text-gray-700">
-									Add a Comment
-								</label>
-								<textarea
-									id="comment"
-									bind:value={newComment}
-									rows="3"
-									placeholder="Ask a question or share your thoughts about this yard sale..."
-									class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
-									required
-								></textarea>
-							</div>
-							<button
-								type="submit"
-								disabled={submittingComment || !newComment.trim()}
-								class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+					{#if yardSale && isYardSaleActive(yardSale)}
+						<div class="border-b border-gray-200 px-8 py-6">
+							<form
+								onsubmit={(e) => {
+									e.preventDefault();
+									handleSubmitComment();
+								}}
 							>
-								{#if submittingComment}
-									<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-										<circle
-											class="opacity-25"
-											cx="12"
-											cy="12"
-											r="10"
-											stroke="currentColor"
-											stroke-width="4"
-										></circle>
+								<div class="mb-4">
+									<label for="comment" class="mb-2 block text-sm font-medium text-gray-700">
+										Add a Comment
+									</label>
+									<textarea
+										id="comment"
+										bind:value={newComment}
+										rows="3"
+										placeholder="Ask a question or share your thoughts about this yard sale..."
+										class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
+										required
+									></textarea>
+								</div>
+								<button
+									type="submit"
+									disabled={submittingComment || !newComment.trim()}
+									class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+								>
+									{#if submittingComment}
+										<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+											<circle
+												class="opacity-25"
+												cx="12"
+												cy="12"
+												r="10"
+												stroke="currentColor"
+												stroke-width="4"
+											></circle>
+											<path
+												class="opacity-75"
+												fill="currentColor"
+												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+											></path>
+										</svg>
+										Posting...
+									{:else}
+										Post Comment
+									{/if}
+								</button>
+							</form>
+						</div>
+					{:else if yardSale}
+						<!-- Expired Event Message -->
+						<div class="border-b border-gray-200 px-8 py-6">
+							<div class="rounded-md bg-gray-50 p-4 dark:bg-gray-800">
+								<div class="flex">
+									<svg
+										class="h-5 w-5 text-gray-400"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+									>
 										<path
-											class="opacity-75"
-											fill="currentColor"
-											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-										></path>
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+										/>
 									</svg>
-									Posting...
-								{:else}
-									Post Comment
-								{/if}
-							</button>
-						</form>
-					</div>
+									<div class="ml-3">
+										<h3 class="text-sm font-medium text-gray-800 dark:text-gray-200">
+											Comments Closed
+										</h3>
+										<div class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+											<p>This yard sale has ended, so new comments are no longer being accepted.</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/if}
 
 					<!-- Comments List -->
 					<div class="px-8 py-6">
