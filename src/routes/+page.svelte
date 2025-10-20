@@ -125,7 +125,7 @@
 			<div class="flex items-center justify-between py-6">
 				<div class="flex items-center space-x-4">
 					<img
-						src="/icon.png"
+						src="/icon2.png"
 						alt="Yard Sale Finder Logo"
 						class="h-12 w-12 rounded-lg object-cover"
 					/>
