@@ -120,13 +120,22 @@
 			<!-- Background overlay -->
 			<div
 				class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity"
-				onclick={closeModal}
+				onclick={(e) => {
+					// Only close if clicking directly on the backdrop, not on child elements
+					if (e.target === e.currentTarget) {
+						closeModal();
+					}
+				}}
 				aria-hidden="true"
 			></div>
 
 			<!-- Modal panel -->
 			<div
 				class="relative inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="dialog"
+				tabindex="-1"
 			>
 				<!-- Header -->
 				<div class="border-b border-gray-200 bg-white px-6 py-4">

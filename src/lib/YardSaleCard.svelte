@@ -51,8 +51,12 @@
 
 	function handleSendMessage(event: Event) {
 		event.stopPropagation();
+		event.preventDefault();
 		if (yardSale.allow_messages) {
-			showMessageModal = true;
+			// Use setTimeout to ensure the modal opens after any potential event bubbling
+			setTimeout(() => {
+				showMessageModal = true;
+			}, 0);
 		}
 	}
 
