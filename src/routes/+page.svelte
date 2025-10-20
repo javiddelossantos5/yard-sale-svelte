@@ -123,11 +123,18 @@
 	<header class="border-b bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between py-6">
-				<div>
-					<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
-					<p class="mt-1 text-gray-600 dark:text-gray-300">
-						Discover amazing deals in your neighborhood
-					</p>
+				<div class="flex items-center space-x-4">
+					<img
+						src="/icon.png"
+						alt="Yard Sale Finder Logo"
+						class="h-12 w-12 rounded-lg object-cover"
+					/>
+					<div>
+						<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
+						<p class="mt-1 text-gray-600 dark:text-gray-300">
+							Discover amazing deals in your neighborhood
+						</p>
+					</div>
 				</div>
 
 				<div class="flex items-center space-x-4">
