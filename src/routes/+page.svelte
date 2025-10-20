@@ -38,21 +38,13 @@
 		error = null;
 
 		try {
-			let data: YardSale[];
+			// Always load all yard sales to populate filter options
+			const allData = await getYardSales();
+			yardSales = allData;
 
-			if (selectedCity) {
-				data = await getYardSalesByCity(selectedCity);
-			} else if (selectedCategory) {
-				data = await getYardSalesByCategory(selectedCategory);
-			} else {
-				data = await getYardSales();
-			}
-
-			yardSales = data;
-
-			// Extract unique cities and categories
-			cities = [...new Set(data.map((sale) => sale.city))].sort();
-			categories = [...new Set(data.flatMap((sale) => sale.categories))].sort();
+			// Extract unique cities and categories from all data
+			cities = [...new Set(allData.map((sale) => sale.city))].sort();
+			categories = [...new Set(allData.flatMap((sale) => sale.categories))].sort();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load yard sales';
 		} finally {
@@ -64,21 +56,21 @@
 		const target = event.target as HTMLSelectElement;
 		selectedCity = target.value;
 		selectedCategory = ''; // Reset category when city changes
-		loadYardSales();
+		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
 	function handleCategoryChange(event: Event) {
 		const target = event.target as HTMLSelectElement;
 		selectedCategory = target.value;
 		selectedCity = ''; // Reset city when category changes
-		loadYardSales();
+		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
 	function clearFilters() {
 		selectedCity = '';
 		selectedCategory = '';
 		searchTerm = '';
-		loadYardSales();
+		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
 	function handleLogout() {
@@ -99,15 +91,25 @@
 		loadYardSales();
 	}
 
-	// Filter yard sales by search term
+	// Filter yard sales by search term, city, and category
 	let filteredYardSales = $derived(
-		yardSales.filter(
-			(sale) =>
+		yardSales.filter((sale) => {
+			// Search term filter
+			const matchesSearch =
+				!searchTerm ||
 				sale.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
 				sale.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
 				sale.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				sale.categories.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()))
-		)
+				sale.categories.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()));
+
+			// City filter
+			const matchesCity = !selectedCity || sale.city === selectedCity;
+
+			// Category filter
+			const matchesCategory = !selectedCategory || sale.categories.includes(selectedCategory);
+
+			return matchesSearch && matchesCity && matchesCategory;
+		})
 	);
 </script>
 
