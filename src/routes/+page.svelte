@@ -10,7 +10,7 @@
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import { logout } from '$lib/auth';
-	import { getYardSaleStatus, isYardSaleActive } from '$lib/yardSaleUtils';
+	import { getYardSaleStatus, isYardSaleActive, isYardSaleActiveOnDate } from '$lib/yardSaleUtils';
 	import { isYardSaleVisited } from '$lib/visitedYardSales';
 
 	let yardSales = $state<YardSale[]>([]);
@@ -140,8 +140,8 @@
 				// Category filter
 				const matchesCategory = !selectedCategory || sale.categories.includes(selectedCategory);
 
-				// Date filter
-				const matchesDate = !selectedDate || sale.start_date === selectedDate;
+				// Date filter - show yard sales that are active on the selected date
+				const matchesDate = !selectedDate || isYardSaleActiveOnDate(sale, selectedDate);
 
 				// Status filter: filter by selected status option
 				const status = getYardSaleStatus(sale);

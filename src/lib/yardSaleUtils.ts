@@ -133,6 +133,44 @@ export function isYardSaleToday(yardSale: YardSale): boolean {
 }
 
 /**
+ * Check if a yard sale is active on a specific date
+ * This includes multi-day events and considers the yard sale's status
+ */
+export function isYardSaleActiveOnDate(yardSale: YardSale, targetDate: string): boolean {
+	const target = new Date(targetDate);
+	const startDate = new Date(yardSale.start_date || '');
+	const endDate = new Date(yardSale.end_date || '');
+
+	// Check if the target date is between start and end date (inclusive)
+	const isWithinDateRange = target >= startDate && target <= endDate;
+
+	// If it's not within the date range, it's not active
+	if (!isWithinDateRange) {
+		return false;
+	}
+
+	// If it's within the date range, check the status
+	const status = getYardSaleStatus(yardSale);
+
+	// Show if it's active, on_break, or upcoming (but only if it's the start date or later)
+	if (status === 'active' || status === 'on_break') {
+		return true;
+	}
+
+	// For upcoming events, only show if the target date is the start date or later
+	if (status === 'upcoming') {
+		return target >= startDate;
+	}
+
+	// For closed/expired events, only show if the target date is before the end date
+	if (status === 'closed' || status === 'expired') {
+		return target <= endDate;
+	}
+
+	return false;
+}
+
+/**
  * Get a formatted time remaining message
  */
 export function getTimeRemainingMessage(yardSale: YardSale): string {
