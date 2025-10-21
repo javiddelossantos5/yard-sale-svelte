@@ -19,7 +19,7 @@
 	let selectedCity = $state('');
 	let selectedCategory = $state('');
 	let selectedDate = $state('');
-	let showExpired = $state(false);
+	let statusFilter = $state('active');
 
 	// Get unique cities and categories for filters
 	let cities = $state<string[]>([]);
@@ -80,7 +80,7 @@
 		selectedCategory = '';
 		selectedDate = '';
 		searchTerm = '';
-		showExpired = false;
+		statusFilter = 'active';
 		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
@@ -123,12 +123,29 @@
 				// Date filter
 				const matchesDate = !selectedDate || sale.start_date === selectedDate;
 
-				// Status filter: show all if showExpired is true, otherwise exclude expired, on_break, and closed
+				// Status filter: filter by selected status option
 				const status = getYardSaleStatus(sale);
-				const isExpired = status === 'expired';
-				const isOnBreak = status === 'on_break';
-				const isClosed = status === 'closed';
-				const matchesStatus = showExpired || (!isExpired && !isOnBreak && !isClosed);
+				let matchesStatus = false;
+
+				switch (statusFilter) {
+					case 'active':
+						matchesStatus = status === 'active';
+						break;
+					case 'upcoming':
+						matchesStatus = status === 'upcoming';
+						break;
+					case 'ended':
+						matchesStatus = status === 'expired' || status === 'closed';
+						break;
+					case 'on_break':
+						matchesStatus = status === 'on_break';
+						break;
+					case 'all':
+						matchesStatus = true;
+						break;
+					default:
+						matchesStatus = status === 'active';
+				}
 
 				return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesStatus;
 			})
@@ -341,27 +358,30 @@
 					/>
 				</div>
 
-				<!-- Show Expired Toggle -->
-				<div class="flex items-end">
-					<div class="flex items-center">
-						<input
-							id="show-expired"
-							type="checkbox"
-							bind:checked={showExpired}
-							class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-						/>
-						<label
-							for="show-expired"
-							class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-						>
-							Show All (Including Expired, On Break & Closed)
-						</label>
-					</div>
+				<!-- Status Filter -->
+				<div>
+					<label
+						for="status"
+						class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+					>
+						Status
+					</label>
+					<select
+						id="status"
+						bind:value={statusFilter}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
+					>
+						<option value="active">Active Now</option>
+						<option value="upcoming">Upcoming</option>
+						<option value="ended">Ended</option>
+						<option value="on_break">On Break</option>
+						<option value="all">All Statuses</option>
+					</select>
 				</div>
 			</div>
 
 			<!-- Clear Filters -->
-			{#if selectedCity || selectedCategory || selectedDate || showExpired}
+			{#if selectedCity || selectedCategory || selectedDate || statusFilter !== 'active'}
 				<div class="mt-4">
 					<button
 						onclick={clearFilters}
@@ -436,7 +456,9 @@
 					<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						{searchTerm || selectedCity || selectedCategory || selectedDate
 							? 'Try adjusting your search or filters.'
-							: 'No yard sales are currently available.'}
+							: statusFilter !== 'active'
+								? 'No yard sales found with the selected status filter.'
+								: 'No yard sales are currently active right now. Try changing the status filter to see upcoming, ended, or other yard sales.'}
 					</p>
 				</div>
 			{:else}
