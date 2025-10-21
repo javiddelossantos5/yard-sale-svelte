@@ -157,53 +157,109 @@
 	<!-- Header -->
 	<header class="border-b bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<div class="flex items-center justify-between py-6">
-				<div class="flex items-center space-x-4">
-					<img
-						src="/icon2.png"
-						alt="Yard Sale Finder Logo"
-						class="h-12 w-12 rounded-lg object-cover"
-					/>
-					<div>
-						<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
-						<p class="mt-1 text-gray-600 dark:text-gray-300">
-							Discover amazing deals in your neighborhood
-						</p>
+			<div class="py-4 sm:py-6">
+				<!-- Mobile Layout -->
+				<div class="block sm:hidden">
+					<div class="mb-4 flex items-center justify-between">
+						<div class="flex items-center space-x-3">
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-10 w-10 rounded-lg object-cover"
+							/>
+							<div>
+								<h1 class="text-xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
+								<p class="text-xs text-gray-600 dark:text-gray-300">Discover amazing deals</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="mb-3 flex items-center justify-between">
+						<div class="text-sm font-medium text-gray-700 dark:text-gray-300">
+							{filteredYardSales.length} yard sales found
+						</div>
+					</div>
+
+					<div class="flex space-x-2">
+						<button
+							onclick={handleCreateYardSale}
+							class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-blue-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+						>
+							<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+								></path>
+							</svg>
+							Post New Sale
+						</button>
+						<button
+							onclick={handleLogout}
+							class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+						>
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+								></path>
+							</svg>
+						</button>
 					</div>
 				</div>
 
-				<div class="flex items-center space-x-4">
-					<div class="text-sm text-gray-500 dark:text-gray-400">
-						{filteredYardSales.length} yard sales found
+				<!-- Desktop Layout -->
+				<div class="hidden items-center justify-between sm:flex">
+					<div class="flex items-center space-x-4">
+						<img
+							src="/icon2.png"
+							alt="Yard Sale Finder Logo"
+							class="h-12 w-12 rounded-lg object-cover"
+						/>
+						<div>
+							<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
+							<p class="mt-1 text-gray-600 dark:text-gray-300">
+								Discover amazing deals in your neighborhood
+							</p>
+						</div>
 					</div>
-					<button
-						onclick={handleCreateYardSale}
-						class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-					>
-						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-							></path>
-						</svg>
-						Post New Yard Sale
-					</button>
-					<button
-						onclick={handleLogout}
-						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-					>
-						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-							></path>
-						</svg>
-						Logout
-					</button>
+
+					<div class="flex items-center space-x-4">
+						<div class="text-sm text-gray-500 dark:text-gray-400">
+							{filteredYardSales.length} yard sales found
+						</div>
+						<button
+							onclick={handleCreateYardSale}
+							class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+						>
+							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+								></path>
+							</svg>
+							Post New Yard Sale
+						</button>
+						<button
+							onclick={handleLogout}
+							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+						>
+							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+								></path>
+							</svg>
+							Logout
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
