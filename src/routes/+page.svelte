@@ -12,6 +12,7 @@
 	import { logout } from '$lib/auth';
 	import { getYardSaleStatus, isYardSaleActive, isYardSaleActiveOnDate } from '$lib/yardSaleUtils';
 	import { isYardSaleVisited } from '$lib/visitedYardSales';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 
 	let yardSales = $state<YardSale[]>([]);
 	let loading = $state(true);
@@ -238,14 +239,7 @@
 							onclick={handleCreateYardSale}
 							class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-blue-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 						>
-							<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-								></path>
-							</svg>
+							<FontAwesomeIcon icon="plus" class="mr-1.5 h-4 w-4" />
 							Post New Sale
 						</button>
 						<button
@@ -253,14 +247,7 @@
 							aria-label="Logout"
 							class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 						>
-							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-								></path>
-							</svg>
+							<FontAwesomeIcon icon="arrow-right" class="h-4 w-4" />
 						</button>
 					</div>
 				</div>
@@ -289,28 +276,14 @@
 							onclick={handleCreateYardSale}
 							class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
 						>
-							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-								></path>
-							</svg>
+							<FontAwesomeIcon icon="plus" class="mr-2 h-4 w-4" />
 							Post New Yard Sale
 						</button>
 						<button
 							onclick={handleLogout}
 							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 						>
-							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-								></path>
-							</svg>
+							<FontAwesomeIcon icon="arrow-right" class="mr-2 h-4 w-4" />
 							Logout
 						</button>
 					</div>

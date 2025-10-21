@@ -6,6 +6,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { setupAuthFetch, isLoggedIn } from '$lib/auth';
 	import { darkMode, toggleDarkMode } from '$lib/darkMode';
+	import '$lib/fontawesome';
 
 	let { children } = $props();
 
