@@ -183,12 +183,14 @@
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<header class="border-b bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+	<header
+		class="border-b bg-white/80 shadow-sm backdrop-blur-md dark:border-gray-700 dark:bg-gray-800/80"
+	>
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="flex items-center justify-between py-4">
 				<button
 					onclick={() => goto('/')}
-					class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+					class="inline-flex items-center rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 				>
 					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -198,7 +200,7 @@
 							d="M15 19l-7-7 7-7"
 						></path>
 					</svg>
-					Back to Yard Sales
+					Back
 				</button>
 			</div>
 		</div>
@@ -235,17 +237,19 @@
 
 		<!-- Yard Sale Details -->
 		{#if yardSale && !loading}
-			<div class="space-y-8">
+			<div class="space-y-6">
 				<!-- Main Content -->
 				<div
-					class="rounded-lg bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+					class="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 				>
-					<div class="p-8">
+					<div class="p-6 sm:p-8">
 						<!-- Title and Location -->
-						<div class="mb-6">
+						<div class="mb-8">
 							<div class="flex items-start justify-between">
 								<div class="flex-1">
-									<h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white">
+									<h1
+										class="mb-6 text-2xl leading-tight font-bold text-gray-900 sm:text-3xl dark:text-white"
+									>
 										{yardSale.title}
 									</h1>
 
@@ -255,10 +259,10 @@
 										{@const statusMessage = getYardSaleStatusMessage(yardSale)}
 										{@const timeRemaining = getTimeRemainingMessage(yardSale)}
 
-										<div class="mb-4">
+										<div class="mb-6">
 											{#if status === 'expired'}
 												<div
-													class="inline-flex items-center rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-800 dark:bg-red-900/20 dark:text-red-200"
+													class="inline-flex items-center rounded-full bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 dark:bg-red-900/10 dark:text-red-300"
 												>
 													<svg
 														class="mr-2 h-4 w-4"
@@ -273,11 +277,12 @@
 															d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 														/>
 													</svg>
-													{statusMessage} - {timeRemaining}
+													<span class="font-semibold">Expired</span>
+													<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
 												</div>
 											{:else if status === 'upcoming'}
 												<div
-													class="inline-flex items-center rounded-md bg-yellow-50 px-3 py-2 text-sm font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+													class="inline-flex items-center rounded-full bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-700 dark:bg-blue-900/10 dark:text-blue-300"
 												>
 													<svg
 														class="mr-2 h-4 w-4"
@@ -292,11 +297,12 @@
 															d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 														/>
 													</svg>
-													{statusMessage} - {timeRemaining}
+													<span class="font-semibold">Upcoming</span>
+													<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
 												</div>
 											{:else if status === 'active'}
 												<div
-													class="inline-flex items-center rounded-md bg-green-50 px-3 py-2 text-sm font-medium text-green-800 dark:bg-green-900/20 dark:text-green-200"
+													class="inline-flex items-center rounded-full bg-green-50 px-4 py-2.5 text-sm font-medium text-green-700 dark:bg-green-900/10 dark:text-green-300"
 												>
 													<svg
 														class="mr-2 h-4 w-4"
@@ -308,48 +314,65 @@
 															stroke-linecap="round"
 															stroke-linejoin="round"
 															stroke-width="2"
-															d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+															d="M13 10V3L4 14h7v7l9-11h-7z"
 														/>
 													</svg>
-													{statusMessage} - {timeRemaining}
+													<span class="font-semibold">Active Now</span>
+													<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
 												</div>
 											{:else if status === 'on_break'}
-												<div
-													class="inline-flex items-center rounded-md bg-orange-50 px-3 py-2 text-sm font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-200"
-												>
-													<svg
-														class="mr-2 h-4 w-4"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
+												<div class="space-y-2">
+													<div
+														class="inline-flex items-center rounded-full bg-orange-50 px-4 py-2.5 text-sm font-medium text-orange-700 dark:bg-orange-900/10 dark:text-orange-300"
 													>
-														<path
-															stroke-linecap="round"
-															stroke-linejoin="round"
-															stroke-width="2"
-															d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-														/>
-													</svg>
-													{statusMessage} - {timeRemaining}
+														<svg
+															class="mr-2 h-4 w-4"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path
+																stroke-linecap="round"
+																stroke-linejoin="round"
+																stroke-width="2"
+																d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+															/>
+														</svg>
+														<span class="font-semibold">On Break</span>
+														<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+													</div>
+													{#if yardSale.status_reason}
+														<div class="text-sm text-orange-600 dark:text-orange-400">
+															{yardSale.status_reason}
+														</div>
+													{/if}
 												</div>
 											{:else if status === 'closed'}
-												<div
-													class="inline-flex items-center rounded-md bg-gray-50 px-3 py-2 text-sm font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-200"
-												>
-													<svg
-														class="mr-2 h-4 w-4"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24"
+												<div class="space-y-2">
+													<div
+														class="inline-flex items-center rounded-full bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-700 dark:bg-gray-700/50 dark:text-gray-300"
 													>
-														<path
-															stroke-linecap="round"
-															stroke-linejoin="round"
-															stroke-width="2"
-															d="M6 18L18 6M6 6l12 12"
-														/>
-													</svg>
-													{statusMessage} - {timeRemaining}
+														<svg
+															class="mr-2 h-4 w-4"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path
+																stroke-linecap="round"
+																stroke-linejoin="round"
+																stroke-width="2"
+																d="M6 18L18 6M6 6l12 12"
+															/>
+														</svg>
+														<span class="font-semibold">Closed</span>
+														<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+													</div>
+													{#if yardSale.status_reason}
+														<div class="text-sm text-gray-500 dark:text-gray-400">
+															{yardSale.status_reason}
+														</div>
+													{/if}
 												</div>
 											{/if}
 										</div>
@@ -358,10 +381,10 @@
 
 								<!-- Owner Actions -->
 								{#if isOwner}
-									<div class="ml-4 flex space-x-2">
+									<div class="ml-4 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
 										<button
 											onclick={handleEditYardSale}
-											class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+											class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 										>
 											<svg
 												class="mr-2 h-4 w-4"
@@ -380,7 +403,7 @@
 										</button>
 										<button
 											onclick={handleDeleteYardSale}
-											class="inline-flex items-center rounded-md border border-red-600 bg-white px-3 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
+											class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 transition-all hover:bg-red-50 active:scale-95 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
 										>
 											<svg
 												class="mr-2 h-4 w-4"
@@ -549,13 +572,13 @@
 							</div>
 
 							<!-- Action Buttons -->
-							<div class="mt-6 flex flex-wrap gap-3">
+							<div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 								{#if yardSale.contact_phone}
 									{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
 									<a
 										href={isDisabled ? '#' : `tel:${yardSale.contact_phone}`}
 										onclick={isDisabled ? (e) => e.preventDefault() : undefined}
-										class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 {isDisabled
+										class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 {isDisabled
 											? 'cursor-not-allowed opacity-50'
 											: ''}"
 									>
@@ -580,7 +603,7 @@
 									<button
 										onclick={isDisabled ? undefined : handleSendMessage}
 										disabled={isDisabled}
-										class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+										class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-green-500 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
 									>
 										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path
@@ -606,7 +629,7 @@
 											openDirections(fullAddress);
 										}
 									}}
-									class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+									class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-indigo-500 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-indigo-600 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-700"
 									title={`Get directions in ${getPlatformName()}`}
 								>
 									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -632,9 +655,9 @@
 
 				<!-- Comments Section -->
 				<div
-					class="rounded-lg bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+					class="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 				>
-					<div class="border-b border-gray-200 px-8 py-6 dark:border-gray-700">
+					<div class="border-b border-gray-200 px-6 py-6 sm:px-8 dark:border-gray-700">
 						<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
 							Comments ({comments.length})
 						</h2>
@@ -642,33 +665,33 @@
 
 					<!-- Add Comment Form -->
 					{#if yardSale && isYardSaleActive(yardSale)}
-						<div class="border-b border-gray-200 px-8 py-6 dark:border-gray-700">
+						<div class="border-b border-gray-200 px-6 py-6 sm:px-8 dark:border-gray-700">
 							<form
 								onsubmit={(e) => {
 									e.preventDefault();
 									handleSubmitComment();
 								}}
 							>
-								<div class="mb-4">
+								<div class="mb-6">
 									<label
 										for="comment"
-										class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-medium text-gray-700 dark:text-gray-300"
 									>
 										Add a Comment
 									</label>
 									<textarea
 										id="comment"
 										bind:value={newComment}
-										rows="3"
+										rows="4"
 										placeholder="Ask a question or share your thoughts about this yard sale..."
-										class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+										class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
 										required
 									></textarea>
 								</div>
 								<button
 									type="submit"
 									disabled={submittingComment || !newComment.trim()}
-									class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+									class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
 								>
 									{#if submittingComment}
 										<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -695,8 +718,8 @@
 						</div>
 					{:else if yardSale}
 						<!-- Expired Event Message -->
-						<div class="border-b border-gray-200 px-8 py-6 dark:border-gray-700">
-							<div class="rounded-md bg-gray-50 p-4 dark:bg-gray-800">
+						<div class="border-b border-gray-200 px-6 py-6 sm:px-8 dark:border-gray-700">
+							<div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
 								<div class="flex">
 									<svg
 										class="h-5 w-5 text-gray-400"
@@ -725,7 +748,7 @@
 					{/if}
 
 					<!-- Comments List -->
-					<div class="px-8 py-6">
+					<div class="px-6 py-6 sm:px-8">
 						{#if comments.length === 0}
 							<div class="py-8 text-center">
 								<svg
