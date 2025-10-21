@@ -297,3 +297,26 @@ export async function deleteYardSale(id: number): Promise<void> {
 		throw new Error(errorData.detail || 'Failed to delete yard sale');
 	}
 }
+
+export interface CurrentUser {
+	id: number;
+	username: string;
+	email: string;
+	full_name: string;
+	phone_number: string;
+	location: {
+		city: string;
+		state: string;
+		zip: string;
+	};
+	bio: string;
+}
+
+export async function getCurrentUser(): Promise<CurrentUser> {
+	const response = await fetch('/api/me');
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Failed to get current user');
+	}
+	return response.json();
+}

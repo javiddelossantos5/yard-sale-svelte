@@ -7,8 +7,10 @@
 		getComments,
 		addComment,
 		deleteYardSale,
+		getCurrentUser,
 		type YardSale,
-		type Comment
+		type Comment,
+		type CurrentUser
 	} from '$lib/api';
 	import MessageModal from '$lib/MessageModal.svelte';
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
@@ -45,7 +47,8 @@
 
 	// Message modal state
 	let showMessageModal = $state(false);
-	let currentUserId = 1; // This should come from auth context in a real app
+	let currentUser = $state<CurrentUser | null>(null);
+	let currentUserId = $derived(currentUser?.id || null);
 
 	// Visited state
 	let isVisited = $state(false);
@@ -67,6 +70,7 @@
 		}
 
 		try {
+			await loadCurrentUser();
 			await loadYardSale();
 			await loadComments();
 		} catch (err) {
@@ -76,11 +80,18 @@
 		}
 	});
 
+	async function loadCurrentUser() {
+		try {
+			currentUser = await getCurrentUser();
+		} catch (error) {
+			console.warn('Failed to load current user:', error);
+			// User might not be logged in, that's okay
+		}
+	}
+
 	async function loadYardSale() {
 		yardSale = await getYardSaleById(yardSaleId);
 		// Check if current user is the owner
-		// For now, we'll assume user ID 1 is the current user
-		// In a real app, this would come from the auth context
 		isOwner = yardSale?.owner_id === currentUserId;
 
 		// Initialize visited state

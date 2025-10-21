@@ -7,6 +7,7 @@
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { getPaymentMethodIcon } from './paymentUtils';
+	import { getCurrentUser, type CurrentUser } from './api';
 
 	let { yardSale, onVisitedChange }: { yardSale: YardSale; onVisitedChange?: () => void } =
 		$props();
@@ -30,8 +31,25 @@
 	// Status calculations
 	let status = $derived(getYardSaleStatus(yardSale));
 	let timeRemaining = $derived(getTimeRemainingMessage(yardSale));
-	let currentUserId = 1; // This should come from auth context in a real app
+
+	// User state
+	let currentUser = $state<CurrentUser | null>(null);
+	let currentUserId = $derived(currentUser?.id || null);
 	let isOwner = $derived(currentUserId === yardSale.owner_id);
+
+	// Load current user on mount
+	$effect(() => {
+		loadCurrentUser();
+	});
+
+	async function loadCurrentUser() {
+		try {
+			currentUser = await getCurrentUser();
+		} catch (error) {
+			console.warn('Failed to load current user:', error);
+			// User might not be logged in, that's okay
+		}
+	}
 
 	// Visited state
 	let isVisited = $state(isYardSaleVisited(yardSale.id));
