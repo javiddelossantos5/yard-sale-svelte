@@ -59,9 +59,12 @@
 
 	// Debug: Watch for changes in isOwner
 	$effect(() => {
+		console.log('=== OWNERSHIP DEBUG ===');
 		console.log('isOwner changed to:', isOwner);
 		console.log('currentUserId:', currentUserId);
 		console.log('yardSale?.owner_id:', yardSale?.owner_id);
+		console.log('currentUser:', currentUser);
+		console.log('========================');
 	});
 
 	// Delete confirmation modal state
@@ -134,6 +137,8 @@
 			isOwner = newIsOwner;
 		}
 	});
+
+	// Ownership calculation is now handled by the reactive effect above
 
 	async function loadComments() {
 		comments = await getComments(yardSaleId);

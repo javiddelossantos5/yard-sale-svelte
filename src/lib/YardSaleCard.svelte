@@ -322,7 +322,7 @@
 
 	<!-- Footer -->
 	<div
-		class="border-t border-gray-100 bg-gray-50/50 px-5 py-5 dark:border-gray-700 dark:bg-gray-700/50"
+		class="border-t border-gray-100 bg-gray-50/50 px-5 py-5 dark:border-gray-700 dark:bg-gray-700/50 h-full"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 		role="button"
@@ -396,7 +396,7 @@
 		</div>
 
 		<!-- Payment Methods -->
-		<div class="mt-4">
+		<div class="mt-4 ">
 			<div class="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Payment:</div>
 			<div class="flex flex-wrap gap-2">
 				{#each yardSale.payment_methods as method}
