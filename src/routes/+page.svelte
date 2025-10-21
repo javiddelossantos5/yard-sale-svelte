@@ -18,16 +18,15 @@
 	let error = $state<string | null>(null);
 	let searchTerm = $state('');
 	let selectedCity = $state('');
-	let selectedCategory = $state('');
 	let selectedDate = $state('');
 	let statusFilter = $state('active');
+	let zipCodeSearch = $state('');
 
 	// Visited state tracker to trigger re-sorting when visited status changes
 	let visitedStateTracker = $state(0);
 
-	// Get unique cities and categories for filters
+	// Get unique cities for filters
 	let cities = $state<string[]>([]);
-	let categories = $state<string[]>([]);
 
 	// Create yard sale modal state
 	let showCreateModal = $state(false);
@@ -60,7 +59,7 @@
 			const allData = await getYardSales();
 			yardSales = allData;
 
-			// Extract unique cities and categories from all data
+			// Extract unique cities from all data
 			// Normalize city names to prevent duplicates (e.g., "Vernal" vs "vernal")
 			const cityMap = new Map();
 			allData.forEach((sale) => {
@@ -70,7 +69,6 @@
 				}
 			});
 			cities = Array.from(cityMap.values()).sort();
-			categories = [...new Set(allData.flatMap((sale) => sale.categories))].sort();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load yard sales';
 		} finally {
@@ -81,14 +79,12 @@
 	function handleCityChange(event: Event) {
 		const target = event.target as HTMLSelectElement;
 		selectedCity = target.value;
-		selectedCategory = ''; // Reset category when city changes
 		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
-	function handleCategoryChange(event: Event) {
-		const target = event.target as HTMLSelectElement;
-		selectedCategory = target.value;
-		selectedCity = ''; // Reset city when category changes
+	function handleZipCodeChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		zipCodeSearch = target.value;
 		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
@@ -100,8 +96,8 @@
 
 	function clearFilters() {
 		selectedCity = '';
-		selectedCategory = '';
 		selectedDate = '';
+		zipCodeSearch = '';
 		searchTerm = '';
 		statusFilter = 'active';
 		// No need to call loadYardSales() - filtering is handled by $derived
@@ -130,7 +126,7 @@
 		loadYardSales();
 	}
 
-	// Filter yard sales by search term, city, category, and date
+	// Filter yard sales by search term, city, zip code, and date
 	let filteredYardSales = $derived(
 		yardSales
 			.filter((sale) => {
@@ -146,8 +142,8 @@
 				const matchesCity =
 					!selectedCity || sale.city.trim().toLowerCase() === selectedCity.toLowerCase();
 
-				// Category filter
-				const matchesCategory = !selectedCategory || sale.categories.includes(selectedCategory);
+				// Zip code filter
+				const matchesZipCode = !zipCodeSearch || sale.zip_code.includes(zipCodeSearch);
 
 				// Date filter - show yard sales that are active on the selected date
 				const matchesDate = !selectedDate || isYardSaleActiveOnDate(sale, selectedDate);
@@ -176,7 +172,7 @@
 						matchesStatus = status === 'active';
 				}
 
-				return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesStatus;
+				return matchesSearch && matchesCity && matchesZipCode && matchesDate && matchesStatus;
 			})
 			.sort((a, b) => {
 				// Access visitedStateTracker to make this derived state reactive to visited changes
@@ -364,25 +360,22 @@
 					</select>
 				</div>
 
-				<!-- Category Filter -->
+				<!-- Zip Code Filter -->
 				<div>
 					<label
-						for="category"
+						for="zipCode"
 						class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
 					>
-						Category
+						Zip Code
 					</label>
-					<select
-						id="category"
-						bind:value={selectedCategory}
-						onchange={handleCategoryChange}
+					<input
+						type="text"
+						id="zipCode"
+						bind:value={zipCodeSearch}
+						oninput={handleZipCodeChange}
+						placeholder="Enter zip code..."
 						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
-					>
-						<option value="">All Categories</option>
-						{#each categories as category}
-							<option value={category}>{category}</option>
-						{/each}
-					</select>
+					/>
 				</div>
 
 				<!-- Date Filter -->
@@ -422,7 +415,7 @@
 			</div>
 
 			<!-- Clear Filters -->
-			{#if selectedCity || selectedCategory || selectedDate || statusFilter !== 'active'}
+			{#if selectedCity || zipCodeSearch || selectedDate || statusFilter !== 'active'}
 				<div class="mt-4">
 					<button
 						onclick={clearFilters}
@@ -495,7 +488,7 @@
 						No yard sales found
 					</h3>
 					<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-						{searchTerm || selectedCity || selectedCategory || selectedDate
+						{searchTerm || selectedCity || zipCodeSearch || selectedDate
 							? 'Try adjusting your search or filters.'
 							: statusFilter !== 'active'
 								? 'No yard sales found with the selected status filter.'
