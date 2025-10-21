@@ -129,6 +129,24 @@
 		return `${startTime} - ${endTime}`;
 	}
 
+	function formatPhoneNumber(phone: string): string {
+		// Remove all non-digit characters
+		const cleaned = phone.replace(/\D/g, '');
+
+		// Check if it's a 10-digit US phone number
+		if (cleaned.length === 10) {
+			return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+		}
+
+		// Check if it's an 11-digit number starting with 1
+		if (cleaned.length === 11 && cleaned.startsWith('1')) {
+			return `(${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+		}
+
+		// Return original if it doesn't match expected format
+		return phone;
+	}
+
 	function formatCommentDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-US', {
 			year: 'numeric',
@@ -568,6 +586,67 @@
 								{/each}
 							</div>
 						</div>
+
+						<!-- Contact Information Card -->
+						<div
+							class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+						>
+							<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+								Contact Information
+							</h2>
+							<div class="flex flex-wrap gap-3">
+								<!-- Contact Person Tag -->
+								<div
+									class="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
+								>
+									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+										/>
+									</svg>
+									{yardSale.contact_name}
+								</div>
+
+								{#if yardSale.contact_phone}
+									<!-- Phone Tag -->
+									<a
+										href="tel:{yardSale.contact_phone}"
+										class="inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-800 transition-colors hover:bg-green-200 dark:bg-green-900/20 dark:text-green-200 dark:hover:bg-green-900/30"
+									>
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+											/>
+										</svg>
+										{formatPhoneNumber(yardSale.contact_phone)}
+									</a>
+								{/if}
+
+								{#if yardSale.contact_email}
+									<!-- Email Tag -->
+									<a
+										href="mailto:{yardSale.contact_email}"
+										class="inline-flex items-center rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800 transition-colors hover:bg-purple-200 dark:bg-purple-900/20 dark:text-purple-200 dark:hover:bg-purple-900/30"
+									>
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+											/>
+										</svg>
+										{yardSale.contact_email}
+									</a>
+								{/if}
+							</div>
+						</div>
 					</div>
 
 					<!-- Right Column - Sidebar -->
@@ -757,49 +836,6 @@
 										</div>
 									{/if}
 								{/each}
-							</div>
-						</div>
-
-						<!-- Contact Information Card -->
-						<div
-							class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
-						>
-							<h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-								Contact Information
-							</h3>
-							<div class="space-y-4">
-								<div>
-									<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
-										Contact Person
-									</div>
-									<div class="text-lg font-semibold text-gray-900 dark:text-white">
-										{yardSale.contact_name}
-									</div>
-								</div>
-
-								{#if yardSale.contact_phone}
-									<div>
-										<div class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</div>
-										<a
-											href="tel:{yardSale.contact_phone}"
-											class="text-lg font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-										>
-											{yardSale.contact_phone}
-										</a>
-									</div>
-								{/if}
-
-								{#if yardSale.contact_email}
-									<div>
-										<div class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</div>
-										<a
-											href="mailto:{yardSale.contact_email}"
-											class="text-lg font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-										>
-											{yardSale.contact_email}
-										</a>
-									</div>
-								{/if}
 							</div>
 						</div>
 					</div>
