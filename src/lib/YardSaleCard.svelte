@@ -3,6 +3,7 @@
 	import type { YardSale } from './api';
 	import MessageModal from './MessageModal.svelte';
 	import { getYardSaleStatus, getTimeRemainingMessage } from './yardSaleUtils';
+	import { openDirections, getPlatformName } from './mapsUtils';
 
 	let { yardSale }: { yardSale: YardSale } = $props();
 
@@ -68,9 +69,7 @@
 	function handleAddressClick(event: Event) {
 		event.stopPropagation();
 		const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
-		const encodedAddress = encodeURIComponent(fullAddress);
-		const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
-		window.open(googleMapsUrl, '_blank');
+		openDirections(fullAddress);
 	}
 </script>
 
@@ -207,7 +206,7 @@
 					<button
 						onclick={handleAddressClick}
 						class="text-left text-sm text-blue-600 hover:text-blue-800 hover:underline focus:underline focus:outline-none"
-						title="Click to open in Google Maps"
+						title={`Click to open in ${getPlatformName()}`}
 					>
 						<div class="font-medium">{yardSale.address}</div>
 						<div class="text-gray-500 dark:text-gray-400">
@@ -340,6 +339,33 @@
 						{status === 'expired' ? 'Ended' : status === 'closed' ? 'Closed' : 'Message'}
 					</button>
 				{/if}
+
+				<!-- Get Directions Button -->
+				<button
+					onclick={(e) => {
+						e.stopPropagation();
+						const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
+						openDirections(fullAddress);
+					}}
+					class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+					title={`Get directions in ${getPlatformName()}`}
+				>
+					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+						/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+						/>
+					</svg>
+					Directions
+				</button>
 			</div>
 		</div>
 
