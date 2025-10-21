@@ -707,14 +707,11 @@
 											href={yardSale.venmo_url}
 											target="_blank"
 											rel="noopener noreferrer"
-											class="flex items-center space-x-3 rounded-lg bg-gray-200 p-3 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
+											class="flex items-center space-x-3 rounded-lg bg-blue-500 p-3 transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
 											title="Pay with Venmo"
 										>
-											<FontAwesomeIcon
-												icon="check-circle"
-												class="h-5 w-5 text-gray-600 dark:text-gray-400"
-											/>
-											<span class="font-medium text-gray-700 dark:text-gray-200">{method}</span>
+											<FontAwesomeIcon icon="check-circle" class="h-5 w-5 text-white" />
+											<span class="font-medium text-white">{method}</span>
 										</a>
 									{:else}
 										<div
