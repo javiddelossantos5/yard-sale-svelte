@@ -682,6 +682,138 @@
 							</div>
 						</div>
 
+						<!-- Action Buttons Card -->
+						<div
+							class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+						>
+							<h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Actions</h3>
+							<div class="space-y-3">
+								{#if yardSale.contact_phone}
+									{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
+									<a
+										href={isDisabled ? '#' : `tel:${yardSale.contact_phone}`}
+										onclick={isDisabled ? (e) => e.preventDefault() : undefined}
+										class="flex w-full items-center justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 {isDisabled
+											? 'cursor-not-allowed opacity-50'
+											: ''}"
+									>
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+											/>
+										</svg>
+										{yardSale.status === 'closed'
+											? 'Closed'
+											: !isYardSaleActive(yardSale)
+												? 'Event Ended'
+												: 'Call Now'}
+									</a>
+								{/if}
+
+								{#if yardSale.allow_messages}
+									{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
+									<button
+										onclick={isDisabled ? undefined : handleSendMessage}
+										disabled={isDisabled}
+										class="flex w-full items-center justify-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
+									>
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+											/>
+										</svg>
+										{yardSale.status === 'closed'
+											? 'Closed'
+											: !isYardSaleActive(yardSale)
+												? 'Event Ended'
+												: 'Send Message'}
+									</button>
+								{/if}
+
+								<!-- Get Directions Button -->
+								<button
+									onclick={(e) => {
+										e.stopPropagation();
+										if (yardSale) {
+											const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
+											openDirections(fullAddress);
+										}
+									}}
+									class="flex w-full items-center justify-center rounded-full bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-indigo-600 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+								>
+									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+										/>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+										/>
+									</svg>
+									Get Directions
+								</button>
+
+								<!-- Visited Toggle Button - Only show for active/started yard sales -->
+								{#if yardSale && getYardSaleStatus(yardSale) !== 'upcoming'}
+									<button
+										onclick={handleToggleVisited}
+										class="flex w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition-all active:scale-95 {isVisited
+											? 'bg-gray-500 text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700'
+											: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'}"
+									>
+										{#if isVisited}
+											<svg
+												class="mr-2 h-4 w-4"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M5 13l4 4L19 7"
+												/>
+											</svg>
+											Visited
+										{:else}
+											<svg
+												class="mr-2 h-4 w-4"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+												/>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+												/>
+											</svg>
+											Mark Visited
+										{/if}
+									</button>
+								{/if}
+							</div>
+						</div>
+
 						<!-- Payment Methods Card -->
 						<div
 							class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
@@ -838,128 +970,6 @@
 								{/each}
 							</div>
 						</div>
-					</div>
-				</div>
-
-				<!-- Action Buttons Section -->
-				<div
-					class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
-				>
-					<div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:justify-center">
-						{#if yardSale.contact_phone}
-							{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
-							<a
-								href={isDisabled ? '#' : `tel:${yardSale.contact_phone}`}
-								onclick={isDisabled ? (e) => e.preventDefault() : undefined}
-								class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 {isDisabled
-									? 'cursor-not-allowed opacity-50'
-									: ''}"
-							>
-								<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-									/>
-								</svg>
-								{yardSale.status === 'closed'
-									? 'Closed'
-									: !isYardSaleActive(yardSale)
-										? 'Event Ended'
-										: 'Call Now'}
-							</a>
-						{/if}
-
-						{#if yardSale.allow_messages}
-							{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
-							<button
-								onclick={isDisabled ? undefined : handleSendMessage}
-								disabled={isDisabled}
-								class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-green-500 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
-							>
-								<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-									/>
-								</svg>
-								{yardSale.status === 'closed'
-									? 'Closed'
-									: !isYardSaleActive(yardSale)
-										? 'Event Ended'
-										: 'Send Message'}
-							</button>
-						{/if}
-
-						<!-- Get Directions Button -->
-						<button
-							onclick={() => {
-								if (yardSale) {
-									const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
-									openDirections(fullAddress);
-								}
-							}}
-							class="inline-flex min-h-[44px] items-center justify-center rounded-full bg-indigo-500 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-indigo-600 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-700"
-							title={`Get directions in ${getPlatformName()}`}
-						>
-							<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-								/>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-								/>
-							</svg>
-							Get Directions
-						</button>
-
-						<!-- Visited Toggle Button - Only show for active/started yard sales -->
-						{#if yardSale && getYardSaleStatus(yardSale) !== 'upcoming'}
-							<button
-								onclick={handleToggleVisited}
-								class="inline-flex min-h-[44px] items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-all active:scale-95 {isVisited
-									? 'bg-gray-500 text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700'
-									: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'}"
-								title={isVisited ? 'Mark as not visited' : 'Mark as visited'}
-							>
-								{#if isVisited}
-									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M5 13l4 4L19 7"
-										/>
-									</svg>
-									Visited
-								{:else}
-									<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-										/>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-										/>
-									</svg>
-									Mark Visited
-								{/if}
-							</button>
-						{/if}
 					</div>
 				</div>
 
