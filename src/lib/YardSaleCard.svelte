@@ -81,8 +81,8 @@
 	tabindex="0"
 >
 	<!-- Header -->
-	<div class="p-5 pb-3">
-		<h3 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-gray-900 dark:text-white">
+	<div class="p-5 pb-4">
+		<h3 class="mb-4 line-clamp-2 text-lg leading-tight font-semibold text-gray-900 dark:text-white">
 			{yardSale.title}
 		</h3>
 
@@ -250,21 +250,21 @@
 	</div>
 
 	<!-- Categories -->
-	<div class="px-6 pb-4">
+	<div class="px-5 pb-4">
 		<div class="mb-4 flex flex-wrap gap-2">
 			{#each yardSale.categories as category}
 				<span
-					class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
+					class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
 				>
 					{category}
 				</span>
 			{/each}
 		</div>
 
-		<!-- Price Range & Payment Methods -->
-		<div class="flex items-center justify-between text-sm">
-			<div class="flex items-center font-medium text-green-600">
-				<svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<!-- Price Range & Comments -->
+		<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+			<div class="flex items-center font-medium text-green-600 dark:text-green-400">
+				<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -272,11 +272,11 @@
 						d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
 					></path>
 				</svg>
-				{yardSale.price_range}
+				<span class="text-sm">{yardSale.price_range}</span>
 			</div>
 
-			<div class="flex items-center text-gray-500">
-				<svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<div class="flex items-center text-gray-500 dark:text-gray-400">
+				<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -284,32 +284,34 @@
 						d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
 					></path>
 				</svg>
-				{yardSale.comment_count} comments
+				<span class="text-sm">{yardSale.comment_count} comments</span>
 			</div>
 		</div>
 	</div>
 
 	<!-- Footer -->
 	<div
-		class="border-t border-gray-100 bg-gray-50/50 px-5 py-4 dark:border-gray-700 dark:bg-gray-700/50"
+		class="border-t border-gray-100 bg-gray-50/50 px-5 py-5 dark:border-gray-700 dark:bg-gray-700/50"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 		role="button"
 		tabindex="0"
 	>
-		<div class="flex items-center justify-between">
-			<div class="text-sm text-gray-600 dark:text-gray-300">
-				<span class="font-medium">Contact:</span>
-				{yardSale.contact_name}
+		<div class="space-y-4">
+			<div class="flex items-center justify-between">
+				<div class="text-sm text-gray-600 dark:text-gray-300">
+					<span class="font-medium">Contact:</span>
+					{yardSale.contact_name}
+				</div>
 			</div>
 
-			<div class="flex space-x-2">
+			<div class="flex flex-wrap gap-2 sm:gap-3">
 				{#if yardSale.contact_phone}
 					<a
 						href="tel:{yardSale.contact_phone}"
-						class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-blue-700 active:scale-95"
+						class="inline-flex min-h-[44px] items-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95"
 					>
-						<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -326,9 +328,9 @@
 					<button
 						onclick={isDisabled ? undefined : handleSendMessage}
 						disabled={isDisabled}
-						class="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+						class="inline-flex min-h-[44px] items-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 					>
-						<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -347,10 +349,10 @@
 						const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
 						openDirections(fullAddress);
 					}}
-					class="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+					class="inline-flex min-h-[44px] items-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 					title={`Get directions in ${getPlatformName()}`}
 				>
-					<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -370,7 +372,7 @@
 		</div>
 
 		<!-- Payment Methods -->
-		<div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+		<div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
 			<span class="font-medium">Payment:</span>
 			{yardSale.payment_methods.join(', ')}
 		</div>
