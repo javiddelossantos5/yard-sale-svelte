@@ -25,7 +25,8 @@
 		allow_messages: true,
 		categories: [],
 		price_range: '',
-		payment_methods: []
+		payment_methods: [],
+		venmo_url: ''
 	});
 
 	let loading = $state(false);
@@ -168,7 +169,8 @@
 			allow_messages: true,
 			categories: [],
 			price_range: '',
-			payment_methods: []
+			payment_methods: [],
+			venmo_url: ''
 		};
 	}
 
@@ -546,6 +548,26 @@
 										</label>
 									{/each}
 								</div>
+							</div>
+
+							<!-- Venmo URL -->
+							<div class="sm:col-span-2 lg:col-span-3">
+								<label
+									for="venmo-url"
+									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+								>
+									Venmo URL (Optional)
+								</label>
+								<input
+									id="venmo-url"
+									type="url"
+									bind:value={formData.venmo_url}
+									placeholder="https://venmo.com/your-username"
+									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								/>
+								<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+									Add your Venmo profile URL to allow customers to pay directly
+								</p>
 							</div>
 
 							<!-- Allow Messages -->

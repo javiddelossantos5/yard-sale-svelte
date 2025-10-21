@@ -29,6 +29,7 @@ export interface YardSale {
 	owner_id: number;
 	owner_username: string;
 	comment_count: number;
+	venmo_url?: string;
 }
 
 export async function getYardSales(): Promise<YardSale[]> {
@@ -254,6 +255,7 @@ export interface YardSaleCreate {
 	featured_image?: string;
 	status?: 'active' | 'on_break' | 'closed';
 	status_reason?: string;
+	venmo_url?: string;
 }
 
 export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
