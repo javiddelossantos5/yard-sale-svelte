@@ -41,6 +41,17 @@
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
+	let availablePaymentMethods = $state<any[]>([
+		{ id: 'cash', name: 'Cash', icon: 'dollar-sign', icon_type: 'solid' },
+		{ id: 'credit-card', name: 'Credit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'debit-card', name: 'Debit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'venmo', name: 'Venmo', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'paypal', name: 'PayPal', icon: 'paypal', icon_type: 'brand' },
+		{ id: 'zelle', name: 'Zelle', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'apple', name: 'Apple Pay', icon: 'apple', icon_type: 'brand' },
+		{ id: 'google', name: 'Google Pay', icon: 'google', icon_type: 'brand' },
+		{ id: 'square', name: 'Square', icon: 'credit-card', icon_type: 'solid' }
+	]);
 
 	// Available options
 	const states = [
@@ -125,7 +136,7 @@
 		'Negotiable'
 	];
 
-	const paymentMethods = ['Cash', 'Credit Card', 'Debit Card', 'Check', 'Venmo', 'PayPal', 'Zelle'];
+	// Payment methods are now hardcoded and always available
 
 	// Initialize form data when yardSale changes
 	$effect(() => {
@@ -584,16 +595,18 @@
 									for="payment-methods">Payment Methods</label
 								>
 								<div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-									{#each paymentMethods as method}
-										<label class="flex items-center" for="payment-{method}">
+									{#each availablePaymentMethods as method}
+										<label class="flex items-center" for="payment-{method.id}">
 											<input
-												id="payment-{method}"
+												id="payment-{method.id}"
 												type="checkbox"
-												checked={formData.payment_methods?.includes(method) || false}
-												onchange={(e) => handlePaymentMethodChange(method, e)}
+												checked={formData.payment_methods?.includes(method.name) || false}
+												onchange={(e) => handlePaymentMethodChange(method.name, e)}
 												class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 											/>
-											<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{method}</span>
+											<span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+												>{method.name}</span
+											>
 										</label>
 									{/each}
 								</div>

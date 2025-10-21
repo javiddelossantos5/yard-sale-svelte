@@ -23,11 +23,23 @@
 	import { openDirections, getPlatformName } from '$lib/mapsUtils';
 	import { isYardSaleVisited, toggleYardSaleVisited } from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { getPaymentMethodIcon } from '$lib/paymentUtils';
 
 	let yardSale = $state<YardSale | null>(null);
 	let comments = $state<Comment[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let availablePaymentMethods = $state<any[]>([
+		{ id: 'cash', name: 'Cash', icon: 'dollar-sign', icon_type: 'solid' },
+		{ id: 'credit-card', name: 'Credit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'debit-card', name: 'Debit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'venmo', name: 'Venmo', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'paypal', name: 'PayPal', icon: 'paypal', icon_type: 'brand' },
+		{ id: 'zelle', name: 'Zelle', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'apple', name: 'Apple Pay', icon: 'apple', icon_type: 'brand' },
+		{ id: 'google', name: 'Google Pay', icon: 'google', icon_type: 'brand' },
+		{ id: 'square', name: 'Square', icon: 'credit-card', icon_type: 'solid' }
+	]);
 	let newComment = $state('');
 	let submittingComment = $state(false);
 
@@ -702,7 +714,10 @@
 							</h3>
 							<div class="space-y-3">
 								{#each yardSale.payment_methods as method}
-									{#if method.toLowerCase().includes('venmo') && yardSale.venmo_url}
+									{@const iconInfo = getPaymentMethodIcon(method, availablePaymentMethods)}
+									{@const isVenmoWithUrl =
+										method.toLowerCase().includes('venmo') && yardSale.venmo_url}
+									{#if isVenmoWithUrl}
 										<a
 											href={yardSale.venmo_url}
 											target="_blank"
@@ -710,61 +725,24 @@
 											class="flex items-center space-x-3 rounded-lg bg-blue-500 p-3 transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
 											title="Pay with Venmo"
 										>
-											<FontAwesomeIcon icon="check-circle" class="h-5 w-5 text-white" />
+											<FontAwesomeIcon
+												icon={iconInfo.iconType === 'brand'
+													? ['fab', iconInfo.icon]
+													: iconInfo.icon}
+												class="h-5 w-5 text-white"
+											/>
 											<span class="font-medium text-white">{method}</span>
 										</a>
 									{:else}
 										<div
 											class="flex items-center space-x-3 rounded-lg bg-gray-200 p-3 dark:bg-gray-600"
 										>
-											{#if method.toLowerCase().includes('cash')}
-												<FontAwesomeIcon
-													icon="dollar-sign"
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else if method.toLowerCase().includes('venmo')}
-												<FontAwesomeIcon
-													icon="check-circle"
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else if method.toLowerCase().includes('paypal')}
-												<FontAwesomeIcon
-													icon={['fab', 'paypal']}
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else if method.toLowerCase().includes('zelle')}
-												<FontAwesomeIcon
-													icon="check-circle"
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else if method.toLowerCase().includes('apple')}
-												<FontAwesomeIcon
-													icon={['fab', 'apple']}
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else if method.toLowerCase().includes('google')}
-												<FontAwesomeIcon
-													icon={['fab', 'google']}
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else if method.toLowerCase().includes('card') || method
-													.toLowerCase()
-													.includes('credit') || method.toLowerCase().includes('debit')}
-												<FontAwesomeIcon
-													icon="credit-card"
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else if method.toLowerCase().includes('check')}
-												<FontAwesomeIcon
-													icon="check"
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{:else}
-												<FontAwesomeIcon
-													icon="dollar-sign"
-													class="h-5 w-5 text-gray-600 dark:text-gray-400"
-												/>
-											{/if}
+											<FontAwesomeIcon
+												icon={iconInfo.iconType === 'brand'
+													? ['fab', iconInfo.icon]
+													: iconInfo.icon}
+												class="h-5 w-5 text-gray-600 dark:text-gray-400"
+											/>
 											<span class="font-medium text-gray-700 dark:text-gray-200">{method}</span>
 										</div>
 									{/if}

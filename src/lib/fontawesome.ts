@@ -17,7 +17,17 @@ import {
 	faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
 
-import { faPaypal, faApple, faGoogle } from '@fortawesome/free-brands-svg-icons';
+import {
+	faPaypal,
+	faApple,
+	faGoogle,
+	faCcVisa,
+	faCcMastercard,
+	faCcAmex,
+	faCcDiscover,
+	faBitcoin,
+	faEthereum
+} from '@fortawesome/free-brands-svg-icons';
 
 // Add icons to the library
 library.add(
@@ -41,7 +51,13 @@ library.add(
 	// Brand icons
 	faPaypal,
 	faApple,
-	faGoogle
+	faGoogle,
+	faCcVisa,
+	faCcMastercard,
+	faCcAmex,
+	faCcDiscover,
+	faBitcoin,
+	faEthereum
 );
 
 export { library };

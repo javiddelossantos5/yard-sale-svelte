@@ -6,9 +6,23 @@
 	import { openDirections, getPlatformName } from './mapsUtils';
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { getPaymentMethodIcon } from './paymentUtils';
 
 	let { yardSale, onVisitedChange }: { yardSale: YardSale; onVisitedChange?: () => void } =
 		$props();
+
+	// Payment methods state - using hardcoded fallback methods
+	let availablePaymentMethods = $state<any[]>([
+		{ id: 'cash', name: 'Cash', icon: 'dollar-sign', icon_type: 'solid' },
+		{ id: 'credit-card', name: 'Credit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'debit-card', name: 'Debit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'venmo', name: 'Venmo', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'paypal', name: 'PayPal', icon: 'paypal', icon_type: 'brand' },
+		{ id: 'zelle', name: 'Zelle', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'apple', name: 'Apple Pay', icon: 'apple', icon_type: 'brand' },
+		{ id: 'google', name: 'Google Pay', icon: 'google', icon_type: 'brand' },
+		{ id: 'square', name: 'Square', icon: 'credit-card', icon_type: 'solid' }
+	]);
 
 	// Message modal state
 	let showMessageModal = $state(false);
@@ -368,7 +382,9 @@
 			<div class="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Payment:</div>
 			<div class="flex flex-wrap gap-2">
 				{#each yardSale.payment_methods as method}
-					{#if method.toLowerCase().includes('venmo') && yardSale.venmo_url}
+					{@const iconInfo = getPaymentMethodIcon(method, availablePaymentMethods)}
+					{@const isVenmoWithUrl = method.toLowerCase().includes('venmo') && yardSale.venmo_url}
+					{#if isVenmoWithUrl}
 						<a
 							href={yardSale.venmo_url}
 							target="_blank"
@@ -376,34 +392,20 @@
 							class="inline-flex items-center rounded-full bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
 							title="Pay with Venmo"
 						>
-							<FontAwesomeIcon icon="check-circle" class="mr-1.5 h-3.5 w-3.5" />
+							<FontAwesomeIcon
+								icon={iconInfo.iconType === 'brand' ? ['fab', iconInfo.icon] : iconInfo.icon}
+								class="mr-1.5 h-3.5 w-3.5"
+							/>
 							{method}
 						</a>
 					{:else}
 						<div
 							class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 dark:bg-gray-600 dark:text-gray-200"
 						>
-							{#if method.toLowerCase().includes('cash')}
-								<FontAwesomeIcon icon="dollar-sign" class="mr-1.5 h-3.5 w-3.5" />
-							{:else if method.toLowerCase().includes('venmo')}
-								<FontAwesomeIcon icon="check-circle" class="mr-1.5 h-3.5 w-3.5" />
-							{:else if method.toLowerCase().includes('paypal')}
-								<FontAwesomeIcon icon={['fab', 'paypal']} class="mr-1.5 h-3.5 w-3.5" />
-							{:else if method.toLowerCase().includes('zelle')}
-								<FontAwesomeIcon icon="check-circle" class="mr-1.5 h-3.5 w-3.5" />
-							{:else if method.toLowerCase().includes('apple')}
-								<FontAwesomeIcon icon={['fab', 'apple']} class="mr-1.5 h-3.5 w-3.5" />
-							{:else if method.toLowerCase().includes('google')}
-								<FontAwesomeIcon icon={['fab', 'google']} class="mr-1.5 h-3.5 w-3.5" />
-							{:else if method.toLowerCase().includes('card') || method
-									.toLowerCase()
-									.includes('credit') || method.toLowerCase().includes('debit')}
-								<FontAwesomeIcon icon="credit-card" class="mr-1.5 h-3.5 w-3.5" />
-							{:else if method.toLowerCase().includes('check')}
-								<FontAwesomeIcon icon="check" class="mr-1.5 h-3.5 w-3.5" />
-							{:else}
-								<FontAwesomeIcon icon="dollar-sign" class="mr-1.5 h-3.5 w-3.5" />
-							{/if}
+							<FontAwesomeIcon
+								icon={iconInfo.iconType === 'brand' ? ['fab', iconInfo.icon] : iconInfo.icon}
+								class="mr-1.5 h-3.5 w-3.5"
+							/>
 							{method}
 						</div>
 					{/if}
