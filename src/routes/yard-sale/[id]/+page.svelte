@@ -57,6 +57,13 @@
 	let showEditModal = $state(false);
 	let isOwner = $state(false);
 
+	// Debug: Watch for changes in isOwner
+	$effect(() => {
+		console.log('isOwner changed to:', isOwner);
+		console.log('currentUserId:', currentUserId);
+		console.log('yardSale?.owner_id:', yardSale?.owner_id);
+	});
+
 	// Delete confirmation modal state
 	let showDeleteModal = $state(false);
 
@@ -83,22 +90,50 @@
 	async function loadCurrentUser() {
 		try {
 			currentUser = await getCurrentUser();
+			console.log('Current user loaded:', currentUser);
+			console.log('Current user ID:', currentUser?.id);
 		} catch (error) {
 			console.warn('Failed to load current user:', error);
+			console.warn('Error details:', error);
 			// User might not be logged in, that's okay
+			// Set currentUser to null to indicate no user is logged in
+			currentUser = null;
 		}
 	}
 
 	async function loadYardSale() {
 		yardSale = await getYardSaleById(yardSaleId);
+		console.log('Yard sale loaded:', yardSale);
+		console.log('Yard sale owner_id:', yardSale?.owner_id);
+		console.log('Current user ID:', currentUserId);
+
 		// Check if current user is the owner
+		console.log('Comparing owner_id:', yardSale?.owner_id, 'with currentUserId:', currentUserId);
+		console.log('owner_id type:', typeof yardSale?.owner_id);
+		console.log('currentUserId type:', typeof currentUserId);
+		console.log('Strict equality:', yardSale?.owner_id === currentUserId);
+		console.log('Loose equality:', yardSale?.owner_id == currentUserId);
+
 		isOwner = yardSale?.owner_id === currentUserId;
+		console.log('Is owner?', isOwner);
 
 		// Initialize visited state
 		if (yardSale) {
 			isVisited = isYardSaleVisited(yardSale.id);
 		}
 	}
+
+	// Update ownership when current user changes
+	$effect(() => {
+		if (yardSale && currentUserId !== null) {
+			console.log('Re-evaluating ownership due to currentUserId change');
+			console.log('yardSale.owner_id:', yardSale.owner_id);
+			console.log('currentUserId:', currentUserId);
+			const newIsOwner = yardSale.owner_id === currentUserId;
+			console.log('New isOwner value:', newIsOwner);
+			isOwner = newIsOwner;
+		}
+	});
 
 	async function loadComments() {
 		comments = await getComments(yardSaleId);

@@ -151,7 +151,10 @@
 		error = null;
 
 		try {
-			await createYardSale(formData);
+			console.log('Creating yard sale with data:', formData);
+			const createdYardSale = await createYardSale(formData);
+			console.log('Yard sale created:', createdYardSale);
+			console.log('Created yard sale owner_id:', createdYardSale.owner_id);
 			onSuccess();
 			onClose();
 			resetForm();

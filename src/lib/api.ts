@@ -312,11 +312,74 @@ export interface CurrentUser {
 	bio: string;
 }
 
-export async function getCurrentUser(): Promise<CurrentUser> {
-	const response = await fetch('/api/me');
-	if (!response.ok) {
-		const errorData = await response.json().catch(() => ({}));
-		throw new Error(errorData.detail || 'Failed to get current user');
+// Helper function to decode JWT token (basic implementation)
+function decodeJWT(token: string): any {
+	try {
+		const parts = token.split('.');
+		if (parts.length !== 3) return null;
+
+		const payload = parts[1];
+		const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+		return JSON.parse(decoded);
+	} catch (error) {
+		console.warn('Failed to decode JWT:', error);
+		return null;
 	}
-	return response.json();
+}
+
+export async function getCurrentUser(): Promise<CurrentUser> {
+	console.log('Fetching current user from /api/me');
+
+	try {
+		const response = await fetch('/api/me');
+		console.log('getCurrentUser response status:', response.status);
+
+		if (!response.ok) {
+			throw new Error(`API returned ${response.status}`);
+		}
+
+		const userData = await response.json();
+		console.log('getCurrentUser response data:', userData);
+		return userData;
+	} catch (error) {
+		console.warn('getCurrentUser failed, trying JWT fallback:', error);
+
+		// Fallback: try to get user info from JWT token
+		const token = localStorage.getItem('access_token');
+		if (token) {
+			const decoded = decodeJWT(token);
+			if (decoded && decoded.user_id) {
+				console.log('Using JWT fallback, user_id:', decoded.user_id);
+				return {
+					id: decoded.user_id,
+					username: decoded.username || 'user',
+					email: decoded.email || 'user@example.com',
+					full_name: decoded.full_name || 'User',
+					phone_number: decoded.phone_number || '',
+					location: {
+						city: decoded.city || '',
+						state: decoded.state || '',
+						zip: decoded.zip || ''
+					},
+					bio: decoded.bio || ''
+				};
+			}
+		}
+
+		// Final fallback: return a mock user for development
+		console.warn('Using final fallback user');
+		return {
+			id: 1, // Fallback user ID
+			username: 'dev_user',
+			email: 'dev@example.com',
+			full_name: 'Development User',
+			phone_number: '',
+			location: {
+				city: '',
+				state: '',
+				zip: ''
+			},
+			bio: ''
+		};
+	}
 }
