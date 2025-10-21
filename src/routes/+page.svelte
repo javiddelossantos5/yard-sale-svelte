@@ -11,6 +11,7 @@
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import { logout } from '$lib/auth';
 	import { getYardSaleStatus, isYardSaleActive } from '$lib/yardSaleUtils';
+	import { isYardSaleVisited } from '$lib/visitedYardSales';
 
 	let yardSales = $state<YardSale[]>([]);
 	let loading = $state(true);
@@ -21,6 +22,9 @@
 	let selectedDate = $state('');
 	let statusFilter = $state('active');
 
+	// Visited state tracker to trigger re-sorting when visited status changes
+	let visitedStateTracker = $state(0);
+
 	// Get unique cities and categories for filters
 	let cities = $state<string[]>([]);
 	let categories = $state<string[]>([]);
@@ -28,12 +32,23 @@
 	// Create yard sale modal state
 	let showCreateModal = $state(false);
 
-	onMount(async () => {
-		try {
-			await loadYardSales();
-		} catch (err) {
+	onMount(() => {
+		// Load yard sales
+		loadYardSales().catch((err) => {
 			error = err instanceof Error ? err.message : 'Failed to load yard sales';
-		}
+		});
+
+		// Listen for visited status changes from detail pages
+		const handleVisitedStatusChanged = () => {
+			triggerVisitedStateUpdate();
+		};
+
+		window.addEventListener('visitedStatusChanged', handleVisitedStatusChanged);
+
+		// Cleanup
+		return () => {
+			window.removeEventListener('visitedStatusChanged', handleVisitedStatusChanged);
+		};
 	});
 
 	async function loadYardSales() {
@@ -87,6 +102,11 @@
 	function handleLogout() {
 		logout();
 		goto('/login');
+	}
+
+	// Function to trigger re-sorting when visited status changes
+	function triggerVisitedStateUpdate() {
+		visitedStateTracker++;
 	}
 
 	function handleCreateYardSale() {
@@ -150,7 +170,18 @@
 				return matchesSearch && matchesCity && matchesCategory && matchesDate && matchesStatus;
 			})
 			.sort((a, b) => {
-				// Sort by start date: closest starting date first, then descending
+				// Access visitedStateTracker to make this derived state reactive to visited changes
+				visitedStateTracker; // This makes the derived state reactive to visited changes
+
+				// First, sort by visited status: unvisited first, visited last
+				const aVisited = isYardSaleVisited(a.id);
+				const bVisited = isYardSaleVisited(b.id);
+
+				if (aVisited !== bVisited) {
+					return aVisited ? 1 : -1; // unvisited first (return -1), visited last (return 1)
+				}
+
+				// If both have same visited status, sort by start date: closest starting date first
 				const dateA = new Date(a.start_date || '');
 				const dateB = new Date(b.start_date || '');
 
@@ -465,7 +496,7 @@
 			{:else}
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 					{#each filteredYardSales as yardSale (yardSale.id)}
-						<YardSaleCard {yardSale} />
+						<YardSaleCard {yardSale} onVisitedChange={triggerVisitedStateUpdate} />
 					{/each}
 				</div>
 			{/if}

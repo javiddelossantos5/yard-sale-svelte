@@ -6,7 +6,8 @@
 	import { openDirections, getPlatformName } from './mapsUtils';
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 
-	let { yardSale }: { yardSale: YardSale } = $props();
+	let { yardSale, onVisitedChange }: { yardSale: YardSale; onVisitedChange?: () => void } =
+		$props();
 
 	// Message modal state
 	let showMessageModal = $state(false);
@@ -79,6 +80,8 @@
 	function handleToggleVisited(event: Event) {
 		event.stopPropagation();
 		isVisited = toggleYardSaleVisited(yardSale.id);
+		// Trigger re-sorting on the main page
+		onVisitedChange?.();
 	}
 </script>
 

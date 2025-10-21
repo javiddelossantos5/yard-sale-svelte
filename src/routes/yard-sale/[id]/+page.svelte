@@ -174,6 +174,11 @@
 	function handleToggleVisited() {
 		if (yardSale) {
 			isVisited = toggleYardSaleVisited(yardSale.id);
+			// Trigger a page refresh to update the main page sorting
+			// This is a simple solution - in a more complex app, you'd use a global state manager
+			setTimeout(() => {
+				window.dispatchEvent(new CustomEvent('visitedStatusChanged'));
+			}, 100);
 		}
 	}
 
