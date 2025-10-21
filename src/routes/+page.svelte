@@ -342,24 +342,6 @@
 					/>
 				</div>
 
-				<!-- City Filter -->
-				<div>
-					<label for="city" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-						City
-					</label>
-					<select
-						id="city"
-						bind:value={selectedCity}
-						onchange={handleCityChange}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
-					>
-						<option value="">All Cities</option>
-						{#each cities as city}
-							<option value={city}>{city}</option>
-						{/each}
-					</select>
-				</div>
-
 				<!-- Zip Code Filter -->
 				<div>
 					<label
@@ -376,6 +358,24 @@
 						placeholder="Enter zip code..."
 						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
 					/>
+				</div>
+
+				<!-- City Filter -->
+				<div>
+					<label for="city" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+						City
+					</label>
+					<select
+						id="city"
+						bind:value={selectedCity}
+						onchange={handleCityChange}
+						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
+					>
+						<option value="">All Cities</option>
+						{#each cities as city}
+							<option value={city}>{city}</option>
+						{/each}
+					</select>
 				</div>
 
 				<!-- Date Filter -->
