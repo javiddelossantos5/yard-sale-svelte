@@ -74,15 +74,15 @@
 </script>
 
 <div
-	class="cursor-pointer overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-200 hover:shadow-lg dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600"
+	class="cursor-pointer overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600"
 	onclick={handleCardClick}
 	onkeydown={(e) => e.key === 'Enter' && handleCardClick()}
 	role="button"
 	tabindex="0"
 >
 	<!-- Header -->
-	<div class="p-6 pb-4">
-		<h3 class="mb-2 line-clamp-2 text-xl font-bold text-gray-900 dark:text-white">
+	<div class="p-5 pb-3">
+		<h3 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-gray-900 dark:text-white">
 			{yardSale.title}
 		</h3>
 
@@ -90,9 +90,9 @@
 		<div class="mb-3">
 			{#if status === 'expired'}
 				<div
-					class="inline-flex items-center rounded-full bg-red-100 px-3 py-1.5 text-sm font-medium text-red-800 dark:bg-red-900/20 dark:text-red-200"
+					class="inline-flex items-center rounded-full bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 dark:bg-red-900/10 dark:text-red-300"
 				>
-					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -100,14 +100,14 @@
 							d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 						/>
 					</svg>
-					<span class="font-semibold">EXPIRED</span>
-					<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+					<span class="font-medium">Expired</span>
+					<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'upcoming'}
 				<div
-					class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1.5 text-sm font-medium text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+					class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 dark:bg-blue-900/10 dark:text-blue-300"
 				>
-					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -115,30 +115,30 @@
 							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 						/>
 					</svg>
-					<span class="font-semibold">UPCOMING</span>
-					<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+					<span class="font-medium">Upcoming</span>
+					<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'active'}
 				<div
-					class="inline-flex items-center rounded-full bg-green-100 px-3 py-1.5 text-sm font-medium text-green-800 dark:bg-green-900/20 dark:text-green-200"
+					class="inline-flex items-center rounded-full bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 dark:bg-green-900/10 dark:text-green-300"
 				>
-					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
 							stroke-width="2"
-							d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+							d="M13 10V3L4 14h7v7l9-11h-7z"
 						/>
 					</svg>
-					<span class="font-semibold">ACTIVE NOW</span>
-					<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+					<span class="font-medium">Active Now</span>
+					<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'on_break'}
-				<div class="space-y-1">
+				<div class="space-y-1.5">
 					<div
-						class="inline-flex items-center rounded-full bg-orange-100 px-3 py-1.5 text-sm font-medium text-orange-800 dark:bg-orange-900/20 dark:text-orange-200"
+						class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 dark:bg-orange-900/10 dark:text-orange-300"
 					>
-						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -146,21 +146,21 @@
 								d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 							/>
 						</svg>
-						<span class="font-semibold">ON BREAK</span>
-						<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+						<span class="font-medium">On Break</span>
+						<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
 					</div>
 					{#if yardSale.status_reason}
-						<div class="text-xs text-orange-700 italic dark:text-orange-300">
-							"{yardSale.status_reason}"
+						<div class="text-xs text-orange-600 dark:text-orange-400">
+							{yardSale.status_reason}
 						</div>
 					{/if}
 				</div>
 			{:else if status === 'closed'}
-				<div class="space-y-1">
+				<div class="space-y-1.5">
 					<div
-						class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-200"
+						class="inline-flex items-center rounded-full bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 dark:bg-gray-700/50 dark:text-gray-300"
 					>
-						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -168,12 +168,12 @@
 								d="M6 18L18 6M6 6l12 12"
 							/>
 						</svg>
-						<span class="font-semibold">CLOSED</span>
-						<span class="ml-2 text-xs opacity-75">• {timeRemaining}</span>
+						<span class="font-medium">Closed</span>
+						<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
 					</div>
 					{#if yardSale.status_reason}
-						<div class="text-xs text-gray-600 italic dark:text-gray-400">
-							"{yardSale.status_reason}"
+						<div class="text-xs text-gray-500 dark:text-gray-400">
+							{yardSale.status_reason}
 						</div>
 					{/if}
 				</div>
@@ -181,10 +181,10 @@
 		</div>
 
 		<!-- Location -->
-		<div class="mb-3">
+		<div class="mb-4">
 			<div class="flex items-start text-gray-600 dark:text-gray-300">
 				<svg
-					class="mt-0.5 mr-2 h-4 w-4 shrink-0"
+					class="mt-0.5 mr-2 h-4 w-4 shrink-0 text-gray-400"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
@@ -205,11 +205,11 @@
 				<div class="flex-1">
 					<button
 						onclick={handleAddressClick}
-						class="text-left text-sm text-blue-600 hover:text-blue-800 hover:underline focus:underline focus:outline-none"
+						class="text-left text-sm text-blue-600 hover:text-blue-700 hover:underline focus:underline focus:outline-none dark:text-blue-400 dark:hover:text-blue-300"
 						title={`Click to open in ${getPlatformName()}`}
 					>
 						<div class="font-medium">{yardSale.address}</div>
-						<div class="text-gray-500 dark:text-gray-400">
+						<div class="text-xs text-gray-500 dark:text-gray-400">
 							{yardSale.city}, {yardSale.state}
 							{yardSale.zip_code}
 						</div>
@@ -220,7 +220,7 @@
 
 		<!-- Date & Time -->
 		<div class="mb-3 flex items-center text-gray-600 dark:text-gray-300">
-			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg class="mr-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"
@@ -228,11 +228,11 @@
 					d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
 				></path>
 			</svg>
-			<span class="text-sm">{getDateRange()}</span>
+			<span class="text-sm font-medium">{getDateRange()}</span>
 		</div>
 
 		<div class="mb-4 flex items-center text-gray-600 dark:text-gray-300">
-			<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg class="mr-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				<path
 					stroke-linecap="round"
 					stroke-linejoin="round"
@@ -240,11 +240,11 @@
 					d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
 				></path>
 			</svg>
-			<span class="text-sm">{getTimeRange()}</span>
+			<span class="text-sm font-medium">{getTimeRange()}</span>
 		</div>
 
 		<!-- Description -->
-		<p class="mb-4 line-clamp-3 text-sm text-gray-700 dark:text-gray-300">
+		<p class="mb-5 line-clamp-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
 			{yardSale.description}
 		</p>
 	</div>
@@ -291,7 +291,7 @@
 
 	<!-- Footer -->
 	<div
-		class="border-t bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-700"
+		class="border-t border-gray-100 bg-gray-50/50 px-5 py-4 dark:border-gray-700 dark:bg-gray-700/50"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 		role="button"
@@ -307,9 +307,9 @@
 				{#if yardSale.contact_phone}
 					<a
 						href="tel:{yardSale.contact_phone}"
-						class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+						class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-xs font-medium text-white transition-all hover:bg-blue-700 active:scale-95"
 					>
-						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -326,9 +326,9 @@
 					<button
 						onclick={isDisabled ? undefined : handleSendMessage}
 						disabled={isDisabled}
-						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+						class="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 					>
-						<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -347,10 +347,10 @@
 						const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
 						openDirections(fullAddress);
 					}}
-					class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+					class="inline-flex items-center rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 					title={`Get directions in ${getPlatformName()}`}
 				>
-					<svg class="mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
