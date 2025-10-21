@@ -61,7 +61,15 @@
 			yardSales = allData;
 
 			// Extract unique cities and categories from all data
-			cities = [...new Set(allData.map((sale) => sale.city))].sort();
+			// Normalize city names to prevent duplicates (e.g., "Vernal" vs "vernal")
+			const cityMap = new Map();
+			allData.forEach((sale) => {
+				const normalizedCity = sale.city.trim().toLowerCase();
+				if (!cityMap.has(normalizedCity)) {
+					cityMap.set(normalizedCity, sale.city.trim());
+				}
+			});
+			cities = Array.from(cityMap.values()).sort();
 			categories = [...new Set(allData.flatMap((sale) => sale.categories))].sort();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load yard sales';
@@ -134,8 +142,9 @@
 					sale.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
 					sale.categories.some((cat) => cat.toLowerCase().includes(searchTerm.toLowerCase()));
 
-				// City filter
-				const matchesCity = !selectedCity || sale.city === selectedCity;
+				// City filter - case insensitive comparison
+				const matchesCity =
+					!selectedCity || sale.city.trim().toLowerCase() === selectedCity.toLowerCase();
 
 				// Category filter
 				const matchesCategory = !selectedCategory || sale.categories.includes(selectedCategory);
