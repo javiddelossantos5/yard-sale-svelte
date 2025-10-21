@@ -305,11 +305,11 @@
 				</div>
 			</div>
 
-			<div class="flex flex-wrap gap-2 sm:gap-3">
+			<div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
 				{#if yardSale.contact_phone}
 					<a
 						href="tel:{yardSale.contact_phone}"
-						class="inline-flex min-h-[44px] items-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95"
+						class="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 sm:w-auto"
 					>
 						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -328,7 +328,7 @@
 					<button
 						onclick={isDisabled ? undefined : handleSendMessage}
 						disabled={isDisabled}
-						class="inline-flex min-h-[44px] items-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
+						class="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 sm:w-auto dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
 					>
 						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
@@ -349,7 +349,7 @@
 						const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
 						openDirections(fullAddress);
 					}}
-					class="inline-flex min-h-[44px] items-center rounded-full bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-indigo-600 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+					class="inline-flex min-h-[44px] w-full items-center justify-center rounded-full bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-indigo-600 active:scale-95 sm:w-auto dark:bg-indigo-600 dark:hover:bg-indigo-700"
 					title={`Get directions in ${getPlatformName()}`}
 				>
 					<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
