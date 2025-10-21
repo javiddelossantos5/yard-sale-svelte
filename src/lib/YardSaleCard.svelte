@@ -4,6 +4,7 @@
 	import MessageModal from './MessageModal.svelte';
 	import { getYardSaleStatus, getTimeRemainingMessage } from './yardSaleUtils';
 	import { openDirections, getPlatformName } from './mapsUtils';
+	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 
 	let { yardSale }: { yardSale: YardSale } = $props();
 
@@ -15,6 +16,9 @@
 	let timeRemaining = $derived(getTimeRemainingMessage(yardSale));
 	let currentUserId = 1; // This should come from auth context in a real app
 	let isOwner = $derived(currentUserId === yardSale.owner_id);
+
+	// Visited state
+	let isVisited = $state(isYardSaleVisited(yardSale.id));
 
 	function formatDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -71,10 +75,17 @@
 		const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
 		openDirections(fullAddress);
 	}
+
+	function handleToggleVisited(event: Event) {
+		event.stopPropagation();
+		isVisited = toggleYardSaleVisited(yardSale.id);
+	}
 </script>
 
 <div
-	class="cursor-pointer overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600"
+	class="cursor-pointer overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] {isVisited
+		? 'bg-gray-100 opacity-60 dark:bg-gray-900 dark:opacity-60'
+		: 'bg-white dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600'}"
 	onclick={handleCardClick}
 	onkeydown={(e) => e.key === 'Enter' && handleCardClick()}
 	role="button"
@@ -85,6 +96,25 @@
 		<h3 class="mb-4 line-clamp-2 text-lg leading-tight font-semibold text-gray-900 dark:text-white">
 			{yardSale.title}
 		</h3>
+
+		<!-- Visited Indicator -->
+		{#if isVisited}
+			<div class="mb-3">
+				<div
+					class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+				>
+					<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M5 13l4 4L19 7"
+						/>
+					</svg>
+					<span class="font-medium">Already Visited</span>
+				</div>
+			</div>
+		{/if}
 
 		<!-- Status Indicator -->
 		<div class="mb-3">
@@ -367,6 +397,43 @@
 						/>
 					</svg>
 					Directions
+				</button>
+
+				<!-- Visited Toggle Button -->
+				<button
+					onclick={handleToggleVisited}
+					class="inline-flex min-h-[44px] w-full items-center justify-center rounded-full px-4 py-2.5 text-sm font-medium transition-all active:scale-95 sm:w-auto {isVisited
+						? 'bg-gray-500 text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700'
+						: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'}"
+					title={isVisited ? 'Mark as not visited' : 'Mark as visited'}
+				>
+					{#if isVisited}
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M5 13l4 4L19 7"
+							/>
+						</svg>
+						Visited
+					{:else}
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+							/>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+							/>
+						</svg>
+						Mark Visited
+					{/if}
 				</button>
 			</div>
 		</div>

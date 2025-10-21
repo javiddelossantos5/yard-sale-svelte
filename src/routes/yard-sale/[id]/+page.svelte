@@ -21,26 +21,30 @@
 		isYardSaleActive
 	} from '$lib/yardSaleUtils';
 	import { openDirections, getPlatformName } from '$lib/mapsUtils';
+	import { isYardSaleVisited, toggleYardSaleVisited } from '$lib/visitedYardSales';
 
-	let yardSale: YardSale | null = null;
-	let comments: Comment[] = [];
-	let loading = true;
-	let error: string | null = null;
-	let newComment = '';
-	let submittingComment = false;
+	let yardSale = $state<YardSale | null>(null);
+	let comments = $state<Comment[]>([]);
+	let loading = $state(true);
+	let error = $state<string | null>(null);
+	let newComment = $state('');
+	let submittingComment = $state(false);
 
 	// Message modal state
-	let showMessageModal = false;
+	let showMessageModal = $state(false);
 	let currentUserId = 1; // This should come from auth context in a real app
 
+	// Visited state
+	let isVisited = $state(false);
+
 	// Edit modal state
-	let showEditModal = false;
-	let isOwner = false;
+	let showEditModal = $state(false);
+	let isOwner = $state(false);
 
 	// Delete confirmation modal state
-	let showDeleteModal = false;
+	let showDeleteModal = $state(false);
 
-	$: yardSaleId = parseInt($page.params.id || '0');
+	let yardSaleId = $derived(parseInt($page.params.id || '0'));
 
 	onMount(async () => {
 		if (isNaN(yardSaleId)) {
@@ -65,6 +69,11 @@
 		// For now, we'll assume user ID 1 is the current user
 		// In a real app, this would come from the auth context
 		isOwner = yardSale?.owner_id === currentUserId;
+
+		// Initialize visited state
+		if (yardSale) {
+			isVisited = isYardSaleVisited(yardSale.id);
+		}
 	}
 
 	async function loadComments() {
@@ -162,6 +171,12 @@
 		showDeleteModal = false;
 	}
 
+	function handleToggleVisited() {
+		if (yardSale) {
+			isVisited = toggleYardSaleVisited(yardSale.id);
+		}
+	}
+
 	async function handleConfirmDelete() {
 		if (!yardSale) return;
 
@@ -252,6 +267,30 @@
 									>
 										{yardSale.title}
 									</h1>
+
+									<!-- Visited Indicator -->
+									{#if isVisited}
+										<div class="mb-4">
+											<div
+												class="inline-flex items-center rounded-full bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+											>
+												<svg
+													class="mr-2 h-4 w-4"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														stroke-width="2"
+														d="M5 13l4 4L19 7"
+													/>
+												</svg>
+												<span class="font-medium">Already Visited</span>
+											</div>
+										</div>
+									{/if}
 
 									<!-- Status Banner -->
 									{#if yardSale}
@@ -768,6 +807,43 @@
 										/>
 									</svg>
 									Get Directions
+								</button>
+
+								<!-- Visited Toggle Button -->
+								<button
+									onclick={handleToggleVisited}
+									class="inline-flex min-h-[44px] w-full items-center justify-center rounded-full px-6 py-3 text-sm font-medium transition-all active:scale-95 sm:w-auto {isVisited
+										? 'bg-gray-500 text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700'
+										: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'}"
+									title={isVisited ? 'Mark as not visited' : 'Mark as visited'}
+								>
+									{#if isVisited}
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M5 13l4 4L19 7"
+											/>
+										</svg>
+										Visited
+									{:else}
+										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+											/>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+											/>
+										</svg>
+										Mark Visited
+									{/if}
 								</button>
 							</div>
 						</div>
