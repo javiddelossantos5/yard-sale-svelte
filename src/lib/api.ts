@@ -312,21 +312,6 @@ export interface CurrentUser {
 	bio: string;
 }
 
-// Helper function to decode JWT token (basic implementation)
-function decodeJWT(token: string): any {
-	try {
-		const parts = token.split('.');
-		if (parts.length !== 3) return null;
-
-		const payload = parts[1];
-		const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-		return JSON.parse(decoded);
-	} catch (error) {
-		console.warn('Failed to decode JWT:', error);
-		return null;
-	}
-}
-
 export async function getCurrentUser(): Promise<CurrentUser> {
 	console.log('Fetching current user from /api/me');
 
@@ -342,80 +327,7 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 		console.log('getCurrentUser response data:', userData);
 		return userData;
 	} catch (error) {
-		console.warn('getCurrentUser failed, trying JWT fallback:', error);
-
-		// Fallback: try to get user info from JWT token
-		const token = localStorage.getItem('access_token');
-		if (token) {
-			console.log('JWT token found, decoding...');
-			const decoded = decodeJWT(token);
-			console.log('Decoded JWT payload:', decoded);
-
-			if (decoded) {
-				// Try different possible field names for user ID
-				const userId = decoded.user_id || decoded.id || decoded.sub || decoded.userId;
-				console.log('Extracted user ID from JWT:', userId);
-				console.log('User ID type:', typeof userId);
-
-				// Check if we have a username that needs to be mapped to a numeric ID
-				if (userId === 'javiddelossantos1') {
-					console.log('Detected username javiddelossantos1, mapping to user ID 15');
-					return {
-						id: 15, // Map username to actual database user ID
-						username: 'javiddelossantos1',
-						email: decoded.email || 'user@example.com',
-						full_name: decoded.full_name || decoded.name || 'User',
-						phone_number: decoded.phone_number || '',
-						location: {
-							city: decoded.city || '',
-							state: decoded.state || '',
-							zip: decoded.zip || ''
-						},
-						bio: decoded.bio || ''
-					};
-				} else if (userId) {
-					console.log('Using JWT fallback, user_id:', userId);
-					return {
-						id: userId,
-						username: decoded.username || decoded.preferred_username || 'user',
-						email: decoded.email || 'user@example.com',
-						full_name: decoded.full_name || decoded.name || 'User',
-						phone_number: decoded.phone_number || '',
-						location: {
-							city: decoded.city || '',
-							state: decoded.state || '',
-							zip: decoded.zip || ''
-						},
-						bio: decoded.bio || ''
-					};
-				} else {
-					console.warn('No user ID found in JWT token');
-				}
-			}
-		} else {
-			console.warn('No access token found in localStorage');
-		}
-
-		// Final fallback: return a mock user for development
-		console.warn('Using final fallback user');
-
-		// Check if we can determine user from any other source
-		// For now, let's try to get a reasonable user ID
-		// You mentioned your user ID is 15, so let's use that as a fallback
-		const fallbackUserId = 15; // This should match your actual user ID
-
-		return {
-			id: fallbackUserId,
-			username: 'javiddelossantos1',
-			email: 'dev@example.com',
-			full_name: 'Development User',
-			phone_number: '',
-			location: {
-				city: '',
-				state: '',
-				zip: ''
-			},
-			bio: ''
-		};
+		console.error('getCurrentUser failed:', error);
+		throw error; // Re-throw the error since backend should be working now
 	}
 }
