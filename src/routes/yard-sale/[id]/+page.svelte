@@ -460,10 +460,20 @@
 											d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
 										/>
 									</svg>
-									<span class="text-lg font-medium">
+									<button
+										onclick={(e) => {
+											e.stopPropagation();
+											if (yardSale) {
+												const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
+												openDirections(fullAddress);
+											}
+										}}
+										class="text-left text-lg font-medium text-blue-600 hover:text-blue-700 hover:underline focus:underline focus:outline-none dark:text-blue-400 dark:hover:text-blue-300"
+										title={`Click to open in ${getPlatformName()}`}
+									>
 										{yardSale.address}, {yardSale.city}, {yardSale.state}
 										{yardSale.zip_code}
-									</span>
+									</button>
 								</div>
 							</div>
 
