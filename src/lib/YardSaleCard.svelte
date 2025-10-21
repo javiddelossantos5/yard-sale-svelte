@@ -284,10 +284,10 @@
 
 	<!-- Categories -->
 	<div class="px-5 pb-4">
-		<div class="mb-4 flex flex-wrap gap-2">
+		<div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
 			{#each yardSale.categories as category}
 				<span
-					class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-300"
+					class="inline-flex items-center justify-center rounded-xl border border-gray-200/50 bg-blue-50/60 px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md dark:border-gray-700/50 dark:bg-blue-900/20 dark:text-gray-200 dark:hover:bg-blue-900/30"
 				>
 					{category}
 				</span>
@@ -454,7 +454,7 @@
 							href={yardSale.venmo_url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-blue-100 hover:text-blue-700 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-blue-900 dark:hover:text-blue-300"
+							class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 							title="Pay with Venmo"
 						>
 							<svg class="mr-1.5 h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -466,7 +466,7 @@
 						</a>
 					{:else}
 						<div
-							class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200"
+							class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 dark:bg-gray-600 dark:text-gray-200"
 						>
 							{#if method.toLowerCase().includes('cash')}
 								<svg

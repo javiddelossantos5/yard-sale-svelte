@@ -586,10 +586,10 @@
 							class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Categories</h2>
-							<div class="flex flex-wrap gap-3">
+							<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
 								{#each yardSale.categories as category}
 									<span
-										class="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
+										class="inline-flex items-center justify-center rounded-xl border border-gray-200/50 bg-blue-50/60 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md dark:border-gray-700/50 dark:bg-blue-900/20 dark:text-gray-200 dark:hover:bg-blue-900/30"
 									>
 										{category}
 									</span>
@@ -838,11 +838,11 @@
 											href={yardSale.venmo_url}
 											target="_blank"
 											rel="noopener noreferrer"
-											class="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-blue-50 dark:bg-gray-700 dark:hover:bg-blue-900/20"
+											class="flex items-center space-x-3 rounded-lg bg-gray-200 p-3 transition-colors hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
 											title="Pay with Venmo"
 										>
 											<svg
-												class="h-5 w-5 text-blue-600 dark:text-blue-400"
+												class="h-5 w-5 text-gray-600 dark:text-gray-400"
 												fill="currentColor"
 												viewBox="0 0 24 24"
 											>
@@ -850,15 +850,15 @@
 													d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM12 18c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"
 												/>
 											</svg>
-											<span class="font-medium text-gray-900 dark:text-white">{method}</span>
+											<span class="font-medium text-gray-700 dark:text-gray-200">{method}</span>
 										</a>
 									{:else}
 										<div
-											class="flex items-center space-x-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-700"
+											class="flex items-center space-x-3 rounded-lg bg-gray-200 p-3 dark:bg-gray-600"
 										>
 											{#if method.toLowerCase().includes('cash')}
 												<svg
-													class="h-5 w-5 text-green-600 dark:text-green-400"
+													class="h-5 w-5 text-gray-600 dark:text-gray-400"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -872,7 +872,7 @@
 												</svg>
 											{:else if method.toLowerCase().includes('venmo')}
 												<svg
-													class="h-5 w-5 text-blue-600 dark:text-blue-400"
+													class="h-5 w-5 text-gray-600 dark:text-gray-400"
 													fill="currentColor"
 													viewBox="0 0 24 24"
 												>
@@ -882,7 +882,7 @@
 												</svg>
 											{:else if method.toLowerCase().includes('paypal')}
 												<svg
-													class="h-5 w-5 text-blue-600 dark:text-blue-400"
+													class="h-5 w-5 text-gray-600 dark:text-gray-400"
 													fill="currentColor"
 													viewBox="0 0 24 24"
 												>
@@ -892,7 +892,7 @@
 												</svg>
 											{:else if method.toLowerCase().includes('zelle')}
 												<svg
-													class="h-5 w-5 text-blue-600 dark:text-blue-400"
+													class="h-5 w-5 text-gray-600 dark:text-gray-400"
 													fill="currentColor"
 													viewBox="0 0 24 24"
 												>
@@ -912,7 +912,7 @@
 												</svg>
 											{:else if method.toLowerCase().includes('google')}
 												<svg
-													class="h-5 w-5 text-blue-600 dark:text-blue-400"
+													class="h-5 w-5 text-gray-600 dark:text-gray-400"
 													fill="currentColor"
 													viewBox="0 0 24 24"
 												>
@@ -933,7 +933,7 @@
 													.toLowerCase()
 													.includes('credit') || method.toLowerCase().includes('debit')}
 												<svg
-													class="h-5 w-5 text-blue-600 dark:text-blue-400"
+													class="h-5 w-5 text-gray-600 dark:text-gray-400"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -947,7 +947,7 @@
 												</svg>
 											{:else if method.toLowerCase().includes('check')}
 												<svg
-													class="h-5 w-5 text-green-600 dark:text-green-400"
+													class="h-5 w-5 text-gray-600 dark:text-gray-400"
 													fill="none"
 													stroke="currentColor"
 													viewBox="0 0 24 24"
@@ -974,7 +974,7 @@
 													/>
 												</svg>
 											{/if}
-											<span class="font-medium text-gray-900 dark:text-white">{method}</span>
+											<span class="font-medium text-gray-700 dark:text-gray-200">{method}</span>
 										</div>
 									{/if}
 								{/each}
