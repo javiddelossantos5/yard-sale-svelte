@@ -10,6 +10,10 @@ export const darkMode = writable(false);
 function initializeDarkMode() {
 	if (!browser) return;
 
+	// Set up the subscription first
+	applyDarkMode();
+
+	// Then set the initial value
 	const stored = localStorage.getItem(DARK_MODE_KEY);
 	if (stored !== null) {
 		darkMode.set(stored === 'true');
@@ -17,14 +21,13 @@ function initializeDarkMode() {
 		// Check system preference
 		darkMode.set(window.matchMedia('(prefers-color-scheme: dark)').matches);
 	}
-
-	applyDarkMode();
 }
 
 // Apply dark mode to the document
 function applyDarkMode() {
 	if (!browser) return;
 
+	// Subscribe to dark mode changes and apply them
 	darkMode.subscribe((isDark) => {
 		if (isDark) {
 			document.documentElement.classList.add('dark');
