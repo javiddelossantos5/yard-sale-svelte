@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getYardSaleMessages, sendMessage, markMessageAsRead, type Message } from './api';
+	import {
+		getYardSaleMessages,
+		sendMessage,
+		markMessageAsRead,
+		getConversationMessages,
+		sendConversationMessage,
+		getOrCreateConversation,
+		type Message
+	} from './api';
 
 	let {
 		isOpen,
@@ -28,6 +36,7 @@
 	let sending = $state(false);
 	let error = $state<string | null>(null);
 	let messagesContainer = $state<HTMLDivElement>();
+	let conversationId = $state<number | null>(null);
 
 	// Determine if current user is the yard sale owner
 	let isOwner = $derived(currentUserId === otherUserId);
@@ -61,14 +70,26 @@
 		loading = true;
 		error = null;
 		try {
-			messages = await getYardSaleMessages(yardSaleId);
-			// Mark unread messages as read
-			const unreadMessages = messages.filter(
-				(msg) => !msg.is_read && msg.sender_id !== currentUserId
-			);
-			for (const message of unreadMessages) {
-				await markMessageAsRead(message.id);
+			// Handle profile messaging (yardSaleId = 0)
+			if (yardSaleId === 0) {
+				// Get or create conversation between current user and other user
+				const conversation = await getOrCreateConversation(otherUserId);
+				conversationId = conversation.id;
+
+				// Load conversation messages
+				messages = await getConversationMessages(conversationId);
+			} else {
+				// Handle yard sale messaging
+				messages = await getYardSaleMessages(yardSaleId);
+				// Mark unread messages as read
+				const unreadMessages = messages.filter(
+					(msg) => !msg.is_read && msg.sender_id !== currentUserId
+				);
+				for (const message of unreadMessages) {
+					await markMessageAsRead(message.id);
+				}
 			}
+
 			// Scroll to bottom
 			setTimeout(() => {
 				if (messagesContainer) {
@@ -85,33 +106,48 @@
 	async function handleSendMessage() {
 		if (!newMessage.trim() || sending) return;
 
+		// Handle profile messaging (yardSaleId = 0) - will be handled in the try block
+
 		sending = true;
 		try {
-			let recipientId: number;
+			let message: Message;
 
-			if (isOwner) {
-				// If the current user is the owner, they can reply to customers
-				// Try to find the most recent message from someone other than the owner to reply to
-				const lastMessageFromCustomer = messages
-					.filter((msg) => msg.sender_id !== currentUserId)
-					.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-
-				if (lastMessageFromCustomer) {
-					// Reply to the most recent customer
-					recipientId = lastMessageFromCustomer.sender_id;
-				} else {
-					// If no messages from customers yet, owner cannot send a message
-					// They need to wait for a customer to message them first
-					error =
-						'No customers have messaged you yet. You can reply once someone sends you a message.';
+			// Handle profile messaging (yardSaleId = 0)
+			if (yardSaleId === 0) {
+				if (!conversationId) {
+					error = 'Conversation not found. Please try again.';
 					return;
 				}
+				message = await sendConversationMessage(conversationId, newMessage.trim());
 			} else {
-				// If the current user is not the owner, they message the owner
-				recipientId = otherUserId;
+				// Handle yard sale messaging
+				let recipientId: number;
+
+				if (isOwner) {
+					// If the current user is the owner, they can reply to customers
+					// Try to find the most recent message from someone other than the owner to reply to
+					const lastMessageFromCustomer = messages
+						.filter((msg) => msg.sender_id !== currentUserId)
+						.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+					if (lastMessageFromCustomer) {
+						// Reply to the most recent customer
+						recipientId = lastMessageFromCustomer.sender_id;
+					} else {
+						// If no messages from customers yet, owner cannot send a message
+						// They need to wait for a customer to message them first
+						error =
+							'No customers have messaged you yet. You can reply once someone sends you a message.';
+						return;
+					}
+				} else {
+					// If the current user is not the owner, they message the owner
+					recipientId = otherUserId;
+				}
+
+				message = await sendMessage(yardSaleId, recipientId, newMessage.trim());
 			}
 
-			const message = await sendMessage(yardSaleId, recipientId, newMessage.trim());
 			messages = [...messages, message];
 			newMessage = '';
 			// Scroll to bottom

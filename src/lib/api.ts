@@ -180,6 +180,81 @@ export async function getUnreadCount(): Promise<{ count: number }> {
 	return response.json();
 }
 
+// Conversation-based messaging for direct user-to-user communication
+export async function getConversationMessages(conversationId: number): Promise<Message[]> {
+	const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch conversation messages');
+	}
+	return response.json();
+}
+
+export async function sendConversationMessage(
+	conversationId: number,
+	content: string
+): Promise<Message> {
+	const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({
+			content: content.trim()
+		})
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to send conversation message');
+	}
+	return response.json();
+}
+
+// Get or create a conversation between two users
+export async function getOrCreateConversation(otherUserId: number): Promise<{ id: number }> {
+	const response = await fetch('/api/conversations', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({
+			other_user_id: otherUserId
+		})
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to get or create conversation');
+	}
+	return response.json();
+}
+
 export interface LoginRequest {
 	username: string;
 	password: string;
