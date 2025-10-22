@@ -32,7 +32,14 @@ export function setupAuthFetch(): void {
 				if (token) {
 					const headers = new Headers(init?.headers || {});
 					if (!headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`);
-					return originalFetch(input, { ...init, headers });
+					const response = await originalFetch(input, { ...init, headers });
+
+					// Check for token expiration (401 Unauthorized or 403 Forbidden)
+					if (isTokenExpired(response)) {
+						handleTokenExpiration();
+					}
+
+					return response;
 				}
 			}
 		} catch {
@@ -77,6 +84,22 @@ export function logout(): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.removeItem(ACCESS_TOKEN_KEY);
 	}
+}
+
+export function handleTokenExpiration(): void {
+	console.log('Token expired, clearing session and redirecting to login...');
+
+	// Clear the expired token
+	logout();
+
+	// Redirect to login page
+	if (typeof window !== 'undefined') {
+		window.location.href = '/login';
+	}
+}
+
+export function isTokenExpired(response: Response): boolean {
+	return response.status === 401 || response.status === 403;
 }
 
 export async function ensureDevLogin(username: string, password: string): Promise<void> {

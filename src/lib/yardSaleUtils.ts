@@ -181,18 +181,8 @@ export function isYardSaleActiveOnDate(yardSale: YardSale, targetDate: string): 
 	const startDate = new Date(startDateStr + 'T00:00:00');
 	const endDate = new Date(endDateStr + 'T00:00:00');
 
-	// Debug logging
-	console.log(`Date filter debug for "${yardSale.title}":`);
-	console.log(`  Target date: ${targetDate} -> ${target}`);
-	console.log(`  Start date: ${startDateStr} -> ${startDate}`);
-	console.log(`  End date: ${endDateStr} -> ${endDate}`);
-	console.log(
-		`  Target year: ${target.getFullYear()}, Start year: ${startDate.getFullYear()}, End year: ${endDate.getFullYear()}`
-	);
-
 	// Check if the target date is between start and end date (inclusive)
 	const isWithinDateRange = target >= startDate && target <= endDate;
-	console.log(`  Is within date range: ${isWithinDateRange}`);
 
 	// If it's not within the date range, it's not active
 	if (!isWithinDateRange) {
@@ -201,29 +191,22 @@ export function isYardSaleActiveOnDate(yardSale: YardSale, targetDate: string): 
 
 	// If it's within the date range, check the status
 	const status = getYardSaleStatus(yardSale);
-	console.log(`  Status: ${status}`);
 
 	// Show if it's active, on_break, or upcoming (but only if it's the start date or later)
 	if (status === 'active' || status === 'on_break') {
-		console.log(`  Result: true (active/on_break)`);
 		return true;
 	}
 
 	// For upcoming events, only show if the target date is the start date or later
 	if (status === 'upcoming') {
-		const result = target >= startDate;
-		console.log(`  Result: ${result} (upcoming)`);
-		return result;
+		return target >= startDate;
 	}
 
 	// For closed/expired events, only show if the target date is before the end date
 	if (status === 'closed' || status === 'expired') {
-		const result = target <= endDate;
-		console.log(`  Result: ${result} (closed/expired)`);
-		return result;
+		return target <= endDate;
 	}
 
-	console.log(`  Result: false (default)`);
 	return false;
 }
 

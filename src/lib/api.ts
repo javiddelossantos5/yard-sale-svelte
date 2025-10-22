@@ -140,6 +140,14 @@ export async function sendMessage(
 			content: content.trim()
 		})
 	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		throw new Error('Failed to send message');
 	}
@@ -266,6 +274,14 @@ export async function createYardSale(yardSaleData: YardSaleCreate): Promise<Yard
 		},
 		body: JSON.stringify(yardSaleData)
 	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
 		throw new Error(errorData.detail || 'Failed to create yard sale');
@@ -281,6 +297,14 @@ export async function updateYardSale(id: number, yardSaleData: YardSaleCreate): 
 		},
 		body: JSON.stringify(yardSaleData)
 	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
 		throw new Error(errorData.detail || 'Failed to update yard sale');
@@ -292,6 +316,14 @@ export async function deleteYardSale(id: number): Promise<void> {
 	const response = await fetch(`/api/yard-sales/${id}`, {
 		method: 'DELETE'
 	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
 		throw new Error(errorData.detail || 'Failed to delete yard sale');
@@ -318,6 +350,15 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 	try {
 		const response = await fetch('/api/me');
 		console.log('getCurrentUser response status:', response.status);
+
+		// Handle token expiration
+		if (response.status === 401 || response.status === 403) {
+			console.log('Token expired in getCurrentUser, redirecting to login...');
+			// Import and use the centralized token expiration handler
+			const { handleTokenExpiration } = await import('./auth');
+			handleTokenExpiration();
+			throw new Error('Token expired');
+		}
 
 		if (!response.ok) {
 			throw new Error(`API returned ${response.status}`);
