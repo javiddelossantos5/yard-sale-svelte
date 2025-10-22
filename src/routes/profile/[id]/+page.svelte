@@ -5,39 +5,26 @@
 	import {
 		getUserProfile,
 		getUserRatings,
-		getUserVerifications,
 		getCurrentUser,
 		createRating,
 		createReport,
-		requestVerification,
 		type CurrentUser,
 		type Rating,
-		type VerificationBadge,
 		type Report
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import {
-		faEnvelope,
-		faPhone,
-		faIdCard,
-		faMapMarkerAlt,
-		faQuestionCircle
-	} from '@fortawesome/free-solid-svg-icons';
 	import RatingModal from '$lib/RatingModal.svelte';
 	import ReportModal from '$lib/ReportModal.svelte';
-	import VerificationModal from '$lib/VerificationModal.svelte';
 
 	let profileUser = $state<CurrentUser | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
 	let ratings = $state<Rating[]>([]);
-	let verifications = $state<VerificationBadge[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
 	// Modal states
 	let showRatingModal = $state(false);
 	let showReportModal = $state(false);
-	let showVerificationModal = $state(false);
 
 	let userId = $derived(parseInt($page.params.id || '0'));
 	let isOwnProfile = $derived(currentUser?.id === userId);
@@ -55,7 +42,6 @@
 			await loadCurrentUser();
 			await loadProfileUser();
 			await loadRatings();
-			await loadVerifications();
 		} catch (err) {
 			console.error('Error during profile loading:', err);
 		} finally {
@@ -88,15 +74,6 @@
 		} catch (error) {
 			console.error('Failed to load ratings:', error);
 			ratings = []; // Set empty array as fallback
-		}
-	}
-
-	async function loadVerifications() {
-		try {
-			verifications = await getUserVerifications(userId);
-		} catch (error) {
-			console.error('Failed to load verifications:', error);
-			verifications = []; // Set empty array as fallback
 		}
 	}
 
@@ -141,12 +118,6 @@
 		}
 	}
 
-	function handleRequestVerification() {
-		if (isOwnProfile) {
-			showVerificationModal = true;
-		}
-	}
-
 	async function handleRatingSuccess() {
 		const debugInfo = {
 			timestamp: new Date().toISOString(),
@@ -185,58 +156,12 @@
 		showReportModal = false;
 	}
 
-	async function handleVerificationSuccess() {
-		await loadVerifications();
-		showVerificationModal = false;
-	}
-
 	function formatDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-US', {
 			year: 'numeric',
 			month: 'long',
 			day: 'numeric'
 		});
-	}
-
-	function getVerificationIcon(type: string) {
-		switch (type) {
-			case 'email':
-				return faEnvelope;
-			case 'phone':
-				return faPhone;
-			case 'identity':
-				return faIdCard;
-			case 'address':
-				return faMapMarkerAlt;
-			default:
-				return faQuestionCircle;
-		}
-	}
-
-	function getVerificationColor(status: string): string {
-		switch (status) {
-			case 'verified':
-				return 'text-green-600 dark:text-green-400';
-			case 'pending':
-				return 'text-yellow-600 dark:text-yellow-400';
-			case 'rejected':
-				return 'text-red-600 dark:text-red-400';
-			default:
-				return 'text-gray-600 dark:text-gray-400';
-		}
-	}
-
-	function getVerificationBgColor(status: string): string {
-		switch (status) {
-			case 'verified':
-				return 'bg-green-50 dark:bg-green-900/20';
-			case 'pending':
-				return 'bg-yellow-50 dark:bg-yellow-900/20';
-			case 'rejected':
-				return 'bg-red-50 dark:bg-red-900/20';
-			default:
-				return 'bg-gray-50 dark:bg-gray-900/20';
-		}
 	}
 </script>
 
@@ -321,20 +246,6 @@
 											</span>
 										</div>
 									{/if}
-
-									{#if profileUser.is_verified}
-										<div
-											class="flex items-center rounded-full bg-blue-50 px-3 py-1 dark:bg-blue-900/20"
-										>
-											<FontAwesomeIcon
-												icon="check-circle"
-												class="h-4 w-4 text-blue-600 dark:text-blue-400"
-											/>
-											<span class="ml-1 text-sm font-medium text-blue-600 dark:text-blue-400"
-												>Verified</span
-											>
-										</div>
-									{/if}
 								</div>
 
 								<!-- Location -->
@@ -368,16 +279,6 @@
 									Report
 								</button>
 							{/if}
-
-							{#if isOwnProfile}
-								<button
-									onclick={handleRequestVerification}
-									class="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-								>
-									<FontAwesomeIcon icon="shield-alt" class="mr-2 h-4 w-4" />
-									Get Verified
-								</button>
-							{/if}
 						</div>
 					</div>
 
@@ -388,46 +289,6 @@
 						</div>
 					{/if}
 				</div>
-
-				<!-- Verification Badges -->
-				{#if verifications.length > 0}
-					<div
-						class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
-					>
-						<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-							Verification Badges
-						</h2>
-						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-							{#each verifications as verification}
-								<div
-									class="flex items-center rounded-xl p-3 {getVerificationBgColor(
-										verification.status
-									)}"
-								>
-									<FontAwesomeIcon
-										icon={getVerificationIcon(verification.verification_type)}
-										class="h-5 w-5 {getVerificationColor(verification.status)}"
-									/>
-									<div class="ml-3 flex-1">
-										<div class="flex items-center justify-between">
-											<span class="text-sm font-medium text-gray-900 capitalize dark:text-white">
-												{verification.verification_type} Verified
-											</span>
-											<span class="text-xs font-medium {getVerificationColor(verification.status)}">
-												{verification.status}
-											</span>
-										</div>
-										{#if verification.verified_at}
-											<p class="text-xs text-gray-600 dark:text-gray-400">
-												Verified {formatDate(verification.verified_at)}
-											</p>
-										{/if}
-									</div>
-								</div>
-							{/each}
-						</div>
-					</div>
-				{/if}
 
 				<!-- Reviews -->
 				{#if ratings.length > 0}
@@ -500,13 +361,5 @@
 		reportedUserName={profileUser.full_name || 'Unknown User'}
 		onClose={() => (showReportModal = false)}
 		onSuccess={handleReportSuccess}
-	/>
-{/if}
-
-{#if showVerificationModal}
-	<VerificationModal
-		isOpen={showVerificationModal}
-		onClose={() => (showVerificationModal = false)}
-		onSuccess={handleVerificationSuccess}
 	/>
 {/if}
