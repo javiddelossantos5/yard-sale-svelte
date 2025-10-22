@@ -196,7 +196,7 @@
 			<div
 				class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700"
 			>
-				<img src="/icon.png" alt="Yard Sale Finder" class="h-12 w-12 rounded-full object-cover" />
+				<img src="/icon2.png" alt="Yard Sale Finder" class="h-12 w-12 rounded-full object-cover" />
 			</div>
 
 			<!-- App Name -->
