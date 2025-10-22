@@ -296,6 +296,7 @@
 
 		<!-- Price Range & Comments -->
 		<div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+			{#if yardSale.price_range}
 			<div class="flex items-center font-medium text-green-600 dark:text-green-400">
 				<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 					<path
@@ -307,6 +308,8 @@
 				</svg>
 				<span class="text-sm">{yardSale.price_range}</span>
 			</div>
+			{/if}
+			{#if yardSale.comment_count}
 
 			<div class="flex items-center text-gray-500 dark:text-gray-400">
 				<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,6 +322,7 @@
 				</svg>
 				<span class="text-sm">{yardSale.comment_count} comments</span>
 			</div>
+			{/if}
 		</div>
 	</div>
 
