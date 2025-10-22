@@ -350,12 +350,9 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 		const response = await fetch('/api/me');
 		console.log('getCurrentUser response status:', response.status);
 
-		// Handle token expiration
+		// Handle token expiration - don't redirect here, let calling code handle it
 		if (response.status === 401 || response.status === 403) {
-			console.log('Token expired in getCurrentUser, redirecting to login...');
-			// Import and use the centralized token expiration handler
-			const { handleTokenExpiration } = await import('./auth');
-			handleTokenExpiration();
+			console.log('Token expired in getCurrentUser');
 			throw new Error('Token expired');
 		}
 

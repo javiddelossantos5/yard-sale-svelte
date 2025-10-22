@@ -72,6 +72,17 @@
 
 	let yardSaleId = $derived(parseInt($page.params.id || '0'));
 
+	// Helper function to handle authentication redirects
+	async function requireAuth(action: () => Promise<void> | void) {
+		if (!currentUser) {
+			console.log('User not authenticated, redirecting to login...');
+			const { handleTokenExpiration } = await import('$lib/auth');
+			handleTokenExpiration();
+			return;
+		}
+		await action();
+	}
+
 	onMount(async () => {
 		if (isNaN(yardSaleId)) {
 			error = 'Invalid yard sale ID';
@@ -98,9 +109,16 @@
 		} catch (error) {
 			console.warn('Failed to load current user:', error);
 			console.warn('Error details:', error);
-			// User might not be logged in, that's okay
+			// User might not be logged in, that's okay for viewing
 			// Set currentUser to null to indicate no user is logged in
 			currentUser = null;
+
+			// Check if it's a token expiration error and handle it gracefully
+			if (error instanceof Error && error.message === 'Token expired') {
+				console.log('Token expired, user will need to log in for authenticated actions');
+				// Don't redirect here - let the user view the yard sale
+				// They'll be redirected when they try to perform authenticated actions
+			}
 		}
 	}
 
@@ -183,6 +201,11 @@
 		const startDate = formatDate(yardSale.start_date);
 		if (yardSale.end_date) {
 			const endDate = formatDate(yardSale.end_date);
+			// Check if it's the same day
+			if (yardSale.start_date === yardSale.end_date) {
+				return startDate;
+			}
+			// For multi-day events, use a more compact format
 			return `${startDate} - ${endDate}`;
 		}
 		return startDate;
@@ -272,9 +295,11 @@
 	}
 
 	function handleSendMessage() {
-		if (yardSale && yardSale.allow_messages) {
-			showMessageModal = true;
-		}
+		requireAuth(() => {
+			if (yardSale && yardSale.allow_messages) {
+				showMessageModal = true;
+			}
+		});
 	}
 
 	function handleCloseMessageModal() {
@@ -282,7 +307,9 @@
 	}
 
 	function handleEditYardSale() {
-		showEditModal = true;
+		requireAuth(() => {
+			showEditModal = true;
+		});
 	}
 
 	function handleCloseEditModal() {
@@ -295,7 +322,9 @@
 	}
 
 	function handleDeleteYardSale() {
-		showDeleteModal = true;
+		requireAuth(() => {
+			showDeleteModal = true;
+		});
 	}
 
 	function handleCloseDeleteModal() {
@@ -583,17 +612,17 @@
 						<div
 							class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
-							<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+							<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
 								<button
 									onclick={addToCalendar}
-									class="flex w-full items-start space-x-4 rounded-xl p-3 transition-all hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
+									class="group flex w-full items-start space-x-3 rounded-xl p-4 transition-all hover:bg-gray-50 active:bg-gray-100 sm:space-x-4 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
 									title="Add to Calendar"
 								>
 									<div
-										class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20"
+										class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 transition-colors group-hover:bg-blue-100 sm:h-12 sm:w-12 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/30"
 									>
 										<svg
-											class="h-6 w-6 text-blue-600 dark:text-blue-400"
+											class="h-5 w-5 text-blue-600 sm:h-6 sm:w-6 dark:text-blue-400"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -608,9 +637,11 @@
 									</div>
 									<div class="flex-1 text-left">
 										<div class="flex items-center gap-2">
-											<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Date</h3>
+											<h3 class="text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
+												Date
+											</h3>
 											<svg
-												class="h-4 w-4 text-gray-400"
+												class="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600 sm:h-4 sm:w-4 dark:group-hover:text-gray-300"
 												fill="none"
 												stroke="currentColor"
 												viewBox="0 0 24 24"
@@ -623,8 +654,10 @@
 												/>
 											</svg>
 										</div>
-										<p class="text-gray-600 dark:text-gray-300">{getDateRange()}</p>
-										<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+										<p class="mt-1 text-sm text-gray-600 sm:text-base dark:text-gray-300">
+											{getDateRange()}
+										</p>
+										<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 											Tap to add to calendar
 										</p>
 									</div>
@@ -632,14 +665,14 @@
 
 								<button
 									onclick={addToCalendar}
-									class="flex w-full items-start space-x-4 rounded-xl p-3 transition-all hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
+									class="group flex w-full items-start space-x-3 rounded-xl p-4 transition-all hover:bg-gray-50 active:bg-gray-100 sm:space-x-4 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
 									title="Add to Calendar"
 								>
 									<div
-										class="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20"
+										class="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 transition-colors group-hover:bg-green-100 sm:h-12 sm:w-12 dark:bg-green-900/20 dark:group-hover:bg-green-900/30"
 									>
 										<svg
-											class="h-6 w-6 text-green-600 dark:text-green-400"
+											class="h-5 w-5 text-green-600 sm:h-6 sm:w-6 dark:text-green-400"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -654,9 +687,11 @@
 									</div>
 									<div class="flex-1 text-left">
 										<div class="flex items-center gap-2">
-											<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Time</h3>
+											<h3 class="text-base font-semibold text-gray-900 sm:text-lg dark:text-white">
+												Time
+											</h3>
 											<svg
-												class="h-4 w-4 text-gray-400"
+												class="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600 sm:h-4 sm:w-4 dark:group-hover:text-gray-300"
 												fill="none"
 												stroke="currentColor"
 												viewBox="0 0 24 24"
@@ -669,8 +704,10 @@
 												/>
 											</svg>
 										</div>
-										<p class="text-gray-600 dark:text-gray-300">{getTimeRange()}</p>
-										<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+										<p class="mt-1 text-sm text-gray-600 sm:text-base dark:text-gray-300">
+											{getTimeRange()}
+										</p>
+										<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 											Tap to add to calendar
 										</p>
 									</div>
@@ -746,35 +783,41 @@
 					<!-- Right Column - Sidebar -->
 					<div class="space-y-6">
 						<!-- Price Range Card -->
-						<div
-							class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
-						>
-							<div class="flex items-center space-x-3">
-								<div
-									class="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20"
-								>
-									<svg
-										class="h-5 w-5 text-green-600 dark:text-green-400"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-										/>
-									</svg>
-								</div>
-								<div>
-									<h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Price Range</h3>
-									<p class="text-lg font-semibold text-gray-900 dark:text-white">
-										{yardSale.price_range}
-									</p>
+						{#if yardSale.price_range}
+							<div
+								class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								<div class="flex items-center space-x-3">
+									{#if yardSale.price_range && yardSale.price_range.trim() !== ''}
+										<div
+											class="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20"
+										>
+											<svg
+												class="h-5 w-5 text-green-600 dark:text-green-400"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+												/>
+											</svg>
+										</div>
+									{/if}
+									<div>
+										<h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">
+											Price Range
+										</h3>
+										<p class="text-lg font-semibold text-gray-900 dark:text-white">
+											{yardSale.price_range || 'Not specified'}
+										</p>
+									</div>
 								</div>
 							</div>
-						</div>
+						{/if}
 
 						<!-- Action Buttons Card -->
 						<div
