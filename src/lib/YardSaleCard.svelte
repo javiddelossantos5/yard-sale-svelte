@@ -167,7 +167,7 @@
 				</div>
 			{:else if status === 'active'}
 				<div
-					class="inline-flex items-center rounded-full bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 dark:bg-green-900/10 dark:text-blue-300"
+					class="inline-flex items-center rounded-full bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 dark:bg-green-900/20 dark:text-green-300"
 				>
 					<FontAwesomeIcon icon="check-circle" class="mr-1.5 h-3.5 w-3.5" />
 					<span class="font-medium">Active Now</span>
