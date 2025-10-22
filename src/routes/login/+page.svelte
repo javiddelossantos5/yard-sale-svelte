@@ -15,7 +15,6 @@
 		email: '',
 		password: '',
 		full_name: '',
-		phone_number: '',
 		location: {
 			city: '',
 			state: '',
@@ -123,7 +122,6 @@
 			!registerData.email.trim() ||
 			!registerData.password.trim() ||
 			!registerData.full_name.trim() ||
-			!registerData.phone_number.trim() ||
 			!registerData.location.city.trim() ||
 			!registerData.location.state.trim() ||
 			!registerData.location.zip.trim()
@@ -171,7 +169,6 @@
 			email: '',
 			password: '',
 			full_name: '',
-			phone_number: '',
 			location: {
 				city: '',
 				state: '',
@@ -439,29 +436,6 @@
 								bind:value={registerData.full_name}
 								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your full name"
-								disabled={loading}
-							/>
-						</div>
-					</div>
-
-					<!-- Phone Number Field -->
-					<div>
-						<label
-							for="reg-phone"
-							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-						>
-							Phone Number *
-						</label>
-						<div>
-							<input
-								id="reg-phone"
-								name="phone_number"
-								type="tel"
-								autocomplete="tel"
-								required
-								bind:value={registerData.phone_number}
-								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-								placeholder="Enter your phone number"
 								disabled={loading}
 							/>
 						</div>

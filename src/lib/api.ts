@@ -210,7 +210,6 @@ export interface RegisterRequest {
 	email: string;
 	password: string;
 	full_name: string;
-	phone_number: string;
 	location: {
 		city: string;
 		state: string;
@@ -335,7 +334,7 @@ export interface CurrentUser {
 	username: string;
 	email: string;
 	full_name: string;
-	phone_number: string;
+	phone_number?: string;
 	location: {
 		city: string;
 		state: string;
