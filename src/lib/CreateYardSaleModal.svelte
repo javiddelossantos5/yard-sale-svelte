@@ -222,30 +222,30 @@
 		>
 			<!-- Background overlay -->
 			<div
-				class="bg-opacity-75 dark:bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity dark:bg-gray-900"
+				class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
 				onclick={onClose}
 				aria-hidden="true"
 			></div>
 
 			<!-- Modal panel -->
 			<div
-				class="relative inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle dark:bg-gray-800"
+				class="relative inline-block transform overflow-hidden rounded-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
 			>
 				<!-- Header -->
 				<div
-					class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800"
+					class="border-b border-gray-200/50 bg-white/80 px-6 py-5 dark:border-gray-700/50 dark:bg-gray-800/80"
 				>
 					<div class="flex items-center justify-between">
-						<h3 class="text-lg font-medium text-gray-900 dark:text-white" id="modal-title">
+						<h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
 							Post New Yard Sale
 						</h3>
 						<button
 							type="button"
-							class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:text-gray-500 dark:hover:text-gray-400"
+							class="rounded-full bg-gray-100 p-2 text-gray-500 transition-all duration-200 hover:bg-gray-200 hover:text-gray-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-gray-200"
 							onclick={onClose}
 						>
 							<span class="sr-only">Close</span>
-							<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path
 									stroke-linecap="round"
 									stroke-linejoin="round"
@@ -259,16 +259,16 @@
 
 				<!-- Form -->
 				<form onsubmit={handleSubmit} class="max-h-[70vh] overflow-y-auto">
-					<div class="bg-white px-6 py-4 dark:bg-gray-800">
+					<div class="bg-white/80 px-6 py-6 dark:bg-gray-800/80">
 						<!-- Error Message -->
 						{#if error}
 							<div
-								class="mb-4 rounded-md bg-red-50 p-4 dark:border dark:border-red-800 dark:bg-red-900/20"
+								class="mb-6 rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-900/20 dark:ring-red-800"
 							>
 								<div class="flex">
 									<div class="shrink-0">
 										<svg
-											class="h-5 w-5 text-red-400"
+											class="h-5 w-5 text-red-500"
 											fill="none"
 											stroke="currentColor"
 											viewBox="0 0 24 24"
@@ -282,8 +282,8 @@
 										</svg>
 									</div>
 									<div class="ml-3">
-										<h3 class="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
-										<div class="mt-2 text-sm text-red-700 dark:text-red-300">
+										<h3 class="text-sm font-semibold text-red-800 dark:text-red-200">Error</h3>
+										<div class="mt-1 text-sm text-red-700 dark:text-red-300">
 											<p>{error}</p>
 										</div>
 									</div>
@@ -291,227 +291,257 @@
 							</div>
 						{/if}
 
-						<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						<div class="space-y-6">
 							<!-- Title -->
-							<div class="sm:col-span-2 lg:col-span-3">
+							<div>
 								<label
 									for="title"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title *</label
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 								>
+									Title <span class="text-red-500">*</span>
+								</label>
 								<input
 									type="text"
 									id="title"
 									bind:value={formData.title}
 									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									placeholder="e.g., Spring Cleaning Yard Sale"
 								/>
 							</div>
 
 							<!-- Description -->
-							<div class="sm:col-span-2 lg:col-span-3">
+							<div>
 								<label
 									for="description"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Description</label
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 								>
+									Description <span class="text-xs text-gray-400">(Optional)</span>
+								</label>
 								<textarea
 									id="description"
 									bind:value={formData.description}
 									rows="4"
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									placeholder="Describe what you're selling..."
 								></textarea>
 							</div>
 
-							<!-- Start Date -->
-							<div>
-								<label
-									for="start_date"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Start Date *</label
-								>
-								<input
-									type="date"
-									id="start_date"
-									bind:value={formData.start_date}
-									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-								/>
-							</div>
+							<!-- Date and Time Section -->
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<!-- Start Date -->
+								<div>
+									<label
+										for="start_date"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										Start Date <span class="text-red-500">*</span>
+									</label>
+									<input
+										type="date"
+										id="start_date"
+										bind:value={formData.start_date}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
 
-							<!-- End Date -->
-							<div>
-								<label
-									for="end_date"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label
-								>
-								<input
-									type="date"
-									id="end_date"
-									bind:value={formData.end_date}
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-								/>
-							</div>
+								<!-- End Date -->
+								<div>
+									<label
+										for="end_date"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										End Date <span class="text-xs text-gray-400">(Optional)</span>
+									</label>
+									<input
+										type="date"
+										id="end_date"
+										bind:value={formData.end_date}
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
 
-							<!-- Start Time -->
-							<div>
-								<label
-									for="start_time"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Start Time *</label
-								>
-								<input
-									type="time"
-									id="start_time"
-									bind:value={formData.start_time}
-									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-								/>
-							</div>
+								<!-- Start Time -->
+								<div>
+									<label
+										for="start_time"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										Start Time <span class="text-red-500">*</span>
+									</label>
+									<input
+										type="time"
+										id="start_time"
+										bind:value={formData.start_time}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
 
-							<!-- End Time -->
-							<div>
-								<label
-									for="end_time"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>End Time *</label
-								>
-								<input
-									type="time"
-									id="end_time"
-									bind:value={formData.end_time}
-									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-								/>
+								<!-- End Time -->
+								<div>
+									<label
+										for="end_time"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										End Time <span class="text-red-500">*</span>
+									</label>
+									<input
+										type="time"
+										id="end_time"
+										bind:value={formData.end_time}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
 							</div>
 
 							<!-- Address -->
-							<div class="sm:col-span-2 lg:col-span-3">
+							<div>
 								<label
 									for="address"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Address *</label
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 								>
+									Address <span class="text-red-500">*</span>
+								</label>
 								<input
 									type="text"
 									id="address"
 									bind:value={formData.address}
 									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									placeholder="123 Main Street"
 								/>
 							</div>
 
-							<!-- City -->
-							<div>
-								<label for="city" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>City *</label
-								>
-								<input
-									type="text"
-									id="city"
-									bind:value={formData.city}
-									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-									placeholder="Anytown"
-								/>
+							<!-- Location Section -->
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+								<!-- City -->
+								<div>
+									<label
+										for="city"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										City <span class="text-red-500">*</span>
+									</label>
+									<input
+										type="text"
+										id="city"
+										bind:value={formData.city}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										placeholder="Anytown"
+									/>
+								</div>
+
+								<!-- State -->
+								<div>
+									<label
+										for="state"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										State <span class="text-red-500">*</span>
+									</label>
+									<select
+										id="state"
+										bind:value={formData.state}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									>
+										<option value="">Select State</option>
+										{#each states as state}
+											<option value={state}>{state}</option>
+										{/each}
+									</select>
+								</div>
+
+								<!-- ZIP Code -->
+								<div>
+									<label
+										for="zip_code"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										ZIP Code <span class="text-red-500">*</span>
+									</label>
+									<input
+										type="text"
+										id="zip_code"
+										bind:value={formData.zip_code}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										placeholder="12345"
+									/>
+								</div>
 							</div>
 
-							<!-- State -->
-							<div>
-								<label
-									for="state"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300">State *</label
-								>
-								<select
-									id="state"
-									bind:value={formData.state}
-									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-								>
-									<option value="">Select State</option>
-									{#each states as state}
-										<option value={state}>{state}</option>
-									{/each}
-								</select>
-							</div>
+							<!-- Contact Information Section -->
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+								<!-- Contact Name -->
+								<div>
+									<label
+										for="contact_name"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										Contact Name <span class="text-red-500">*</span>
+									</label>
+									<input
+										type="text"
+										id="contact_name"
+										bind:value={formData.contact_name}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										placeholder="Your Name"
+									/>
+								</div>
 
-							<!-- ZIP Code -->
-							<div>
-								<label
-									for="zip_code"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>ZIP Code *</label
-								>
-								<input
-									type="text"
-									id="zip_code"
-									bind:value={formData.zip_code}
-									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-									placeholder="12345"
-								/>
-							</div>
+								<!-- Contact Phone -->
+								<div>
+									<label
+										for="contact_phone"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										Phone <span class="text-xs text-gray-400">(Optional)</span>
+									</label>
+									<input
+										type="tel"
+										id="contact_phone"
+										bind:value={formData.contact_phone}
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										placeholder="(555) 123-4567"
+									/>
+								</div>
 
-							<!-- Contact Name -->
-							<div>
-								<label
-									for="contact_name"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Contact Name *</label
-								>
-								<input
-									type="text"
-									id="contact_name"
-									bind:value={formData.contact_name}
-									required
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-									placeholder="Your Name"
-								/>
-							</div>
-
-							<!-- Contact Phone -->
-							<div>
-								<label
-									for="contact_phone"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label
-								>
-								<input
-									type="tel"
-									id="contact_phone"
-									bind:value={formData.contact_phone}
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-									placeholder="(555) 123-4567"
-								/>
-							</div>
-
-							<!-- Contact Email -->
-							<div>
-								<label
-									for="contact_email"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label
-								>
-								<input
-									type="email"
-									id="contact_email"
-									bind:value={formData.contact_email}
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-									placeholder="your@email.com"
-								/>
+								<!-- Contact Email -->
+								<div>
+									<label
+										for="contact_email"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										Email <span class="text-xs text-gray-400">(Optional)</span>
+									</label>
+									<input
+										type="email"
+										id="contact_email"
+										bind:value={formData.contact_email}
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										placeholder="your@email.com"
+									/>
+								</div>
 							</div>
 
 							<!-- Price Range -->
 							<div>
 								<label
 									for="price_range"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Price Range</label
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 								>
+									Price Range <span class="text-xs text-gray-400">(Optional)</span>
+								</label>
 								<select
 									id="price_range"
 									bind:value={formData.price_range}
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								>
 									<option value="">Select Price Range</option>
 									{#each priceRanges as range}
@@ -521,45 +551,57 @@
 							</div>
 
 							<!-- Categories -->
-							<div class="sm:col-span-2 lg:col-span-3">
+							<div>
 								<label
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									for="categories">Categories</label
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									for="categories"
 								>
-								<div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+									Categories <span class="text-xs text-gray-400">(Optional)</span>
+								</label>
+								<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
 									{#each categories as category}
-										<label class="flex items-center" for="category-{category}">
+										<label
+											class="flex items-center rounded-lg bg-gray-50 p-3 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+											for="category-{category}"
+										>
 											<input
 												id="category-{category}"
 												type="checkbox"
 												checked={formData.categories?.includes(category) || false}
 												onchange={(e) => handleCategoryChange(category, e)}
-												class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+												class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
 											/>
-											<span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{category}</span>
+											<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+												>{category}</span
+											>
 										</label>
 									{/each}
 								</div>
 							</div>
 
 							<!-- Payment Methods -->
-							<div class="sm:col-span-2 lg:col-span-3">
+							<div>
 								<label
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-									for="payment-methods">Payment Methods</label
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									for="payment-methods"
 								>
-								<div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+									Payment Methods <span class="text-xs text-gray-400">(Optional)</span>
+								</label>
+								<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
 									{#each availablePaymentMethods as method}
 										{@const isChecked = formData.payment_methods?.includes(method.name) || false}
-										<label class="flex items-center" for="payment-{method.id}">
+										<label
+											class="flex items-center rounded-lg bg-gray-50 p-3 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+											for="payment-{method.id}"
+										>
 											<input
 												id="payment-{method.id}"
 												type="checkbox"
 												checked={isChecked}
 												onchange={(e) => handlePaymentMethodChange(method.name, e)}
-												class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+												class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
 											/>
-											<span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+											<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
 												>{method.name}</span
 											>
 										</label>
@@ -568,34 +610,36 @@
 							</div>
 
 							<!-- Venmo URL -->
-							<div class="sm:col-span-2 lg:col-span-3">
+							<div>
 								<label
 									for="venmo-url"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 								>
-									Venmo URL (Optional)
+									Venmo URL <span class="text-xs text-gray-400">(Optional)</span>
 								</label>
 								<input
 									id="venmo-url"
 									type="url"
 									bind:value={formData.venmo_url}
 									placeholder="https://venmo.com/your-username"
-									class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
-								<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+								<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 									Add your Venmo profile URL to allow customers to pay directly
 								</p>
 							</div>
 
 							<!-- Allow Messages -->
-							<div class="sm:col-span-2 lg:col-span-3">
-								<label class="flex items-center">
+							<div>
+								<label
+									class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+								>
 									<input
 										type="checkbox"
 										bind:checked={formData.allow_messages}
-										class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+										class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
 									/>
-									<span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+									<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
 										>Allow messages through the app</span
 									>
 								</label>
@@ -605,15 +649,15 @@
 
 					<!-- Footer -->
 					<div
-						class="border-t border-gray-200 bg-gray-50 px-6 py-3 sm:flex sm:flex-row-reverse dark:border-gray-700 dark:bg-gray-700"
+						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-4 sm:flex sm:flex-row-reverse dark:border-gray-700/50 dark:bg-gray-700/80"
 					>
 						<button
 							type="submit"
 							disabled={loading}
-							class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto sm:text-sm"
+							class="inline-flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto"
 						>
 							{#if loading}
-								<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+								<svg class="mr-3 h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
 									<circle
 										class="opacity-25"
 										cx="12"
@@ -636,7 +680,7 @@
 						<button
 							type="button"
 							onclick={onClose}
-							class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
+							class="mt-3 inline-flex w-full justify-center rounded-xl border border-gray-300 bg-white px-6 py-3.5 text-base font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 sm:mt-0 sm:ml-3 sm:w-auto dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500"
 						>
 							Cancel
 						</button>
