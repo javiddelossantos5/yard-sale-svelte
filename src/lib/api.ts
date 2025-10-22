@@ -456,6 +456,13 @@ export async function createRating(
 		})
 	});
 
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
 		throw new Error(errorData.detail || 'Failed to create rating');
@@ -484,6 +491,13 @@ export async function createReport(
 		})
 	});
 
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
 		throw new Error(errorData.detail || 'Failed to create report');
@@ -505,6 +519,13 @@ export async function requestVerification(
 			verification_type: verificationType
 		})
 	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
 
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));

@@ -101,8 +101,37 @@
 	}
 
 	function handleRateUser() {
+		const debugInfo = {
+			timestamp: new Date().toISOString(),
+			canRate,
+			currentUserId: currentUser?.id,
+			isOwnProfile,
+			profileUserId: profileUser?.id,
+			action: 'rate_user_clicked'
+		};
+
+		console.log('handleRateUser called:', debugInfo);
+		localStorage.setItem('profile_debug', JSON.stringify(debugInfo));
+
 		if (canRate) {
 			showRatingModal = true;
+			console.log('Rating modal opened');
+			localStorage.setItem(
+				'profile_debug',
+				JSON.stringify({
+					...debugInfo,
+					action: 'modal_opened'
+				})
+			);
+		} else {
+			console.log('Cannot rate user:', { canRate, currentUser, isOwnProfile });
+			localStorage.setItem(
+				'profile_debug',
+				JSON.stringify({
+					...debugInfo,
+					action: 'cannot_rate_user'
+				})
+			);
 		}
 	}
 
@@ -119,7 +148,36 @@
 	}
 
 	async function handleRatingSuccess() {
-		await Promise.all([loadRatings(), loadProfileUser()]);
+		const debugInfo = {
+			timestamp: new Date().toISOString(),
+			action: 'rating_success_callback',
+			profileUserId: profileUser?.id
+		};
+
+		console.log('Rating submitted successfully, refreshing data...');
+		localStorage.setItem('profile_debug', JSON.stringify(debugInfo));
+
+		try {
+			await Promise.all([loadRatings(), loadProfileUser()]);
+			console.log('Data refreshed successfully');
+			localStorage.setItem(
+				'profile_debug',
+				JSON.stringify({
+					...debugInfo,
+					action: 'data_refresh_success'
+				})
+			);
+		} catch (error) {
+			console.error('Error refreshing data after rating:', error);
+			localStorage.setItem(
+				'profile_debug',
+				JSON.stringify({
+					...debugInfo,
+					action: 'data_refresh_error',
+					error: error instanceof Error ? error.message : 'Unknown error'
+				})
+			);
+		}
 		showRatingModal = false;
 	}
 
