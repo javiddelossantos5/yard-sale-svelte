@@ -8,9 +8,15 @@ import type { YardSale } from './api';
  */
 export function isYardSaleActive(yardSale: YardSale): boolean {
 	// Use Mountain Time for all date comparisons
-	const now = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
-	const nowDate = new Date(now);
-	const endDate = new Date(yardSale.end_date || '');
+	const now = new Date();
+	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+
+	// Parse the yard sale end date in Mountain Time
+	const endDateStr = yardSale.end_date || '';
+	if (!endDateStr) return false;
+
+	// Create date in Mountain Time by parsing as if it's in Mountain Time
+	const endDate = new Date(endDateStr + 'T00:00:00');
 
 	// Add end time to the end date for more accurate comparison
 	if (yardSale.end_time) {
@@ -19,7 +25,7 @@ export function isYardSaleActive(yardSale: YardSale): boolean {
 	}
 
 	// Check if the event has ended by date
-	const hasEndedByDate = endDate <= nowDate;
+	const hasEndedByDate = endDate <= nowMountain;
 
 	// Check if the event is closed by status
 	const isClosedByStatus = yardSale.status === 'closed';
@@ -33,9 +39,15 @@ export function isYardSaleActive(yardSale: YardSale): boolean {
  */
 export function hasYardSaleStarted(yardSale: YardSale): boolean {
 	// Use Mountain Time for all date comparisons
-	const now = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
-	const nowDate = new Date(now);
-	const startDate = new Date(yardSale.start_date || '');
+	const now = new Date();
+	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+
+	// Parse the yard sale start date in Mountain Time
+	const startDateStr = yardSale.start_date || '';
+	if (!startDateStr) return false;
+
+	// Create date in Mountain Time by parsing as if it's in Mountain Time
+	const startDate = new Date(startDateStr + 'T00:00:00');
 
 	// Add start time to the start date for more accurate comparison
 	if (yardSale.start_time) {
@@ -43,7 +55,7 @@ export function hasYardSaleStarted(yardSale: YardSale): boolean {
 		startDate.setHours(hours, minutes, 0, 0);
 	}
 
-	return startDate <= nowDate;
+	return startDate <= nowMountain;
 }
 
 /**
@@ -104,25 +116,32 @@ export function getYardSaleStatusMessage(yardSale: YardSale): string {
  */
 export function getDaysUntilEvent(yardSale: YardSale): number {
 	// Use Mountain Time for all date comparisons
-	const now = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
-	const nowDate = new Date(now);
-	const startDate = new Date(yardSale.start_date || '');
-	const endDate = new Date(yardSale.end_date || '');
+	const now = new Date();
+	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+
+	// Parse dates in Mountain Time
+	const startDateStr = yardSale.start_date || '';
+	const endDateStr = yardSale.end_date || '';
+
+	if (!startDateStr || !endDateStr) return 0;
+
+	const startDate = new Date(startDateStr + 'T00:00:00');
+	const endDate = new Date(endDateStr + 'T00:00:00');
 
 	// If it hasn't started, return days until start
 	if (!hasYardSaleStarted(yardSale)) {
-		const diffTime = startDate.getTime() - nowDate.getTime();
+		const diffTime = startDate.getTime() - nowMountain.getTime();
 		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 	}
 
 	// If it's active, return days until end
 	if (isYardSaleActive(yardSale)) {
-		const diffTime = endDate.getTime() - nowDate.getTime();
+		const diffTime = endDate.getTime() - nowMountain.getTime();
 		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 	}
 
 	// If it's expired, return negative days since it ended
-	const diffTime = nowDate.getTime() - endDate.getTime();
+	const diffTime = nowMountain.getTime() - endDate.getTime();
 	return -Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
@@ -131,13 +150,20 @@ export function getDaysUntilEvent(yardSale: YardSale): number {
  */
 export function isYardSaleToday(yardSale: YardSale): boolean {
 	// Use Mountain Time for all date comparisons
-	const today = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
-	const todayDate = new Date(today);
-	const startDate = new Date(yardSale.start_date || '');
-	const endDate = new Date(yardSale.end_date || '');
+	const now = new Date();
+	const todayMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+
+	// Parse dates in Mountain Time
+	const startDateStr = yardSale.start_date || '';
+	const endDateStr = yardSale.end_date || '';
+
+	if (!startDateStr || !endDateStr) return false;
+
+	const startDate = new Date(startDateStr + 'T00:00:00');
+	const endDate = new Date(endDateStr + 'T00:00:00');
 
 	// Check if today is between start and end date (inclusive)
-	return todayDate >= startDate && todayDate <= endDate;
+	return todayMountain >= startDate && todayMountain <= endDate;
 }
 
 /**
@@ -145,9 +171,15 @@ export function isYardSaleToday(yardSale: YardSale): boolean {
  * This includes multi-day events and considers the yard sale's status
  */
 export function isYardSaleActiveOnDate(yardSale: YardSale, targetDate: string): boolean {
-	const target = new Date(targetDate);
-	const startDate = new Date(yardSale.start_date || '');
-	const endDate = new Date(yardSale.end_date || '');
+	// Parse all dates in Mountain Time
+	const target = new Date(targetDate + 'T00:00:00');
+	const startDateStr = yardSale.start_date || '';
+	const endDateStr = yardSale.end_date || '';
+
+	if (!startDateStr || !endDateStr) return false;
+
+	const startDate = new Date(startDateStr + 'T00:00:00');
+	const endDate = new Date(endDateStr + 'T00:00:00');
 
 	// Check if the target date is between start and end date (inclusive)
 	const isWithinDateRange = target >= startDate && target <= endDate;
