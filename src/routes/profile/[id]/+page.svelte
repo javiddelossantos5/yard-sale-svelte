@@ -15,6 +15,7 @@
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import RatingModal from '$lib/RatingModal.svelte';
 	import ReportModal from '$lib/ReportModal.svelte';
+	import MessageModal from '$lib/MessageModal.svelte';
 
 	let profileUser = $state<CurrentUser | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
@@ -25,6 +26,7 @@
 	// Modal states
 	let showRatingModal = $state(false);
 	let showReportModal = $state(false);
+	let showMessageModal = $state(false);
 
 	let userId = $derived(parseInt($page.params.id || '0'));
 	let isOwnProfile = $derived(currentUser?.id === userId);
@@ -116,6 +118,16 @@
 		if (currentUser && !isOwnProfile) {
 			showReportModal = true;
 		}
+	}
+
+	function handleMessageUser() {
+		if (currentUser && !isOwnProfile) {
+			showMessageModal = true;
+		}
+	}
+
+	function handleCloseMessageModal() {
+		showMessageModal = false;
 	}
 
 	async function handleRatingSuccess() {
@@ -260,6 +272,16 @@
 
 						<!-- Action Buttons -->
 						<div class="mt-4 flex flex-col gap-2 sm:mt-0">
+							{#if currentUser && !isOwnProfile}
+								<button
+									onclick={handleMessageUser}
+									class="inline-flex items-center justify-center rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-green-700 active:scale-95"
+								>
+									<FontAwesomeIcon icon="envelope" class="mr-2 h-4 w-4" />
+									Message User
+								</button>
+							{/if}
+
 							{#if canRate}
 								<button
 									onclick={handleRateUser}
@@ -361,5 +383,17 @@
 		reportedUserName={profileUser.full_name || 'Unknown User'}
 		onClose={() => (showReportModal = false)}
 		onSuccess={handleReportSuccess}
+	/>
+{/if}
+
+{#if showMessageModal && profileUser && currentUser}
+	<MessageModal
+		isOpen={showMessageModal}
+		yardSaleId={0}
+		yardSaleTitle="Profile Message"
+		otherUserId={profileUser.id}
+		otherUsername={profileUser.full_name || profileUser.username || 'Unknown User'}
+		currentUserId={currentUser.id}
+		onClose={handleCloseMessageModal}
 	/>
 {/if}

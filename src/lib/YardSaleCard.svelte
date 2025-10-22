@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { YardSale } from './api';
-	import MessageModal from './MessageModal.svelte';
 	import { getYardSaleStatus, getTimeRemainingMessage } from './yardSaleUtils';
 	import { openDirections, getPlatformName } from './mapsUtils';
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
@@ -24,9 +23,6 @@
 		{ id: 'google', name: 'Google Pay', icon: 'google', icon_type: 'brand' },
 		{ id: 'square', name: 'Square', icon: 'credit-card', icon_type: 'solid' }
 	]);
-
-	// Message modal state
-	let showMessageModal = $state(false);
 
 	// Status calculations
 	let status = $derived(getYardSaleStatus(yardSale));
@@ -89,21 +85,6 @@
 
 	function handleCardClick() {
 		goto(`/yard-sale/${yardSale.id}`);
-	}
-
-	function handleSendMessage(event: Event) {
-		event.stopPropagation();
-		event.preventDefault();
-		if (yardSale.allow_messages) {
-			// Use setTimeout to ensure the modal opens after any potential event bubbling
-			setTimeout(() => {
-				showMessageModal = true;
-			}, 0);
-		}
-	}
-
-	function handleCloseMessageModal() {
-		showMessageModal = false;
 	}
 
 	function handleAddressClick(event: Event) {
@@ -443,23 +424,6 @@
 					</a>
 				{/if}
 
-				{#if yardSale.allow_messages}
-					{@const isDisabled = status === 'expired' || status === 'closed'}
-					<button
-						onclick={isDisabled ? undefined : handleSendMessage}
-						disabled={isDisabled}
-						class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-green-500 to-green-600 px-4 text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 disabled:shadow-none sm:w-12 sm:px-0 dark:disabled:bg-gray-600"
-						title={status === 'expired'
-							? 'Yard sale has ended'
-							: status === 'closed'
-								? 'Yard sale is closed'
-								: `Message ${yardSale.contact_name}`}
-					>
-						<FontAwesomeIcon icon="envelope" class="h-5 w-5" />
-						<span class="text-sm font-bold sm:hidden">Message</span>
-					</button>
-				{/if}
-
 				<!-- Get Directions Button -->
 				<button
 					onclick={(e) => {
@@ -536,15 +500,4 @@
 			</div>
 		</div>
 	</div>
-
-	<!-- Message Modal -->
-	<MessageModal
-		isOpen={showMessageModal}
-		yardSaleId={yardSale.id}
-		yardSaleTitle={yardSale.title}
-		otherUserId={isOwner ? currentUserId || 0 : yardSale.owner_id || 0}
-		otherUsername={isOwner ? 'You' : yardSale.owner_username}
-		currentUserId={currentUserId || 0}
-		onClose={handleCloseMessageModal}
-	/>
 </div>
