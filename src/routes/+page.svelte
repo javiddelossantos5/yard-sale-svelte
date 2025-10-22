@@ -5,7 +5,9 @@
 		getYardSales,
 		getYardSalesByCity,
 		getYardSalesByCategory,
-		type YardSale
+		getCurrentUser,
+		type YardSale,
+		type CurrentUser
 	} from '$lib/api';
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
@@ -22,6 +24,7 @@
 	let selectedDate = $state('');
 	let statusFilter = $state('active');
 	let zipCodeSearch = $state('');
+	let currentUser = $state<CurrentUser | null>(null);
 
 	// Visited state tracker to trigger re-sorting when visited status changes
 	let visitedStateTracker = $state(0);
@@ -33,6 +36,9 @@
 	let showCreateModal = $state(false);
 
 	onMount(() => {
+		// Load current user
+		loadCurrentUser();
+
 		// Load yard sales
 		loadYardSales().catch((err) => {
 			error = err instanceof Error ? err.message : 'Failed to load yard sales';
@@ -50,6 +56,15 @@
 			window.removeEventListener('visitedStatusChanged', handleVisitedStatusChanged);
 		};
 	});
+
+	async function loadCurrentUser() {
+		try {
+			currentUser = await getCurrentUser();
+		} catch (error) {
+			console.warn('Failed to load current user:', error);
+			currentUser = null;
+		}
+	}
 
 	async function loadYardSales() {
 		loading = true;
@@ -125,6 +140,12 @@
 	function handleCreateSuccess() {
 		// Reload yard sales to show the new one
 		loadYardSales();
+	}
+
+	function goToProfile() {
+		if (currentUser) {
+			goto(`/profile/${currentUser.id}`);
+		}
 	}
 
 	// Filter yard sales by search term, city, zip code, and date
@@ -249,6 +270,15 @@
 							<FontAwesomeIcon icon="plus" class="mr-1.5 h-4 w-4" />
 							Post New Sale
 						</button>
+						{#if currentUser}
+							<button
+								onclick={goToProfile}
+								class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								aria-label="View Profile"
+							>
+								<FontAwesomeIcon icon="user" class="h-4 w-4" />
+							</button>
+						{/if}
 						<button
 							onclick={handleLogout}
 							aria-label="Logout"
@@ -286,6 +316,15 @@
 							<FontAwesomeIcon icon="plus" class="mr-2 h-4 w-4" />
 							Post New Yard Sale
 						</button>
+						{#if currentUser}
+							<button
+								onclick={goToProfile}
+								class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							>
+								<FontAwesomeIcon icon="user" class="mr-2 h-4 w-4" />
+								My Profile
+							</button>
+						{/if}
 						<button
 							onclick={handleLogout}
 							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
