@@ -92,6 +92,7 @@
 	function handleDateChange(event: Event) {
 		const target = event.target as HTMLInputElement;
 		selectedDate = target.value;
+		console.log('Date filter changed to:', selectedDate);
 		// No need to call loadYardSales() - filtering is handled by $derived
 	}
 
@@ -148,6 +149,14 @@
 
 				// Date filter - show yard sales that are active on the selected date
 				const matchesDate = !selectedDate || isYardSaleActiveOnDate(sale, selectedDate);
+
+				// Debug logging for date filtering
+				if (selectedDate) {
+					console.log(
+						`Checking yard sale "${sale.title}" (${sale.start_date} - ${sale.end_date}) for date ${selectedDate}:`,
+						matchesDate
+					);
+				}
 
 				// Status filter: filter by selected status option
 				const status = getYardSaleStatus(sale);
