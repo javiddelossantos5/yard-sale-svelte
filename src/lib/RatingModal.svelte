@@ -55,7 +55,7 @@
 		try {
 			console.log('Submitting rating:', debugInfo);
 
-			// await createRating(ratedUserId, rating, reviewText.trim() || undefined, yardSaleId);
+			await createRating(ratedUserId, rating, reviewText.trim() || undefined, yardSaleId);
 
 			// Update debug info for success
 			localStorage.setItem(
@@ -79,13 +79,10 @@
 				})
 			);
 
-			// Temporarily disable success callback to test if it's causing the refresh
-			// setTimeout(() => {
-			// 	onSuccess();
-			// }, 100);
-
-			// Just close the modal for now
-			onClose();
+			// Call success callback after a small delay to prevent immediate navigation
+			setTimeout(() => {
+				onSuccess();
+			}, 100);
 		} catch (err) {
 			// Update debug info for error
 			localStorage.setItem(

@@ -414,7 +414,7 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 export async function getUserProfile(userId: number): Promise<CurrentUser> {
 	const response = await fetch(`/api/users/${userId}`, {
 		headers: {
-			Authorization: `Bearer ${localStorage.getItem('token')}`
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
 	if (!response.ok) {
@@ -427,7 +427,7 @@ export async function getUserProfile(userId: number): Promise<CurrentUser> {
 export async function getUserRatings(userId: number): Promise<Rating[]> {
 	const response = await fetch(`/api/users/${userId}/ratings`, {
 		headers: {
-			Authorization: `Bearer ${localStorage.getItem('token')}`
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
 	if (!response.ok) {
@@ -446,7 +446,7 @@ export async function createRating(
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: `Bearer ${localStorage.getItem('token')}`
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		},
 		body: JSON.stringify({
 			rated_user_id: ratedUserId,
@@ -481,7 +481,7 @@ export async function createReport(
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: `Bearer ${localStorage.getItem('token')}`
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		},
 		body: JSON.stringify({
 			report_type: reportType,
@@ -513,7 +513,7 @@ export async function requestVerification(
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: `Bearer ${localStorage.getItem('token')}`
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		},
 		body: JSON.stringify({
 			verification_type: verificationType
@@ -537,7 +537,7 @@ export async function requestVerification(
 export async function getUserVerifications(userId: number): Promise<VerificationBadge[]> {
 	const response = await fetch(`/api/users/${userId}/verifications`, {
 		headers: {
-			Authorization: `Bearer ${localStorage.getItem('token')}`
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
 	if (!response.ok) {
