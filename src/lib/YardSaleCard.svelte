@@ -121,35 +121,41 @@
 </script>
 
 <div
-	class="cursor-pointer overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] {isVisited
-		? 'bg-gray-100 opacity-60 dark:bg-gray-900 dark:opacity-60'
-		: 'bg-white dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600'}"
+	class="group cursor-pointer overflow-hidden rounded-3xl transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] {isVisited
+		? 'bg-white/30 opacity-60 shadow-lg backdrop-blur-md dark:bg-gray-800/30 dark:opacity-60'
+		: 'bg-white/80 shadow-xl shadow-black/5 backdrop-blur-xl hover:shadow-2xl hover:shadow-black/10 dark:bg-gray-800/80 dark:shadow-black/20 dark:hover:shadow-black/30'}"
 	onclick={handleCardClick}
 	onkeydown={(e) => e.key === 'Enter' && handleCardClick()}
 	role="button"
 	tabindex="0"
 >
 	<!-- Header -->
-	<div class="p-5 pb-4">
-		<h3 class="mb-2 line-clamp-2 text-lg leading-tight font-semibold text-gray-900 dark:text-white">
+	<div class="p-6 pb-5">
+		<h3 class="mb-3 line-clamp-2 text-xl leading-tight font-bold text-gray-900 dark:text-white">
 			{yardSale.title}
 		</h3>
 
 		<!-- Owner Information -->
-		<div class="mb-4 flex items-center justify-between">
+		<div class="mb-5 flex items-center justify-between">
 			<button
 				onclick={(e) => {
 					e.stopPropagation();
 					goto(`/profile/${yardSale.owner_id}`);
 				}}
-				class="flex items-center text-sm text-gray-600 transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+				class="flex items-center rounded-full bg-gray-100/60 px-3 py-2 text-sm text-gray-700 transition-all duration-300 hover:bg-blue-100/60 hover:text-blue-700 dark:bg-gray-700/60 dark:text-gray-200 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
 			>
-				<FontAwesomeIcon icon="user" class="mr-1.5 h-3.5 w-3.5" />
-				<span class="font-medium">by {yardSale.owner_username}</span>
+				<div
+					class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600"
+				>
+					<FontAwesomeIcon icon="user" class="h-3 w-3 text-white" />
+				</div>
+				<span class="font-semibold">by {yardSale.owner_username}</span>
 				{#if yardSale.owner_average_rating}
-					<div class="ml-2 flex items-center">
-						<FontAwesomeIcon icon="star" class="h-3 w-3 text-yellow-400" />
-						<span class="ml-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+					<div
+						class="ml-2 flex items-center rounded-full bg-yellow-100/60 px-2 py-1 dark:bg-yellow-900/30"
+					>
+						<FontAwesomeIcon icon="star" class="h-3 w-3 text-yellow-500" />
+						<span class="ml-1 text-xs font-bold text-yellow-700 dark:text-yellow-300">
 							{yardSale.owner_average_rating.toFixed(1)}
 						</span>
 					</div>
@@ -159,50 +165,50 @@
 
 		<!-- Visited Indicator -->
 		{#if isVisited}
-			<div class="mb-3">
+			<div class="mb-4">
 				<div
-					class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+					class="inline-flex items-center rounded-full bg-gray-200/60 px-4 py-2 text-xs font-bold text-gray-700 shadow-sm backdrop-blur-sm dark:bg-gray-600/60 dark:text-gray-200"
 				>
-					<FontAwesomeIcon icon="check" class="mr-1.5 h-3.5 w-3.5" />
-					<span class="font-medium">Already Visited</span>
+					<FontAwesomeIcon icon="check" class="mr-2 h-4 w-4" />
+					<span>Already Visited</span>
 				</div>
 			</div>
 		{/if}
 
 		<!-- Status Indicator -->
-		<div class="mb-3">
+		<div class="mb-4">
 			{#if status === 'expired'}
 				<div
-					class="inline-flex items-center rounded-full bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 dark:bg-red-900/10 dark:text-red-300"
+					class="inline-flex items-center rounded-full bg-red-100/60 px-4 py-2 text-xs font-bold text-red-700 shadow-sm backdrop-blur-sm dark:bg-red-900/30 dark:text-red-300"
 				>
-					<FontAwesomeIcon icon="exclamation-triangle" class="mr-1.5 h-3.5 w-3.5" />
-					<span class="font-medium">Expired</span>
-					<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
+					<FontAwesomeIcon icon="exclamation-triangle" class="mr-2 h-4 w-4" />
+					<span>Expired</span>
+					<span class="ml-2 text-xs opacity-80">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'upcoming'}
 				<div
-					class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 dark:bg-blue-900/10 dark:text-blue-300"
+					class="inline-flex items-center rounded-full bg-blue-100/60 px-4 py-2 text-xs font-bold text-blue-700 shadow-sm backdrop-blur-sm dark:bg-blue-900/30 dark:text-blue-300"
 				>
-					<FontAwesomeIcon icon="clock" class="mr-1.5 h-3.5 w-3.5" />
-					<span class="font-medium">Upcoming</span>
-					<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
+					<FontAwesomeIcon icon="clock" class="mr-2 h-4 w-4" />
+					<span>Upcoming</span>
+					<span class="ml-2 text-xs opacity-80">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'active'}
 				<div
-					class="inline-flex items-center rounded-full bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 dark:bg-green-900/20 dark:text-green-300"
+					class="inline-flex items-center rounded-full bg-green-100/60 px-4 py-2 text-xs font-bold text-green-700 shadow-sm backdrop-blur-sm dark:bg-green-900/30 dark:text-green-300"
 				>
-					<FontAwesomeIcon icon="check-circle" class="mr-1.5 h-3.5 w-3.5" />
-					<span class="font-medium">Active Now</span>
-					<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
+					<FontAwesomeIcon icon="check-circle" class="mr-2 h-4 w-4" />
+					<span>Active Now</span>
+					<span class="ml-2 text-xs opacity-80">• {timeRemaining}</span>
 				</div>
 			{:else if status === 'on_break'}
-				<div class="space-y-1.5">
+				<div class="space-y-2">
 					<div
-						class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1.5 text-xs font-medium text-orange-700 dark:bg-orange-900/10 dark:text-orange-300"
+						class="inline-flex items-center rounded-full bg-orange-100/60 px-4 py-2 text-xs font-bold text-orange-700 shadow-sm backdrop-blur-sm dark:bg-orange-900/30 dark:text-orange-300"
 					>
-						<FontAwesomeIcon icon="clock" class="mr-1.5 h-3.5 w-3.5" />
-						<span class="font-medium">On Break</span>
-						<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
+						<FontAwesomeIcon icon="clock" class="mr-2 h-4 w-4" />
+						<span>On Break</span>
+						<span class="ml-2 text-xs opacity-80">• {timeRemaining}</span>
 					</div>
 					{#if yardSale.status_reason}
 						<div class="text-xs text-orange-600 dark:text-orange-400">
@@ -211,11 +217,11 @@
 					{/if}
 				</div>
 			{:else if status === 'closed'}
-				<div class="space-y-1.5">
+				<div class="space-y-2">
 					<div
-						class="inline-flex items-center rounded-full bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-700 dark:bg-gray-700/50 dark:text-gray-300"
+						class="inline-flex items-center rounded-full bg-gray-100/60 px-4 py-2 text-xs font-bold text-gray-700 shadow-sm backdrop-blur-sm dark:bg-gray-600/60 dark:text-gray-300"
 					>
-						<svg class="mr-1.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path
 								stroke-linecap="round"
 								stroke-linejoin="round"
@@ -223,8 +229,8 @@
 								d="M6 18L18 6M6 6l12 12"
 							/>
 						</svg>
-						<span class="font-medium">Closed</span>
-						<span class="ml-1.5 text-xs opacity-70">• {timeRemaining}</span>
+						<span>Closed</span>
+						<span class="ml-2 text-xs opacity-80">• {timeRemaining}</span>
 					</div>
 					{#if yardSale.status_reason}
 						<div class="text-xs text-gray-500 dark:text-gray-400">
@@ -236,35 +242,41 @@
 		</div>
 
 		<!-- Location -->
-		<div class="mb-4">
-			<div class="flex items-start text-gray-600 dark:text-gray-300">
-				<svg
-					class="mt-0.5 mr-2 h-4 w-4 shrink-0 text-gray-400"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
+		<div class="mb-5">
+			<div
+				class="flex items-start rounded-2xl bg-gray-50/60 p-4 backdrop-blur-sm dark:bg-gray-700/60"
+			>
+				<div
+					class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100/60 dark:bg-blue-900/30"
 				>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-					></path>
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-					></path>
-				</svg>
+					<svg
+						class="h-4 w-4 text-blue-600 dark:text-blue-400"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+						></path>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+						></path>
+					</svg>
+				</div>
 				<div class="flex-1">
 					<button
 						onclick={handleAddressClick}
-						class="text-left text-sm text-blue-600 hover:text-blue-700 hover:underline focus:underline focus:outline-none dark:text-blue-400 dark:hover:text-blue-300"
+						class="text-left transition-all duration-300 hover:scale-105"
 						title={`Click to open in ${getPlatformName()}`}
 					>
-						<div class="font-medium">{yardSale.address}</div>
-						<div class="text-xs text-gray-500 dark:text-gray-400">
+						<div class="text-sm font-bold text-gray-900 dark:text-white">{yardSale.address}</div>
+						<div class="text-xs text-gray-600 dark:text-gray-300">
 							{yardSale.city}, {yardSale.state}
 							{yardSale.zip_code}
 						</div>
@@ -274,42 +286,68 @@
 		</div>
 
 		<!-- Date & Time -->
-		<div class="mb-3 flex items-center text-gray-600 dark:text-gray-300">
-			<svg class="mr-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-				></path>
-			</svg>
-			<span class="text-sm font-medium">{getDateRange()}</span>
-		</div>
+		<div class="mb-4 space-y-3">
+			<div
+				class="flex items-center rounded-2xl bg-purple-50/60 p-3 backdrop-blur-sm dark:bg-purple-900/20"
+			>
+				<div
+					class="mr-3 flex h-7 w-7 items-center justify-center rounded-full bg-purple-100/60 dark:bg-purple-800/40"
+				>
+					<svg
+						class="h-4 w-4 text-purple-600 dark:text-purple-400"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+						></path>
+					</svg>
+				</div>
+				<span class="text-sm font-bold text-gray-900 dark:text-white">{getDateRange()}</span>
+			</div>
 
-		<div class="mb-4 flex items-center text-gray-600 dark:text-gray-300">
-			<svg class="mr-2 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-				></path>
-			</svg>
-			<span class="text-sm font-medium">{getTimeRange()}</span>
+			<div
+				class="flex items-center rounded-2xl bg-indigo-50/60 p-3 backdrop-blur-sm dark:bg-indigo-900/20"
+			>
+				<div
+					class="mr-3 flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100/60 dark:bg-indigo-800/40"
+				>
+					<svg
+						class="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+						></path>
+					</svg>
+				</div>
+				<span class="text-sm font-bold text-gray-900 dark:text-white">{getTimeRange()}</span>
+			</div>
 		</div>
 
 		<!-- Description -->
-		<p class="mb-5 line-clamp-3 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-			{yardSale.description}
-		</p>
+		<div class="mb-6 rounded-2xl bg-gray-50/40 p-4 backdrop-blur-sm dark:bg-gray-700/40">
+			<p class="line-clamp-3 text-sm leading-relaxed text-gray-700 dark:text-gray-200">
+				{yardSale.description}
+			</p>
+		</div>
 	</div>
 
 	<!-- Categories -->
-	<div class="px-5 pb-4">
-		<div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+	<div class="px-6 pb-5">
+		<div class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
 			{#each yardSale.categories as category}
 				<span
-					class="inline-flex items-center justify-center rounded-xl border border-gray-200/50 bg-blue-50/60 px-3 py-1.5 text-center text-xs font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md dark:border-gray-700/50 dark:bg-blue-900/20 dark:text-gray-200 dark:hover:bg-blue-900/30"
+					class="inline-flex items-center justify-center rounded-2xl bg-linear-to-r from-blue-100/60 to-purple-100/60 px-4 py-2.5 text-center text-xs font-bold text-gray-800 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md dark:from-blue-900/30 dark:to-purple-900/30 dark:text-gray-100"
 				>
 					{category}
 				</span>
@@ -317,33 +355,59 @@
 		</div>
 
 		<!-- Price Range & Comments -->
-		<div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+		<div class="flex flex-col gap-3 sm:flex-row sm:items-center">
 			<div class="flex-1">
 				{#if yardSale.price_range}
-					<div class="flex items-center font-medium text-green-600 dark:text-green-400">
-						<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-							></path>
-						</svg>
-						<span class="text-sm">{yardSale.price_range}</span>
+					<div
+						class="flex items-center rounded-2xl bg-green-100/60 px-4 py-2.5 backdrop-blur-sm dark:bg-green-900/20"
+					>
+						<div
+							class="mr-3 flex h-7 w-7 items-center justify-center rounded-full bg-green-200/60 dark:bg-green-800/40"
+						>
+							<svg
+								class="h-4 w-4 text-green-600 dark:text-green-400"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+								></path>
+							</svg>
+						</div>
+						<span class="text-sm font-bold text-green-700 dark:text-green-300"
+							>{yardSale.price_range}</span
+						>
 					</div>
 				{/if}
 			</div>
 			{#if yardSale.comment_count}
-				<div class="flex items-center text-gray-500 dark:text-gray-400">
-					<svg class="mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-						></path>
-					</svg>
-					<span class="text-sm">{yardSale.comment_count} comments</span>
+				<div
+					class="flex items-center rounded-2xl bg-gray-100/60 px-4 py-2.5 backdrop-blur-sm dark:bg-gray-700/60"
+				>
+					<div
+						class="mr-3 flex h-7 w-7 items-center justify-center rounded-full bg-gray-200/60 dark:bg-gray-600/40"
+					>
+						<svg
+							class="h-4 w-4 text-gray-600 dark:text-gray-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+							></path>
+						</svg>
+					</div>
+					<span class="text-sm font-bold text-gray-700 dark:text-gray-300"
+						>{yardSale.comment_count} comments</span
+					>
 				</div>
 			{/if}
 		</div>
@@ -351,29 +415,31 @@
 
 	<!-- Footer -->
 	<div
-		class="h-full border-t border-gray-100 bg-gray-50/50 px-5 py-5 dark:border-gray-700 dark:bg-gray-700/50"
+		class="h-full border-t border-gray-200/50 bg-linear-to-r from-gray-50/80 to-gray-100/80 px-6 py-6 backdrop-blur-xl dark:border-gray-600/50 dark:from-gray-700/80 dark:to-gray-800/80"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 		role="button"
 		tabindex="0"
 	>
-		<div class="space-y-4">
+		<div class="space-y-5">
 			<div class="flex items-center justify-between">
-				<div class="text-sm text-gray-600 dark:text-gray-300">
-					<span class="font-medium">Contact:</span>
-					{yardSale.contact_name}
+				<div class="rounded-2xl bg-white/60 px-4 py-2.5 backdrop-blur-sm dark:bg-gray-600/60">
+					<div class="text-sm text-gray-700 dark:text-gray-200">
+						<span class="font-bold">Contact:</span>
+						<span class="ml-1 font-semibold">{yardSale.contact_name}</span>
+					</div>
 				</div>
 			</div>
 
-			<div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
+			<div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-3">
 				{#if yardSale.contact_phone}
 					<a
 						href="tel:{yardSale.contact_phone}"
-						class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-blue-600 px-3 text-white transition-all hover:bg-blue-700 active:scale-95 sm:w-10 sm:px-0"
+						class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-blue-500 to-blue-600 px-4 text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95 sm:w-12 sm:px-0"
 						title="Call {yardSale.contact_name}"
 					>
 						<FontAwesomeIcon icon="phone" class="h-5 w-5" />
-						<span class="text-sm font-medium sm:hidden">Call</span>
+						<span class="text-sm font-bold sm:hidden">Call</span>
 					</a>
 				{/if}
 
@@ -382,7 +448,7 @@
 					<button
 						onclick={isDisabled ? undefined : handleSendMessage}
 						disabled={isDisabled}
-						class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-green-500 px-3 text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 sm:w-10 sm:px-0 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
+						class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-green-500 to-green-600 px-4 text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 disabled:shadow-none sm:w-12 sm:px-0 dark:disabled:bg-gray-600"
 						title={status === 'expired'
 							? 'Yard sale has ended'
 							: status === 'closed'
@@ -390,7 +456,7 @@
 								: `Message ${yardSale.contact_name}`}
 					>
 						<FontAwesomeIcon icon="envelope" class="h-5 w-5" />
-						<span class="text-sm font-medium sm:hidden">Message</span>
+						<span class="text-sm font-bold sm:hidden">Message</span>
 					</button>
 				{/if}
 
@@ -401,20 +467,20 @@
 						const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
 						openDirections(fullAddress);
 					}}
-					class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-indigo-500 px-3 text-white transition-all hover:bg-indigo-600 active:scale-95 sm:w-10 sm:px-0 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+					class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-indigo-500 to-indigo-600 px-4 text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95 sm:w-12 sm:px-0"
 					title={`Get directions in ${getPlatformName()}`}
 				>
 					<FontAwesomeIcon icon="map-marker-alt" class="h-5 w-5" />
-					<span class="text-sm font-medium sm:hidden">Directions</span>
+					<span class="text-sm font-bold sm:hidden">Directions</span>
 				</button>
 
 				<!-- Visited Toggle Button - Only show for active/started yard sales -->
 				{#if status !== 'upcoming'}
 					<button
 						onclick={handleToggleVisited}
-						class="inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 transition-all active:scale-95 sm:w-10 sm:px-0 {isVisited
-							? 'bg-gray-500 text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700'
-							: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'}"
+						class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl px-4 transition-all duration-300 active:scale-95 sm:w-12 sm:px-0 {isVisited
+							? 'bg-linear-to-r from-gray-500 to-gray-600 text-white shadow-lg hover:-translate-y-1 hover:shadow-xl dark:from-gray-600 dark:to-gray-700'
+							: 'border-2 border-gray-300 bg-white/80 text-gray-700 shadow-lg backdrop-blur-sm hover:-translate-y-1 hover:shadow-xl dark:border-gray-600 dark:bg-gray-700/80 dark:text-gray-200'}"
 						title={isVisited ? 'Mark as not visited' : 'Mark as visited'}
 					>
 						{#if isVisited}
@@ -422,7 +488,7 @@
 						{:else}
 							<FontAwesomeIcon icon="eye" class="h-5 w-5" />
 						{/if}
-						<span class="text-sm font-medium sm:hidden"
+						<span class="text-sm font-bold sm:hidden"
 							>{isVisited ? 'Marked Visited' : 'Mark as Visited'}</span
 						>
 					</button>
@@ -431,9 +497,9 @@
 		</div>
 
 		<!-- Payment Methods -->
-		<div class="mt-4">
-			<div class="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Payment:</div>
-			<div class="flex flex-wrap gap-2">
+		<div class="mt-5">
+			<div class="mb-3 text-sm font-bold text-gray-600 dark:text-gray-300">Payment Methods:</div>
+			<div class="flex flex-wrap gap-2.5">
 				{#each yardSale.payment_methods as method}
 					{@const iconInfo = getPaymentMethodIcon(method, availablePaymentMethods)}
 					{@const isVenmoWithUrl = method.toLowerCase().includes('venmo') && yardSale.venmo_url}
@@ -442,22 +508,26 @@
 							href={yardSale.venmo_url}
 							target="_blank"
 							rel="noopener noreferrer"
-							class="inline-flex items-center rounded-full bg-blue-500 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+							class="inline-flex items-center rounded-2xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
 							title="Pay with Venmo"
 						>
 							<FontAwesomeIcon
-								icon={iconInfo.iconType === 'brand' ? ['fab', iconInfo.icon] : iconInfo.icon}
-								class="mr-1.5 h-3.5 w-3.5"
+								icon={iconInfo.iconType === 'brand'
+									? ['fab', iconInfo.icon]
+									: (iconInfo.icon as any)}
+								class="mr-2 h-4 w-4"
 							/>
 							{method}
 						</a>
 					{:else}
 						<div
-							class="inline-flex items-center rounded-full bg-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 dark:bg-gray-600 dark:text-gray-200"
+							class="inline-flex items-center rounded-2xl bg-white/80 px-4 py-2.5 text-xs font-bold text-gray-700 shadow-lg backdrop-blur-sm dark:bg-gray-600/80 dark:text-gray-200"
 						>
 							<FontAwesomeIcon
-								icon={iconInfo.iconType === 'brand' ? ['fab', iconInfo.icon] : iconInfo.icon}
-								class="mr-1.5 h-3.5 w-3.5"
+								icon={iconInfo.iconType === 'brand'
+									? ['fab', iconInfo.icon]
+									: (iconInfo.icon as any)}
+								class="mr-2 h-4 w-4"
 							/>
 							{method}
 						</div>
@@ -472,9 +542,9 @@
 		isOpen={showMessageModal}
 		yardSaleId={yardSale.id}
 		yardSaleTitle={yardSale.title}
-		otherUserId={isOwner ? currentUserId : yardSale.owner_id}
+		otherUserId={isOwner ? currentUserId || 0 : yardSale.owner_id || 0}
 		otherUsername={isOwner ? 'You' : yardSale.owner_username}
-		{currentUserId}
+		currentUserId={currentUserId || 0}
 		onClose={handleCloseMessageModal}
 	/>
 </div>
