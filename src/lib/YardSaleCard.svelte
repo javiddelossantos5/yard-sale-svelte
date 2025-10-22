@@ -342,10 +342,11 @@
 				{#if yardSale.contact_phone}
 					<a
 						href="tel:{yardSale.contact_phone}"
-						class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white transition-all hover:bg-blue-700 active:scale-95"
+						class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-blue-600 px-3 text-white transition-all hover:bg-blue-700 active:scale-95 sm:w-10 sm:px-0"
 						title="Call {yardSale.contact_name}"
 					>
 						<FontAwesomeIcon icon="phone" class="h-5 w-5" />
+						<span class="text-sm font-medium sm:hidden">Call</span>
 					</a>
 				{/if}
 
@@ -354,7 +355,7 @@
 					<button
 						onclick={isDisabled ? undefined : handleSendMessage}
 						disabled={isDisabled}
-						class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-500 text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
+						class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-green-500 px-3 text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 sm:w-10 sm:px-0 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
 						title={status === 'expired'
 							? 'Yard sale has ended'
 							: status === 'closed'
@@ -362,6 +363,7 @@
 								: `Message ${yardSale.contact_name}`}
 					>
 						<FontAwesomeIcon icon="envelope" class="h-5 w-5" />
+						<span class="text-sm font-medium sm:hidden">Message</span>
 					</button>
 				{/if}
 
@@ -372,17 +374,18 @@
 						const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
 						openDirections(fullAddress);
 					}}
-					class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500 text-white transition-all hover:bg-indigo-600 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+					class="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-indigo-500 px-3 text-white transition-all hover:bg-indigo-600 active:scale-95 sm:w-10 sm:px-0 dark:bg-indigo-600 dark:hover:bg-indigo-700"
 					title={`Get directions in ${getPlatformName()}`}
 				>
 					<FontAwesomeIcon icon="map-marker-alt" class="h-5 w-5" />
+					<span class="text-sm font-medium sm:hidden">Directions</span>
 				</button>
 
 				<!-- Visited Toggle Button - Only show for active/started yard sales -->
 				{#if status !== 'upcoming'}
 					<button
 						onclick={handleToggleVisited}
-						class="inline-flex h-10 w-10 items-center justify-center rounded-full transition-all active:scale-95 {isVisited
+						class="inline-flex h-10 items-center justify-center gap-2 rounded-full px-3 transition-all active:scale-95 sm:w-10 sm:px-0 {isVisited
 							? 'bg-gray-500 text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700'
 							: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'}"
 						title={isVisited ? 'Mark as not visited' : 'Mark as visited'}
@@ -392,6 +395,9 @@
 						{:else}
 							<FontAwesomeIcon icon="eye" class="h-5 w-5" />
 						{/if}
+						<span class="text-sm font-medium sm:hidden"
+							>{isVisited ? 'Marked Visited' : 'Mark as Visited'}</span
+						>
 					</button>
 				{/if}
 			</div>
