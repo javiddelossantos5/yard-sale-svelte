@@ -188,34 +188,43 @@
 </svelte:head>
 
 <div
-	class="flex min-h-screen flex-col justify-center bg-gray-50 py-12 sm:px-6 lg:px-8 dark:bg-gray-900"
+	class="flex min-h-screen flex-col justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4 py-12 sm:px-6 lg:px-8 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900"
 >
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
 		<div class="text-center">
-			<h1 class="mb-2 text-4xl font-bold text-gray-900 dark:text-white">🏠</h1>
-			<h2 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h2>
-			<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-				{isRegisterMode ? 'Create your account' : 'Sign in to your account'}
+			<!-- Logo -->
+			<div
+				class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-700"
+			>
+				<img src="/icon.png" alt="Yard Sale Finder" class="h-12 w-12 rounded-full object-cover" />
+			</div>
+
+			<!-- App Name -->
+			<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
+			<p class="mt-2 text-base text-gray-600 dark:text-gray-300">
+				{isRegisterMode
+					? 'Create your account to get started'
+					: 'Welcome back! Sign in to continue'}
 			</p>
 		</div>
 	</div>
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 		<div
-			class="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+			class="bg-white/80 px-6 py-8 shadow-xl ring-1 ring-white/20 backdrop-blur-xl sm:rounded-2xl dark:bg-gray-800/80 dark:ring-gray-700/50"
 		>
 			{#if !isRegisterMode}
 				<!-- Login Form -->
-				<form class="space-y-6" onsubmit={handleLogin}>
+				<form class="space-y-5" onsubmit={handleLogin}>
 					<!-- Username Field -->
 					<div>
 						<label
 							for="username"
-							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 						>
 							Username
 						</label>
-						<div class="mt-1">
+						<div>
 							<input
 								id="username"
 								name="username"
@@ -223,7 +232,7 @@
 								autocomplete="username"
 								required
 								bind:value={username}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your username"
 								disabled={loading}
 							/>
@@ -234,11 +243,11 @@
 					<div>
 						<label
 							for="password"
-							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 						>
 							Password
 						</label>
-						<div class="mt-1">
+						<div>
 							<input
 								id="password"
 								name="password"
@@ -246,7 +255,7 @@
 								autocomplete="current-password"
 								required
 								bind:value={password}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your password"
 								disabled={loading}
 							/>
@@ -256,12 +265,12 @@
 					<!-- Error Message -->
 					{#if error}
 						<div
-							class="rounded-md bg-red-50 p-4 dark:border dark:border-red-800 dark:bg-red-900/20"
+							class="rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-900/20 dark:ring-red-800"
 						>
 							<div class="flex">
 								<div class="shrink-0">
 									<svg
-										class="h-5 w-5 text-red-400"
+										class="h-5 w-5 text-red-500"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -275,8 +284,8 @@
 									</svg>
 								</div>
 								<div class="ml-3">
-									<h3 class="text-sm font-medium text-red-800 dark:text-red-200">Login Error</h3>
-									<div class="mt-2 text-sm text-red-700 dark:text-red-300">
+									<h3 class="text-sm font-semibold text-red-800 dark:text-red-200">Login Error</h3>
+									<div class="mt-1 text-sm text-red-700 dark:text-red-300">
 										<p>{error}</p>
 									</div>
 								</div>
@@ -285,18 +294,14 @@
 					{/if}
 
 					<!-- Submit Button -->
-					<div>
+					<div class="pt-2">
 						<button
 							type="submit"
 							disabled={loading}
-							class="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+							class="group relative flex w-full justify-center rounded-xl bg-blue-600 px-4 py-3.5 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
 						>
 							{#if loading}
-								<svg
-									class="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
+								<svg class="mr-3 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
 									<circle
 										class="opacity-25"
 										cx="12"
@@ -328,16 +333,16 @@
 				</form>
 
 				<!-- Toggle Button -->
-				<div class="mt-6">
+				<div class="mt-8">
 					<div class="relative">
 						<div class="absolute inset-0 flex items-center">
-							<div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+							<div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
 						</div>
 						<div class="relative flex justify-center text-sm">
 							<button
 								type="button"
 								onclick={toggleMode}
-								class="bg-white px-4 py-2 text-blue-600 hover:text-blue-500 dark:bg-gray-800 dark:text-blue-400 dark:hover:text-blue-300"
+								class="bg-white/80 px-6 py-2 font-medium text-blue-600 transition-colors duration-200 hover:text-blue-500 dark:bg-gray-800/80 dark:text-blue-400 dark:hover:text-blue-300"
 							>
 								Don't have an account? Sign up
 							</button>
@@ -346,16 +351,16 @@
 				</div>
 			{:else}
 				<!-- Registration Form -->
-				<form class="space-y-6" onsubmit={handleRegister}>
+				<form class="space-y-5" onsubmit={handleRegister}>
 					<!-- Username Field -->
 					<div>
 						<label
 							for="reg-username"
-							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 						>
 							Username *
 						</label>
-						<div class="mt-1">
+						<div>
 							<input
 								id="reg-username"
 								name="username"
@@ -363,7 +368,7 @@
 								autocomplete="username"
 								required
 								bind:value={registerData.username}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your username"
 								disabled={loading}
 							/>
@@ -374,11 +379,11 @@
 					<div>
 						<label
 							for="reg-email"
-							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 						>
 							Email *
 						</label>
-						<div class="mt-1">
+						<div>
 							<input
 								id="reg-email"
 								name="email"
@@ -386,7 +391,7 @@
 								autocomplete="email"
 								required
 								bind:value={registerData.email}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your email"
 								disabled={loading}
 							/>
@@ -397,11 +402,11 @@
 					<div>
 						<label
 							for="reg-password"
-							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 						>
 							Password *
 						</label>
-						<div class="mt-1">
+						<div>
 							<input
 								id="reg-password"
 								name="password"
@@ -409,7 +414,7 @@
 								autocomplete="new-password"
 								required
 								bind:value={registerData.password}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your password"
 								disabled={loading}
 							/>
@@ -420,11 +425,11 @@
 					<div>
 						<label
 							for="reg-fullname"
-							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 						>
 							Full Name *
 						</label>
-						<div class="mt-1">
+						<div>
 							<input
 								id="reg-fullname"
 								name="full_name"
@@ -432,7 +437,7 @@
 								autocomplete="name"
 								required
 								bind:value={registerData.full_name}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your full name"
 								disabled={loading}
 							/>
@@ -443,11 +448,11 @@
 					<div>
 						<label
 							for="reg-phone"
-							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 						>
 							Phone Number *
 						</label>
-						<div class="mt-1">
+						<div>
 							<input
 								id="reg-phone"
 								name="phone_number"
@@ -455,7 +460,7 @@
 								autocomplete="tel"
 								required
 								bind:value={registerData.phone_number}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your phone number"
 								disabled={loading}
 							/>
@@ -467,18 +472,18 @@
 						<div>
 							<label
 								for="reg-city"
-								class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 							>
 								City *
 							</label>
-							<div class="mt-1">
+							<div>
 								<input
 									id="reg-city"
 									name="city"
 									type="text"
 									required
 									bind:value={registerData.location.city}
-									class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									placeholder="City"
 									disabled={loading}
 								/>
@@ -487,17 +492,17 @@
 						<div>
 							<label
 								for="reg-state"
-								class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 							>
 								State *
 							</label>
-							<div class="mt-1">
+							<div>
 								<select
 									id="reg-state"
 									name="state"
 									required
 									bind:value={registerData.location.state}
-									class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 									disabled={loading}
 								>
 									<option value="">Select State</option>
@@ -510,18 +515,18 @@
 						<div>
 							<label
 								for="reg-zip"
-								class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 							>
 								ZIP *
 							</label>
-							<div class="mt-1">
+							<div>
 								<input
 									id="reg-zip"
 									name="zip"
 									type="text"
 									required
 									bind:value={registerData.location.zip}
-									class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									placeholder="ZIP"
 									disabled={loading}
 								/>
@@ -531,16 +536,19 @@
 
 					<!-- Bio Field -->
 					<div>
-						<label for="reg-bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+						<label
+							for="reg-bio"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+						>
 							Bio
 						</label>
-						<div class="mt-1">
+						<div>
 							<textarea
 								id="reg-bio"
 								name="bio"
 								rows="3"
 								bind:value={registerData.bio}
-								class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Tell us about yourself (optional)"
 								disabled={loading}
 							></textarea>
@@ -550,12 +558,12 @@
 					<!-- Error Message -->
 					{#if error}
 						<div
-							class="rounded-md bg-red-50 p-4 dark:border dark:border-red-800 dark:bg-red-900/20"
+							class="rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-900/20 dark:ring-red-800"
 						>
 							<div class="flex">
 								<div class="shrink-0">
 									<svg
-										class="h-5 w-5 text-red-400"
+										class="h-5 w-5 text-red-500"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -569,8 +577,8 @@
 									</svg>
 								</div>
 								<div class="ml-3">
-									<h3 class="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
-									<div class="mt-2 text-sm text-red-700 dark:text-red-300">
+									<h3 class="text-sm font-semibold text-red-800 dark:text-red-200">Error</h3>
+									<div class="mt-1 text-sm text-red-700 dark:text-red-300">
 										<p>{error}</p>
 									</div>
 								</div>
@@ -581,12 +589,12 @@
 					<!-- Success Message -->
 					{#if success}
 						<div
-							class="rounded-md bg-green-50 p-4 dark:border dark:border-green-800 dark:bg-green-900/20"
+							class="rounded-xl bg-green-50 p-4 ring-1 ring-green-200 dark:bg-green-900/20 dark:ring-green-800"
 						>
 							<div class="flex">
 								<div class="shrink-0">
 									<svg
-										class="h-5 w-5 text-green-400"
+										class="h-5 w-5 text-green-500"
 										fill="none"
 										stroke="currentColor"
 										viewBox="0 0 24 24"
@@ -600,8 +608,8 @@
 									</svg>
 								</div>
 								<div class="ml-3">
-									<h3 class="text-sm font-medium text-green-800 dark:text-green-200">Success</h3>
-									<div class="mt-2 text-sm text-green-700 dark:text-green-300">
+									<h3 class="text-sm font-semibold text-green-800 dark:text-green-200">Success</h3>
+									<div class="mt-1 text-sm text-green-700 dark:text-green-300">
 										<p>{success}</p>
 									</div>
 								</div>
@@ -610,14 +618,14 @@
 					{/if}
 
 					<!-- Submit Button -->
-					<div>
+					<div class="pt-2">
 						<button
 							type="submit"
 							disabled={loading}
-							class="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-800"
+							class="group relative flex w-full justify-center rounded-xl bg-blue-600 px-4 py-3.5 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
 						>
 							{#if loading}
-								<svg class="mr-2 h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+								<svg class="mr-3 h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
 									<circle
 										class="opacity-25"
 										cx="12"
@@ -634,7 +642,7 @@
 								</svg>
 								Creating account...
 							{:else}
-								<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -649,16 +657,16 @@
 				</form>
 
 				<!-- Toggle Button -->
-				<div class="mt-6">
+				<div class="mt-8">
 					<div class="relative">
 						<div class="absolute inset-0 flex items-center">
-							<div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+							<div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
 						</div>
 						<div class="relative flex justify-center text-sm">
 							<button
 								type="button"
 								onclick={toggleMode}
-								class="bg-white px-4 py-2 text-blue-600 hover:text-blue-500 dark:bg-gray-800 dark:text-blue-400 dark:hover:text-blue-300"
+								class="bg-white/80 px-6 py-2 font-medium text-blue-600 transition-colors duration-200 hover:text-blue-500 dark:bg-gray-800/80 dark:text-blue-400 dark:hover:text-blue-300"
 							>
 								Already have an account? Sign in
 							</button>
