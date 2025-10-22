@@ -358,7 +358,7 @@
 		</div>
 	</header>
 
-	<div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+	<div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
 		<!-- Loading State -->
 		{#if loading}
 			<div class="flex items-center justify-center py-12">
@@ -382,14 +382,16 @@
 
 		<!-- Yard Sale Details -->
 		{#if yardSale && !loading}
-			<div class="mx-auto max-w-4xl space-y-8">
+			<div class="mx-auto max-w-4xl space-y-6 sm:space-y-8">
 				<!-- Hero Section -->
 				<div
 					class="relative overflow-hidden rounded-3xl bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 				>
-					<div class="px-8 py-12 sm:px-12 sm:py-16">
+					<div class="px-4 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
 						<!-- Header with Actions -->
-						<div class="mb-8 flex items-start justify-between">
+						<div
+							class="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between"
+						>
 							<div class="flex-1">
 								<!-- Visited Indicator -->
 								{#if isVisited}
@@ -574,12 +576,12 @@
 				</div>
 
 				<!-- Main Content Grid -->
-				<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+				<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
 					<!-- Left Column - Main Info -->
-					<div class="space-y-8 lg:col-span-2">
+					<div class="space-y-6 sm:space-y-8 lg:col-span-2">
 						<!-- Date and Time Card -->
 						<div
-							class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 								<button
@@ -678,7 +680,7 @@
 
 						<!-- Description Card -->
 						<div
-							class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Description</h2>
 							<p class="leading-relaxed text-gray-700 dark:text-gray-300">{yardSale.description}</p>
@@ -686,7 +688,7 @@
 
 						<!-- Categories Card -->
 						<div
-							class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Categories</h2>
 							<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -702,7 +704,7 @@
 
 						<!-- Contact Information Card -->
 						<div
-							class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
 								Contact Information
@@ -776,7 +778,7 @@
 
 						<!-- Action Buttons Card -->
 						<div
-							class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Actions</h3>
 							<div class="space-y-3">
@@ -900,7 +902,9 @@
 				<div
 					class="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 				>
-					<div class="border-b border-gray-200 px-6 py-6 sm:px-8 dark:border-gray-700">
+					<div
+						class="border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-gray-700"
+					>
 						<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
 							Comments ({comments.length})
 						</h2>
@@ -908,7 +912,9 @@
 
 					<!-- Add Comment Form -->
 					{#if yardSale && isYardSaleActive(yardSale)}
-						<div class="border-b border-gray-200 px-6 py-6 sm:px-8 dark:border-gray-700">
+						<div
+							class="border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-gray-700"
+						>
 							<form
 								onsubmit={(e) => {
 									e.preventDefault();
@@ -961,7 +967,9 @@
 						</div>
 					{:else if yardSale}
 						<!-- Expired Event Message -->
-						<div class="border-b border-gray-200 px-6 py-6 sm:px-8 dark:border-gray-700">
+						<div
+							class="border-b border-gray-200 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 dark:border-gray-700"
+						>
 							<div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
 								<div class="flex">
 									<svg
@@ -991,7 +999,7 @@
 					{/if}
 
 					<!-- Comments List -->
-					<div class="px-6 py-6 sm:px-8">
+					<div class="px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
 						{#if comments.length === 0}
 							<div class="py-8 text-center">
 								<svg
