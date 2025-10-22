@@ -58,7 +58,8 @@
 		return new Date(dateString).toLocaleDateString('en-US', {
 			weekday: 'short',
 			month: 'short',
-			day: 'numeric'
+			day: 'numeric',
+			timeZone: 'America/Denver'
 		});
 	}
 
@@ -66,7 +67,8 @@
 		return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
 			hour: 'numeric',
 			minute: '2-digit',
-			hour12: true
+			hour12: true,
+			timeZone: 'America/Denver'
 		});
 	}
 
@@ -322,7 +324,7 @@
 
 	<!-- Footer -->
 	<div
-		class="border-t border-gray-100 bg-gray-50/50 px-5 py-5 dark:border-gray-700 dark:bg-gray-700/50 h-full"
+		class="h-full border-t border-gray-100 bg-gray-50/50 px-5 py-5 dark:border-gray-700 dark:bg-gray-700/50"
 		onclick={(e) => e.stopPropagation()}
 		onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 		role="button"
@@ -396,7 +398,7 @@
 		</div>
 
 		<!-- Payment Methods -->
-		<div class="mt-4 ">
+		<div class="mt-4">
 			<div class="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Payment:</div>
 			<div class="flex flex-wrap gap-2">
 				{#each yardSale.payment_methods as method}

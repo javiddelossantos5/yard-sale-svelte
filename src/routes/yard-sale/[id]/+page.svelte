@@ -164,7 +164,8 @@
 			weekday: 'long',
 			year: 'numeric',
 			month: 'long',
-			day: 'numeric'
+			day: 'numeric',
+			timeZone: 'America/Denver'
 		});
 	}
 
@@ -172,7 +173,8 @@
 		return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
 			hour: 'numeric',
 			minute: '2-digit',
-			hour12: true
+			hour12: true,
+			timeZone: 'America/Denver'
 		});
 	}
 

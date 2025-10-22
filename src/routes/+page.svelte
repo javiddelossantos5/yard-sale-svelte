@@ -188,16 +188,23 @@
 				}
 
 				// If both have same visited status, sort by start date: closest starting date first
-				const dateA = new Date(a.start_date || '');
-				const dateB = new Date(b.start_date || '');
+				// Sort by date using Mountain Time
+				const dateA = new Date(a.start_date || '').toLocaleString('en-US', {
+					timeZone: 'America/Denver'
+				});
+				const dateB = new Date(b.start_date || '').toLocaleString('en-US', {
+					timeZone: 'America/Denver'
+				});
+				const dateAObj = new Date(dateA);
+				const dateBObj = new Date(dateB);
 
 				// If dates are the same, sort by title alphabetically
-				if (dateA.getTime() === dateB.getTime()) {
+				if (dateAObj.getTime() === dateBObj.getTime()) {
 					return a.title.localeCompare(b.title);
 				}
 
 				// Sort by start date (ascending - closest first)
-				return dateA.getTime() - dateB.getTime();
+				return dateAObj.getTime() - dateBObj.getTime();
 			})
 	);
 </script>

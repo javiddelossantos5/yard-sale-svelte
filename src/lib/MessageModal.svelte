@@ -134,14 +134,16 @@
 
 	function formatMessageTime(dateString: string): string {
 		const date = new Date(dateString);
-		const now = new Date();
-		const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+		const now = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
+		const nowDate = new Date(now);
+		const diffInHours = (nowDate.getTime() - date.getTime()) / (1000 * 60 * 60);
 
 		if (diffInHours < 24) {
 			return date.toLocaleTimeString('en-US', {
 				hour: 'numeric',
 				minute: '2-digit',
-				hour12: true
+				hour12: true,
+				timeZone: 'America/Denver'
 			});
 		} else {
 			return date.toLocaleDateString('en-US', {
@@ -149,7 +151,8 @@
 				day: 'numeric',
 				hour: 'numeric',
 				minute: '2-digit',
-				hour12: true
+				hour12: true,
+				timeZone: 'America/Denver'
 			});
 		}
 	}

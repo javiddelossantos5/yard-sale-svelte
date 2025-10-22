@@ -7,7 +7,9 @@ import type { YardSale } from './api';
  * 2. The status is 'active' or 'on_break' (not 'closed')
  */
 export function isYardSaleActive(yardSale: YardSale): boolean {
-	const now = new Date();
+	// Use Mountain Time for all date comparisons
+	const now = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
+	const nowDate = new Date(now);
 	const endDate = new Date(yardSale.end_date || '');
 
 	// Add end time to the end date for more accurate comparison
@@ -17,7 +19,7 @@ export function isYardSaleActive(yardSale: YardSale): boolean {
 	}
 
 	// Check if the event has ended by date
-	const hasEndedByDate = endDate <= now;
+	const hasEndedByDate = endDate <= nowDate;
 
 	// Check if the event is closed by status
 	const isClosedByStatus = yardSale.status === 'closed';
@@ -30,7 +32,9 @@ export function isYardSaleActive(yardSale: YardSale): boolean {
  * A yard sale is considered started if the start date has passed
  */
 export function hasYardSaleStarted(yardSale: YardSale): boolean {
-	const now = new Date();
+	// Use Mountain Time for all date comparisons
+	const now = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
+	const nowDate = new Date(now);
 	const startDate = new Date(yardSale.start_date || '');
 
 	// Add start time to the start date for more accurate comparison
@@ -39,7 +43,7 @@ export function hasYardSaleStarted(yardSale: YardSale): boolean {
 		startDate.setHours(hours, minutes, 0, 0);
 	}
 
-	return startDate <= now;
+	return startDate <= nowDate;
 }
 
 /**
@@ -99,24 +103,26 @@ export function getYardSaleStatusMessage(yardSale: YardSale): string {
  * Get the number of days until a yard sale starts or ends
  */
 export function getDaysUntilEvent(yardSale: YardSale): number {
-	const now = new Date();
+	// Use Mountain Time for all date comparisons
+	const now = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
+	const nowDate = new Date(now);
 	const startDate = new Date(yardSale.start_date || '');
 	const endDate = new Date(yardSale.end_date || '');
 
 	// If it hasn't started, return days until start
 	if (!hasYardSaleStarted(yardSale)) {
-		const diffTime = startDate.getTime() - now.getTime();
+		const diffTime = startDate.getTime() - nowDate.getTime();
 		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 	}
 
 	// If it's active, return days until end
 	if (isYardSaleActive(yardSale)) {
-		const diffTime = endDate.getTime() - now.getTime();
+		const diffTime = endDate.getTime() - nowDate.getTime();
 		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 	}
 
 	// If it's expired, return negative days since it ended
-	const diffTime = now.getTime() - endDate.getTime();
+	const diffTime = nowDate.getTime() - endDate.getTime();
 	return -Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
@@ -124,12 +130,14 @@ export function getDaysUntilEvent(yardSale: YardSale): number {
  * Check if a yard sale is happening today
  */
 export function isYardSaleToday(yardSale: YardSale): boolean {
-	const today = new Date();
+	// Use Mountain Time for all date comparisons
+	const today = new Date().toLocaleString('en-US', { timeZone: 'America/Denver' });
+	const todayDate = new Date(today);
 	const startDate = new Date(yardSale.start_date || '');
 	const endDate = new Date(yardSale.end_date || '');
 
 	// Check if today is between start and end date (inclusive)
-	return today >= startDate && today <= endDate;
+	return todayDate >= startDate && todayDate <= endDate;
 }
 
 /**
