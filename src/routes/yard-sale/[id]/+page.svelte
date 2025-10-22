@@ -564,10 +564,41 @@
 
 								<!-- Title -->
 								<h1
-									class="mb-6 text-3xl leading-tight font-bold text-gray-900 sm:text-4xl dark:text-white"
+									class="mb-4 text-3xl leading-tight font-bold text-gray-900 sm:text-4xl dark:text-white"
 								>
 									{yardSale.title}
 								</h1>
+
+								<!-- Owner Information -->
+								<div class="mb-6">
+									<button
+										onclick={() => goto(`/profile/${yardSale.owner_id}`)}
+										class="group flex items-center rounded-2xl bg-gray-100/60 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100/60 active:scale-95 dark:bg-gray-700/60 dark:hover:bg-blue-900/30"
+									>
+										<div
+											class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600"
+										>
+											<FontAwesomeIcon icon="user" class="h-4 w-4 text-white" />
+										</div>
+										<div class="flex-1 text-left">
+											<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+												Posted by {yardSale.owner_username}
+											</div>
+											{#if yardSale.owner_average_rating}
+												<div class="flex items-center">
+													<FontAwesomeIcon icon="star" class="mr-1 h-3 w-3 text-yellow-500" />
+													<span class="text-xs font-medium text-gray-600 dark:text-gray-300">
+														{yardSale.owner_average_rating.toFixed(1)} rating
+													</span>
+												</div>
+											{/if}
+										</div>
+										<FontAwesomeIcon
+											icon="arrow-right"
+											class="ml-2 h-4 w-4 text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
+										/>
+									</button>
+								</div>
 
 								<!-- Location -->
 								<div class="flex items-center text-gray-600 dark:text-gray-300">
@@ -936,9 +967,13 @@
 								{#if !isOwner && currentUser}
 									<button
 										onclick={handleRateOwner}
-										class="flex w-full items-center justify-center rounded-full bg-yellow-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-yellow-600 active:scale-95 dark:bg-yellow-600 dark:hover:bg-yellow-700"
+										class="flex w-full items-center justify-center rounded-2xl bg-linear-to-r from-yellow-500 to-yellow-600 px-4 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95"
 									>
-										<FontAwesomeIcon icon="star" class="mr-2 h-4 w-4" />
+										<div
+											class="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-white/20"
+										>
+											<FontAwesomeIcon icon="star" class="h-3 w-3 text-white" />
+										</div>
 										Rate Owner
 									</button>
 								{/if}
@@ -947,9 +982,13 @@
 								{#if !isOwner && currentUser}
 									<button
 										onclick={handleReportYardSale}
-										class="flex w-full items-center justify-center rounded-full border border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-700 transition-all hover:bg-red-50 active:scale-95 dark:border-red-600 dark:bg-gray-700 dark:text-red-400 dark:hover:bg-red-900/20"
+										class="flex w-full items-center justify-center rounded-2xl border-2 border-red-300 bg-white/80 px-4 py-3 text-sm font-bold text-red-700 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-red-50/80 hover:shadow-xl active:scale-95 dark:border-red-600 dark:bg-gray-700/80 dark:text-red-400 dark:hover:bg-red-900/20"
 									>
-										<FontAwesomeIcon icon="flag" class="mr-2 h-4 w-4" />
+										<div
+											class="mr-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-100/60 dark:bg-red-900/30"
+										>
+											<FontAwesomeIcon icon="flag" class="h-3 w-3 text-red-600 dark:text-red-400" />
+										</div>
 										Report
 									</button>
 								{/if}

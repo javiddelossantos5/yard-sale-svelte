@@ -168,6 +168,19 @@
 		}
 	});
 
+	// Helper function to format Venmo URL
+	function formatVenmoUrl(url: string): string {
+		if (!url.trim()) return url;
+
+		// If it already has a protocol, return as is
+		if (url.startsWith('http://') || url.startsWith('https://')) {
+			return url;
+		}
+
+		// Add https:// if it doesn't have a protocol
+		return `https://${url}`;
+	}
+
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
 
@@ -191,10 +204,16 @@
 		error = null;
 
 		try {
+			// Format the Venmo URL before submission
+			const formattedData = {
+				...formData,
+				venmo_url: formData.venmo_url ? formatVenmoUrl(formData.venmo_url) : ''
+			};
+
 			if (isEditing && yardSale) {
-				await updateYardSale(yardSale.id, formData);
+				await updateYardSale(yardSale.id, formattedData);
 			} else {
-				await createYardSale(formData);
+				await createYardSale(formattedData);
 			}
 			onSuccess();
 			onClose();
@@ -666,6 +685,28 @@
 									id="venmo-url"
 									type="url"
 									bind:value={formData.venmo_url}
+									onblur={() => {
+										if (
+											formData.venmo_url &&
+											!formData.venmo_url.startsWith('http://') &&
+											!formData.venmo_url.startsWith('https://')
+										) {
+											formData.venmo_url = `https://${formData.venmo_url}`;
+										}
+									}}
+									oninput={() => {
+										// Automatically select Venmo payment method if URL is provided
+										if (formData.venmo_url && formData.venmo_url.trim() !== '') {
+											if (!formData.payment_methods?.includes('venmo')) {
+												formData.payment_methods = [...(formData.payment_methods || []), 'venmo'];
+											}
+										} else {
+											// Remove Venmo from payment methods if URL is cleared
+											formData.payment_methods = (formData.payment_methods || []).filter(
+												(method) => method !== 'venmo'
+											);
+										}
+									}}
 									placeholder="https://venmo.com/your-username"
 									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
