@@ -90,7 +90,7 @@
 			let recipientId: number;
 
 			if (isOwner) {
-				// If the current user is the owner, they can message anyone
+				// If the current user is the owner, they can reply to customers
 				// Try to find the most recent message from someone other than the owner to reply to
 				const lastMessageFromCustomer = messages
 					.filter((msg) => msg.sender_id !== currentUserId)
@@ -100,19 +100,15 @@
 					// Reply to the most recent customer
 					recipientId = lastMessageFromCustomer.sender_id;
 				} else {
-					// If no messages from customers, message the yard sale owner (yourself is not allowed)
-					// This shouldn't happen in normal flow, but we'll use otherUserId as fallback
-					recipientId = otherUserId;
+					// If no messages from customers yet, owner cannot send a message
+					// They need to wait for a customer to message them first
+					error =
+						'No customers have messaged you yet. You can reply once someone sends you a message.';
+					return;
 				}
 			} else {
 				// If the current user is not the owner, they message the owner
 				recipientId = otherUserId;
-			}
-
-			// Double-check that we're not trying to message ourselves
-			if (recipientId === currentUserId) {
-				error = 'Cannot send message to yourself.';
-				return;
 			}
 
 			const message = await sendMessage(yardSaleId, recipientId, newMessage.trim());
