@@ -195,6 +195,53 @@
 		return `${startTime} - ${endTime}`;
 	}
 
+	function generateCalendarLink(): string {
+		if (!yardSale) return '';
+
+		// Create start and end datetime strings in ISO format
+		const startDateTime = `${yardSale.start_date}T${yardSale.start_time}`;
+		const endDateTime = yardSale.end_date
+			? `${yardSale.end_date}T${yardSale.end_time}`
+			: `${yardSale.start_date}T${yardSale.end_time}`;
+
+		// Format dates for calendar URL (YYYYMMDDTHHMMSSZ format)
+		const startDate = new Date(startDateTime);
+		const endDate = new Date(endDateTime);
+
+		const formatForCalendar = (date: Date) => {
+			return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+		};
+
+		const startFormatted = formatForCalendar(startDate);
+		const endFormatted = formatForCalendar(endDate);
+
+		// Create event details
+		const title = encodeURIComponent(`Yard Sale - ${yardSale.title}`);
+		const description = encodeURIComponent(
+			`${yardSale.description || 'Yard Sale'}\n\n` +
+				`Location: ${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}\n` +
+				`Contact: ${yardSale.contact_name}${yardSale.contact_phone ? ` (${yardSale.contact_phone})` : ''}\n` +
+				`${yardSale.contact_email ? `Email: ${yardSale.contact_email}\n` : ''}` +
+				`Categories: ${yardSale.categories?.join(', ') || 'Various items'}\n` +
+				`Payment Methods: ${yardSale.payment_methods?.join(', ') || 'Cash accepted'}`
+		);
+		const location = encodeURIComponent(
+			`${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`
+		);
+
+		// Generate Google Calendar URL
+		const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startFormatted}/${endFormatted}&details=${description}&location=${location}`;
+
+		return googleCalendarUrl;
+	}
+
+	function addToCalendar() {
+		const calendarUrl = generateCalendarLink();
+		if (calendarUrl) {
+			window.open(calendarUrl, '_blank');
+		}
+	}
+
 	function formatPhoneNumber(phone: string): string {
 		// Remove all non-digit characters
 		const cleaned = phone.replace(/\D/g, '');
@@ -535,7 +582,11 @@
 							class="rounded-2xl bg-white p-8 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-								<div class="flex items-start space-x-4">
+								<button
+									onclick={addToCalendar}
+									class="flex w-full items-start space-x-4 rounded-xl p-3 transition-all hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
+									title="Add to Calendar"
+								>
 									<div
 										class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20"
 									>
@@ -553,13 +604,35 @@
 											/>
 										</svg>
 									</div>
-									<div>
-										<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Date</h3>
+									<div class="flex-1 text-left">
+										<div class="flex items-center gap-2">
+											<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Date</h3>
+											<svg
+												class="h-4 w-4 text-gray-400"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+												/>
+											</svg>
+										</div>
 										<p class="text-gray-600 dark:text-gray-300">{getDateRange()}</p>
+										<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+											Tap to add to calendar
+										</p>
 									</div>
-								</div>
+								</button>
 
-								<div class="flex items-start space-x-4">
+								<button
+									onclick={addToCalendar}
+									class="flex w-full items-start space-x-4 rounded-xl p-3 transition-all hover:bg-gray-50 active:bg-gray-100 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
+									title="Add to Calendar"
+								>
 									<div
 										class="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20"
 									>
@@ -577,11 +650,29 @@
 											/>
 										</svg>
 									</div>
-									<div>
-										<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Time</h3>
+									<div class="flex-1 text-left">
+										<div class="flex items-center gap-2">
+											<h3 class="text-lg font-semibold text-gray-900 dark:text-white">Time</h3>
+											<svg
+												class="h-4 w-4 text-gray-400"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+												/>
+											</svg>
+										</div>
 										<p class="text-gray-600 dark:text-gray-300">{getTimeRange()}</p>
+										<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+											Tap to add to calendar
+										</p>
 									</div>
-								</div>
+								</button>
 							</div>
 						</div>
 
