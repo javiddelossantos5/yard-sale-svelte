@@ -68,19 +68,22 @@
 			);
 
 			console.log('Rating submitted successfully');
-			
+
 			// Update debug info for success
-			localStorage.setItem('rating_debug', JSON.stringify({
-				...debugInfo,
-				action: 'submission_success',
-				successTime: new Date().toISOString()
-			}));
-			
+			localStorage.setItem(
+				'rating_debug',
+				JSON.stringify({
+					...debugInfo,
+					action: 'submission_success',
+					successTime: new Date().toISOString()
+				})
+			);
+
 			// Temporarily disable success callback to test if it's causing the refresh
 			// setTimeout(() => {
 			// 	onSuccess();
 			// }, 100);
-			
+
 			// Just close the modal for now
 			onClose();
 		} catch (err) {
