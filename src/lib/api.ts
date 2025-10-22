@@ -28,6 +28,7 @@ export interface YardSale {
 	updated_at: string;
 	owner_id: number;
 	owner_username: string;
+	owner_average_rating?: number;
 	comment_count: number;
 	venmo_url?: string;
 }
@@ -341,6 +342,46 @@ export interface CurrentUser {
 		zip: string;
 	};
 	bio: string;
+	// Trust metrics
+	average_rating?: number;
+	total_ratings?: number;
+	is_verified?: boolean;
+	verification_badges?: VerificationBadge[];
+}
+
+export interface VerificationBadge {
+	id: number;
+	user_id: number;
+	verification_type: 'email' | 'phone' | 'identity' | 'address';
+	status: 'pending' | 'verified' | 'rejected';
+	verified_at?: string;
+	created_at: string;
+}
+
+export interface Rating {
+	id: number;
+	rater_id: number;
+	rated_user_id: number;
+	yard_sale_id?: number;
+	rating: number; // 1-5
+	review_text?: string;
+	created_at: string;
+	rater_username?: string;
+	yard_sale_title?: string;
+}
+
+export interface Report {
+	id: number;
+	reporter_id: number;
+	reported_user_id?: number;
+	reported_yard_sale_id?: number;
+	report_type: 'scam' | 'inappropriate' | 'spam' | 'other';
+	description: string;
+	status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+	created_at: string;
+	reporter_username?: string;
+	reported_username?: string;
+	reported_yard_sale_title?: string;
 }
 
 export async function getCurrentUser(): Promise<CurrentUser> {
@@ -367,4 +408,119 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 		console.error('getCurrentUser failed:', error);
 		throw error; // Re-throw the error since backend should be working now
 	}
+}
+
+// User Profile API functions
+export async function getUserProfile(userId: number): Promise<CurrentUser> {
+	const response = await fetch(`/api/users/${userId}`, {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('token')}`
+		}
+	});
+	if (!response.ok) {
+		throw new Error(`Failed to fetch user profile: ${response.status}`);
+	}
+	return response.json();
+}
+
+// Ratings API functions
+export async function getUserRatings(userId: number): Promise<Rating[]> {
+	const response = await fetch(`/api/users/${userId}/ratings`, {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('token')}`
+		}
+	});
+	if (!response.ok) {
+		throw new Error(`Failed to fetch user ratings: ${response.status}`);
+	}
+	return response.json();
+}
+
+export async function createRating(
+	ratedUserId: number,
+	rating: number,
+	reviewText?: string,
+	yardSaleId?: number
+): Promise<Rating> {
+	const response = await fetch('/api/ratings', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('token')}`
+		},
+		body: JSON.stringify({
+			rated_user_id: ratedUserId,
+			rating,
+			review_text: reviewText,
+			yard_sale_id: yardSaleId
+		})
+	});
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Failed to create rating');
+	}
+	return response.json();
+}
+
+// Reports API functions
+export async function createReport(
+	reportType: 'scam' | 'inappropriate' | 'spam' | 'other',
+	description: string,
+	reportedUserId?: number,
+	reportedYardSaleId?: number
+): Promise<Report> {
+	const response = await fetch('/api/reports', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('token')}`
+		},
+		body: JSON.stringify({
+			report_type: reportType,
+			description,
+			reported_user_id: reportedUserId,
+			reported_yard_sale_id: reportedYardSaleId
+		})
+	});
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Failed to create report');
+	}
+	return response.json();
+}
+
+// Verification API functions
+export async function requestVerification(
+	verificationType: 'email' | 'phone' | 'identity' | 'address'
+): Promise<VerificationBadge> {
+	const response = await fetch('/api/verifications', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('token')}`
+		},
+		body: JSON.stringify({
+			verification_type: verificationType
+		})
+	});
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Failed to request verification');
+	}
+	return response.json();
+}
+
+export async function getUserVerifications(userId: number): Promise<VerificationBadge[]> {
+	const response = await fetch(`/api/users/${userId}/verifications`, {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('token')}`
+		}
+	});
+	if (!response.ok) {
+		throw new Error(`Failed to fetch user verifications: ${response.status}`);
+	}
+	return response.json();
 }

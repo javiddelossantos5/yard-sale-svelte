@@ -15,6 +15,8 @@
 	import MessageModal from '$lib/MessageModal.svelte';
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
+	import RatingModal from '$lib/RatingModal.svelte';
+	import ReportModal from '$lib/ReportModal.svelte';
 	import { getAccessToken } from '$lib/auth';
 	import {
 		getYardSaleStatus,
@@ -69,6 +71,10 @@
 
 	// Delete confirmation modal state
 	let showDeleteModal = $state(false);
+
+	// Rating and Report modal states
+	let showRatingModal = $state(false);
+	let showReportModal = $state(false);
 
 	let yardSaleId = $derived(parseInt($page.params.id || '0'));
 
@@ -329,6 +335,40 @@
 
 	function handleCloseDeleteModal() {
 		showDeleteModal = false;
+	}
+
+	function handleRateOwner() {
+		requireAuth(() => {
+			if (yardSale && !isOwner) {
+				showRatingModal = true;
+			}
+		});
+	}
+
+	function handleReportYardSale() {
+		requireAuth(() => {
+			if (yardSale && !isOwner) {
+				showReportModal = true;
+			}
+		});
+	}
+
+	function handleCloseRatingModal() {
+		showRatingModal = false;
+	}
+
+	function handleCloseReportModal() {
+		showReportModal = false;
+	}
+
+	async function handleRatingSuccess() {
+		// Reload yard sale data to get updated owner rating
+		await loadYardSale();
+		showRatingModal = false;
+	}
+
+	async function handleReportSuccess() {
+		showReportModal = false;
 	}
 
 	function handleToggleVisited() {
@@ -891,6 +931,28 @@
 										{/if}
 									</button>
 								{/if}
+
+								<!-- Rate Owner Button - Only show for non-owners -->
+								{#if !isOwner && currentUser}
+									<button
+										onclick={handleRateOwner}
+										class="flex w-full items-center justify-center rounded-full bg-yellow-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-yellow-600 active:scale-95 dark:bg-yellow-600 dark:hover:bg-yellow-700"
+									>
+										<FontAwesomeIcon icon="star" class="mr-2 h-4 w-4" />
+										Rate Owner
+									</button>
+								{/if}
+
+								<!-- Report Button - Only show for non-owners -->
+								{#if !isOwner && currentUser}
+									<button
+										onclick={handleReportYardSale}
+										class="flex w-full items-center justify-center rounded-full border border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-700 transition-all hover:bg-red-50 active:scale-95 dark:border-red-600 dark:bg-gray-700 dark:text-red-400 dark:hover:bg-red-900/20"
+									>
+										<FontAwesomeIcon icon="flag" class="mr-2 h-4 w-4" />
+										Report
+									</button>
+								{/if}
 							</div>
 						</div>
 
@@ -1139,4 +1201,28 @@
 		onClose={handleCloseDeleteModal}
 		onConfirm={handleConfirmDelete}
 	/>
+
+	<!-- Rating Modal -->
+	{#if yardSale && showRatingModal}
+		<RatingModal
+			isOpen={showRatingModal}
+			ratedUserId={yardSale.owner_id}
+			ratedUserName={yardSale.owner_username}
+			yardSaleId={yardSale.id}
+			yardSaleTitle={yardSale.title}
+			onClose={handleCloseRatingModal}
+			onSuccess={handleRatingSuccess}
+		/>
+	{/if}
+
+	<!-- Report Modal -->
+	{#if yardSale && showReportModal}
+		<ReportModal
+			isOpen={showReportModal}
+			reportedYardSaleId={yardSale.id}
+			reportedYardSaleTitle={yardSale.title}
+			onClose={handleCloseReportModal}
+			onSuccess={handleReportSuccess}
+		/>
+	{/if}
 </div>

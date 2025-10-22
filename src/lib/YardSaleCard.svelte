@@ -131,9 +131,31 @@
 >
 	<!-- Header -->
 	<div class="p-5 pb-4">
-		<h3 class="mb-4 line-clamp-2 text-lg leading-tight font-semibold text-gray-900 dark:text-white">
+		<h3 class="mb-2 line-clamp-2 text-lg leading-tight font-semibold text-gray-900 dark:text-white">
 			{yardSale.title}
 		</h3>
+
+		<!-- Owner Information -->
+		<div class="mb-4 flex items-center justify-between">
+			<button
+				onclick={(e) => {
+					e.stopPropagation();
+					goto(`/profile/${yardSale.owner_id}`);
+				}}
+				class="flex items-center text-sm text-gray-600 transition-colors hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+			>
+				<FontAwesomeIcon icon="user" class="mr-1.5 h-3.5 w-3.5" />
+				<span class="font-medium">by {yardSale.owner_username}</span>
+				{#if yardSale.owner_average_rating}
+					<div class="ml-2 flex items-center">
+						<FontAwesomeIcon icon="star" class="h-3 w-3 text-yellow-400" />
+						<span class="ml-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+							{yardSale.owner_average_rating.toFixed(1)}
+						</span>
+					</div>
+				{/if}
+			</button>
+		</div>
 
 		<!-- Visited Indicator -->
 		{#if isVisited}
