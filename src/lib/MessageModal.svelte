@@ -177,7 +177,7 @@
 			<div class="flex min-h-screen">
 				<!-- Background overlay -->
 				<div
-					class="bg-opacity-50 fixed inset-0 bg-gray-500 transition-opacity"
+					class="bg-opacity-30 fixed inset-0 bg-gray-500 transition-opacity"
 					onclick={(e) => {
 						// Only close if clicking directly on the backdrop, not on child elements
 						if (e.target === e.currentTarget) {
@@ -412,7 +412,7 @@
 			>
 				<!-- Background overlay -->
 				<div
-					class="bg-opacity-50 fixed inset-0 bg-gray-500 transition-opacity"
+					class="bg-opacity-30 fixed inset-0 bg-gray-500 transition-opacity"
 					onclick={(e) => {
 						// Only close if clicking directly on the backdrop, not on child elements
 						if (e.target === e.currentTarget) {
@@ -424,7 +424,7 @@
 
 				<!-- Modal panel -->
 				<div
-					class="relative inline-block w-full max-w-md transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:align-middle dark:bg-gray-800"
+					class="relative inline-block w-full max-w-2xl transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:align-middle dark:bg-gray-800"
 					onclick={(e) => e.stopPropagation()}
 					onkeydown={(e) => e.stopPropagation()}
 					role="dialog"
@@ -461,7 +461,7 @@
 					</div>
 
 					<!-- Messages Container -->
-					<div class="flex h-64 flex-col dark:bg-gray-800">
+					<div class="flex h-[32rem] flex-col dark:bg-gray-800">
 						{#if loading}
 							<div class="flex flex-1 items-center justify-center">
 								<div class="flex items-center space-x-2">
