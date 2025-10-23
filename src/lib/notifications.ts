@@ -45,7 +45,9 @@ export async function loadNotifications(page: number = 1, limit: number = 50) {
 	try {
 		const response = await getNotifications(page, limit);
 		notifications.set(response.notifications);
-		unreadCount.set(response.unread_count);
+		// Handle both field name formats
+		const unreadCountValue = response.unread_count || response.unread_notifications || 0;
+		unreadCount.set(unreadCountValue);
 	} catch (error) {
 		console.warn('Failed to load notifications:', error);
 	}
@@ -57,7 +59,9 @@ export async function loadNotificationCounts() {
 
 	try {
 		const counts = await getNotificationCounts();
-		unreadCount.set(counts.unread);
+		// Handle both field name formats
+		const unreadCountValue = counts.unread || counts.unread_notifications || 0;
+		unreadCount.set(unreadCountValue);
 	} catch (error) {
 		console.warn('Failed to load notification counts:', error);
 	}

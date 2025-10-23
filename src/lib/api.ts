@@ -845,7 +845,12 @@ export async function getNotifications(
 	page: number = 1,
 	limit: number = 50,
 	unreadOnly: boolean = false
-): Promise<{ notifications: Notification[]; total: number; unread_count: number }> {
+): Promise<{
+	notifications: Notification[];
+	total: number;
+	unread_count: number;
+	unread_notifications: number;
+}> {
 	const params = new URLSearchParams({
 		page: page.toString(),
 		limit: limit.toString(),
@@ -872,7 +877,12 @@ export async function getNotifications(
 }
 
 // Get notification counts
-export async function getNotificationCounts(): Promise<{ total: number; unread: number }> {
+export async function getNotificationCounts(): Promise<{
+	total: number;
+	unread: number;
+	total_notifications: number;
+	unread_notifications: number;
+}> {
 	const response = await fetch('/api/notifications/count', {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
