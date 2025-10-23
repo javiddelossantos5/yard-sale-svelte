@@ -50,6 +50,9 @@
 	function handleNotificationClick(notification: any) {
 		markNotificationAsRead(notification.id);
 
+		// Close the notification center
+		isOpen = false;
+
 		if (notification.type === 'message') {
 			// Navigate to the conversation or yard sale
 			if (notification.related_yard_sale_id) {

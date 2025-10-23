@@ -8,9 +8,11 @@
 		getCurrentUser,
 		createRating,
 		createReport,
+		getAllUserMessages,
 		type CurrentUser,
 		type Rating,
-		type Report
+		type Report,
+		type Message
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import RatingModal from '$lib/RatingModal.svelte';
@@ -20,6 +22,7 @@
 	let profileUser = $state<CurrentUser | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
 	let ratings = $state<Rating[]>([]);
+	let messages = $state<Message[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
@@ -27,6 +30,7 @@
 	let showRatingModal = $state(false);
 	let showReportModal = $state(false);
 	let showMessageModal = $state(false);
+	let showMessagesList = $state(false);
 
 	let userId = $derived(parseInt($page.params.id || '0'));
 	let isOwnProfile = $derived(currentUser?.id === userId);
@@ -76,6 +80,15 @@
 		} catch (error) {
 			console.error('Failed to load ratings:', error);
 			ratings = []; // Set empty array as fallback
+		}
+	}
+
+	async function loadMessages() {
+		try {
+			messages = await getAllUserMessages();
+		} catch (error) {
+			console.error('Failed to load messages:', error);
+			messages = []; // Set empty array as fallback
 		}
 	}
 
@@ -136,6 +149,15 @@
 
 	function handleCloseMessageModal() {
 		showMessageModal = false;
+	}
+
+	function handleViewMessages() {
+		showMessagesList = true;
+		loadMessages(); // Load messages when opening the list
+	}
+
+	function handleCloseMessagesList() {
+		showMessagesList = false;
 	}
 
 	async function handleRatingSuccess() {
@@ -280,6 +302,16 @@
 
 						<!-- Action Buttons -->
 						<div class="mt-4 flex flex-col gap-2 sm:mt-0">
+							{#if isOwnProfile}
+								<button
+									onclick={handleViewMessages}
+									class="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-purple-700 active:scale-95"
+								>
+									<FontAwesomeIcon icon="comments" class="mr-2 h-4 w-4" />
+									View Messages
+								</button>
+							{/if}
+
 							{#if currentUser && !isOwnProfile}
 								<button
 									onclick={handleMessageUser}
@@ -404,4 +436,101 @@
 		currentUserId={currentUser.id}
 		onClose={handleCloseMessageModal}
 	/>
+{/if}
+
+<!-- Messages List Modal -->
+{#if showMessagesList}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+		<div class="mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
+			<!-- Header -->
+			<div
+				class="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700"
+			>
+				<div class="flex items-center gap-3">
+					<FontAwesomeIcon icon="comments" class="h-6 w-6 text-purple-600" />
+					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your Messages</h2>
+				</div>
+				<button
+					onclick={handleCloseMessagesList}
+					class="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+					aria-label="Close messages"
+				>
+					<FontAwesomeIcon icon="times" class="h-5 w-5" />
+				</button>
+			</div>
+
+			<!-- Messages List -->
+			<div class="max-h-96 overflow-y-auto p-6">
+				{#if messages.length === 0}
+					<div class="flex flex-col items-center justify-center py-12 text-center">
+						<FontAwesomeIcon icon="comments" class="mb-4 h-12 w-12 text-gray-300" />
+						<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">No messages yet</h3>
+						<p class="text-gray-500 dark:text-gray-400">Start a conversation with someone!</p>
+					</div>
+				{:else}
+					<div class="space-y-4">
+						{#each messages as message (message.id)}
+							<div
+								class="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+							>
+								<div class="flex items-start justify-between">
+									<div class="flex-1">
+										<div class="mb-2 flex items-center gap-2">
+											<span class="text-sm font-medium text-gray-900 dark:text-white">
+												{message.sender_username}
+											</span>
+											<span class="text-xs text-gray-500 dark:text-gray-400">
+												{new Date(message.created_at).toLocaleDateString()}
+											</span>
+											{#if !message.is_read}
+												<span class="rounded-full bg-blue-500 px-2 py-1 text-xs text-white"
+													>New</span
+												>
+											{/if}
+										</div>
+										<p class="text-gray-700 dark:text-gray-300">{message.content}</p>
+										{#if message.conversation_id}
+											<div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+												Conversation ID: {message.conversation_id}
+											</div>
+										{/if}
+									</div>
+									<div class="ml-4 flex flex-col items-end gap-2">
+										{#if message.sender_id === currentUser?.id}
+											<span
+												class="rounded-full bg-green-100 px-2 py-1 text-xs text-green-800 dark:bg-green-900 dark:text-green-200"
+											>
+												Sent
+											</span>
+										{:else}
+											<span
+												class="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+											>
+												Received
+											</span>
+										{/if}
+									</div>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+
+			<!-- Footer -->
+			<div class="border-t border-gray-200 p-6 dark:border-gray-700">
+				<div class="flex items-center justify-between">
+					<span class="text-sm text-gray-500 dark:text-gray-400">
+						{messages.length} message{messages.length !== 1 ? 's' : ''} total
+					</span>
+					<button
+						onclick={handleCloseMessagesList}
+						class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+					>
+						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
 {/if}
