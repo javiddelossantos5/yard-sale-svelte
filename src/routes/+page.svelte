@@ -19,7 +19,7 @@
 		migrateOldVisitedData
 	} from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { unreadCount } from '$lib/notifications';
+	import { unreadMessageCount } from '$lib/notifications';
 
 	let yardSales = $state<YardSale[]>([]);
 	let loading = $state(true);
@@ -296,11 +296,11 @@
 								aria-label="View Profile"
 							>
 								<FontAwesomeIcon icon="user" class="h-4 w-4" />
-								{#if $unreadCount > 0}
+								{#if $unreadMessageCount > 0}
 									<span
 										class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
 									>
-										{$unreadCount > 99 ? '99+' : $unreadCount}
+										{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
 									</span>
 								{/if}
 							</button>
@@ -349,11 +349,11 @@
 							>
 								<FontAwesomeIcon icon="user" class="mr-2 h-4 w-4" />
 								My Profile
-								{#if $unreadCount > 0}
+								{#if $unreadMessageCount > 0}
 									<span
 										class="ml-2 rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white"
 									>
-										{$unreadCount > 99 ? '99+' : $unreadCount}
+										{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
 									</span>
 								{/if}
 							</button>

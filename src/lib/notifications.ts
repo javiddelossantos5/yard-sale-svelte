@@ -23,6 +23,9 @@ export interface MessageNotification extends Notification {
 export const notifications = writable<Notification[]>([]);
 export const unreadCount = writable<number>(0);
 
+// Derived store for message-specific unread count
+export const unreadMessageCount = writable<number>(0);
+
 // Sound notification settings
 export const soundEnabled = writable<boolean>(true);
 export const browserNotificationsEnabled = writable<boolean>(false);
@@ -48,6 +51,12 @@ export async function loadNotifications(page: number = 1, limit: number = 50) {
 		// Handle both field name formats
 		const unreadCountValue = response.unread_count || response.unread_notifications || 0;
 		unreadCount.set(unreadCountValue);
+
+		// Calculate message-specific unread count
+		const messageUnreadCount = response.notifications.filter(
+			(n) => n.type === 'message' && !n.is_read
+		).length;
+		unreadMessageCount.set(messageUnreadCount);
 	} catch (error) {
 		console.warn('Failed to load notifications:', error);
 	}
@@ -62,6 +71,9 @@ export async function loadNotificationCounts() {
 		// Handle both field name formats
 		const unreadCountValue = counts.unread || counts.unread_notifications || 0;
 		unreadCount.set(unreadCountValue);
+
+		// Also load notifications to calculate message-specific count
+		await loadNotifications(1, 50);
 	} catch (error) {
 		console.warn('Failed to load notification counts:', error);
 	}

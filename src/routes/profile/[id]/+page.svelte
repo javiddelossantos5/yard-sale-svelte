@@ -9,6 +9,9 @@
 		createRating,
 		createReport,
 		getAllUserMessages,
+		markMessageAsRead,
+		getConversationMessages,
+		sendConversationMessage,
 		type CurrentUser,
 		type Rating,
 		type Report,
@@ -18,6 +21,7 @@
 	import RatingModal from '$lib/RatingModal.svelte';
 	import ReportModal from '$lib/ReportModal.svelte';
 	import MessageModal from '$lib/MessageModal.svelte';
+	import { unreadMessageCount, loadNotificationCounts } from '$lib/notifications';
 
 	let profileUser = $state<CurrentUser | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
@@ -31,10 +35,44 @@
 	let showReportModal = $state(false);
 	let showMessageModal = $state(false);
 	let showMessagesList = $state(false);
+	let showConversationModal = $state(false);
+
+	// Conversation state
+	let selectedConversationId = $state<number | null>(null);
+	let selectedConversationMessages = $state<Message[]>([]);
+	let conversationLoading = $state(false);
+	let newMessageContent = $state('');
 
 	let userId = $derived(parseInt($page.params.id || '0'));
 	let isOwnProfile = $derived(currentUser?.id === userId);
 	let canRate = $derived(currentUser && !isOwnProfile);
+
+	// Function to sort messages with unread ones at the top
+	function getSortedMessages() {
+		if (!currentUser) return messages;
+
+		return [...messages].sort((a, b) => {
+			// If both are from current user, sort by date (newest first)
+			if (a.sender_id === currentUser!.id && b.sender_id === currentUser!.id) {
+				return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+			}
+
+			// If both are from others, prioritize unread
+			if (a.sender_id !== currentUser!.id && b.sender_id !== currentUser!.id) {
+				if (a.is_read !== b.is_read) {
+					return a.is_read ? 1 : -1; // Unread first
+				}
+				return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+			}
+
+			// Mixed: prioritize unread messages from others
+			if (a.sender_id !== currentUser!.id && !a.is_read) return -1;
+			if (b.sender_id !== currentUser!.id && !b.is_read) return 1;
+
+			// Default: sort by date
+			return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+		});
+	}
 
 	onMount(async () => {
 		if (isNaN(userId)) {
@@ -154,10 +192,76 @@
 	function handleViewMessages() {
 		showMessagesList = true;
 		loadMessages(); // Load messages when opening the list
+		loadNotificationCounts(); // Load notification counts to sync unread counts
 	}
 
 	function handleCloseMessagesList() {
 		showMessagesList = false;
+	}
+
+	async function handleMessageClick(message: Message) {
+		if (!currentUser) return;
+
+		// Mark message as read if it's not already read and it's not from the current user
+		if (!message.is_read && message.sender_id !== currentUser.id) {
+			try {
+				await markMessageAsRead(message.id);
+				// Update the message in the local state
+				messages = messages.map((m) => (m.id === message.id ? { ...m, is_read: true } : m));
+				// Refresh notification counts to sync the unread count
+				loadNotificationCounts();
+			} catch (error) {
+				console.error('Failed to mark message as read:', error);
+			}
+		}
+
+		// If the message has a conversation_id, load the conversation
+		if (message.conversation_id) {
+			selectedConversationId = message.conversation_id;
+			conversationLoading = true;
+			showConversationModal = true;
+
+			try {
+				const conversationMessages = await getConversationMessages(message.conversation_id);
+				// Sort conversation messages chronologically (oldest to newest for chat experience)
+				selectedConversationMessages = conversationMessages.sort(
+					(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+				);
+			} catch (error) {
+				console.error('Failed to load conversation messages:', error);
+				selectedConversationMessages = [];
+			} finally {
+				conversationLoading = false;
+			}
+		} else {
+			// If no conversation_id, show a simple alert or could open a new conversation modal
+			console.log('Message has no conversation_id, cannot open conversation');
+		}
+	}
+
+	function handleCloseConversationModal() {
+		showConversationModal = false;
+		selectedConversationId = null;
+		selectedConversationMessages = [];
+	}
+
+	async function handleSendConversationMessage(content: string) {
+		if (!selectedConversationId || !currentUser || !content.trim()) return;
+
+		try {
+			await sendConversationMessage(selectedConversationId, content);
+			// Clear the input
+			newMessageContent = '';
+			// Reload conversation messages (sorted with newest at bottom)
+			const conversationMessages = await getConversationMessages(selectedConversationId);
+			selectedConversationMessages = conversationMessages.sort(
+				(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+			);
+			// Reload all messages to update the main list
+			await loadMessages();
+		} catch (error) {
+			console.error('Failed to send conversation message:', error);
+		}
 	}
 
 	async function handleRatingSuccess() {
@@ -448,7 +552,14 @@
 			>
 				<div class="flex items-center gap-3">
 					<FontAwesomeIcon icon="comments" class="h-6 w-6 text-purple-600" />
-					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your Messages</h2>
+					<div class="flex items-center gap-2">
+						<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your Messages</h2>
+						{#if $unreadMessageCount > 0}
+							<span class="rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white">
+								{$unreadMessageCount} unread
+							</span>
+						{/if}
+					</div>
 				</div>
 				<button
 					onclick={handleCloseMessagesList}
@@ -469,9 +580,13 @@
 					</div>
 				{:else}
 					<div class="space-y-4">
-						{#each messages as message (message.id)}
-							<div
-								class="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+						{#each getSortedMessages() as message (message.id)}
+							<button
+								onclick={() => handleMessageClick(message)}
+								class="w-full rounded-xl border p-4 text-left transition-all hover:shadow-md active:scale-98 {message.sender_id !==
+									currentUser?.id && !message.is_read
+									? 'border-blue-300 bg-blue-50 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/20 dark:hover:bg-blue-900/30'
+									: 'border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600'}"
 							>
 								<div class="flex items-start justify-between">
 									<div class="flex-1">
@@ -490,8 +605,11 @@
 										</div>
 										<p class="text-gray-700 dark:text-gray-300">{message.content}</p>
 										{#if message.conversation_id}
-											<div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-												Conversation ID: {message.conversation_id}
+											<div
+												class="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
+											>
+												<FontAwesomeIcon icon="comments" class="h-3 w-3" />
+												<span>Click to view conversation</span>
 											</div>
 										{/if}
 									</div>
@@ -509,9 +627,12 @@
 												Received
 											</span>
 										{/if}
+										{#if message.conversation_id}
+											<FontAwesomeIcon icon="arrow-right" class="h-4 w-4 text-gray-400" />
+										{/if}
 									</div>
 								</div>
-							</div>
+							</button>
 						{/each}
 					</div>
 				{/if}
@@ -528,6 +649,91 @@
 						class="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
 					>
 						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Conversation Modal -->
+{#if showConversationModal && selectedConversationId}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+		<div class="mx-4 w-full max-w-2xl rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
+			<!-- Header -->
+			<div
+				class="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700"
+			>
+				<div class="flex items-center gap-3">
+					<FontAwesomeIcon icon="comments" class="h-6 w-6 text-blue-600" />
+					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">Conversation</h2>
+				</div>
+				<button
+					onclick={handleCloseConversationModal}
+					class="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+					aria-label="Close conversation"
+				>
+					<FontAwesomeIcon icon="times" class="h-5 w-5" />
+				</button>
+			</div>
+
+			<!-- Messages -->
+			<div class="max-h-96 overflow-y-auto p-6">
+				{#if conversationLoading}
+					<div class="flex items-center justify-center py-8">
+						<div
+							class="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"
+						></div>
+						<span class="ml-3 text-gray-600 dark:text-gray-400">Loading conversation...</span>
+					</div>
+				{:else if selectedConversationMessages.length === 0}
+					<div class="flex flex-col items-center justify-center py-12 text-center">
+						<FontAwesomeIcon icon="comments" class="mb-4 h-12 w-12 text-gray-300" />
+						<h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+							No messages in conversation
+						</h3>
+						<p class="text-gray-500 dark:text-gray-400">Start the conversation below!</p>
+					</div>
+				{:else}
+					<div class="space-y-4">
+						{#each selectedConversationMessages as message (message.id)}
+							<div
+								class="flex {message.sender_id === currentUser?.id
+									? 'justify-end'
+									: 'justify-start'}"
+							>
+								<div
+									class="max-w-xs rounded-2xl px-4 py-2 {message.sender_id === currentUser?.id
+										? 'bg-blue-500 text-white'
+										: 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'}"
+								>
+									<p class="text-sm">{message.content}</p>
+									<p class="mt-1 text-xs opacity-70">
+										{new Date(message.created_at).toLocaleTimeString()}
+									</p>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
+			</div>
+
+			<!-- Message Input -->
+			<div class="border-t border-gray-200 p-6 dark:border-gray-700">
+				<div class="flex gap-3">
+					<input
+						type="text"
+						placeholder="Type your message..."
+						class="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
+						bind:value={newMessageContent}
+						onkeydown={(e) => e.key === 'Enter' && handleSendConversationMessage(newMessageContent)}
+					/>
+					<button
+						onclick={() => handleSendConversationMessage(newMessageContent)}
+						disabled={!newMessageContent.trim()}
+						class="rounded-xl bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600"
+					>
+						<FontAwesomeIcon icon="paper-plane" class="h-4 w-4" />
 					</button>
 				</div>
 			</div>
