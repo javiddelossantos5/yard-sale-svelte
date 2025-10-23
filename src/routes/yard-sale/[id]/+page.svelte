@@ -296,7 +296,7 @@
 
 	function handleSendMessage() {
 		requireAuth(() => {
-			if (yardSale && yardSale.allow_messages) {
+			if (yardSale) {
 				showMessageModal = true;
 			}
 		});
@@ -532,7 +532,7 @@
 								<!-- Owner Information -->
 								<div class="mb-6">
 									<button
-										onclick={() => goto(`/profile/${yardSale.owner_id}`)}
+										onclick={() => yardSale && goto(`/profile/${yardSale.owner_id}`)}
 										class="group flex items-center rounded-2xl bg-gray-100/60 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100/60 active:scale-95 dark:bg-gray-700/60 dark:hover:bg-blue-900/30"
 									>
 										<div
@@ -874,7 +874,8 @@
 									</a>
 								{/if}
 
-								{#if yardSale.allow_messages}
+								<!-- Send Message Button -->
+								{#if currentUser && !isOwner}
 									{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
 									<button
 										onclick={isDisabled ? undefined : handleSendMessage}
@@ -947,8 +948,8 @@
 										>
 											<FontAwesomeIcon
 												icon={iconInfo.iconType === 'brand'
-													? ['fab', iconInfo.icon]
-													: iconInfo.icon}
+													? (['fab', iconInfo.icon] as any)
+													: (iconInfo.icon as any)}
 												class="h-5 w-5 text-white"
 											/>
 											<span class="font-medium text-white">{method}</span>
@@ -959,8 +960,8 @@
 										>
 											<FontAwesomeIcon
 												icon={iconInfo.iconType === 'brand'
-													? ['fab', iconInfo.icon]
-													: iconInfo.icon}
+													? (['fab', iconInfo.icon] as any)
+													: (iconInfo.icon as any)}
 												class="h-5 w-5 text-gray-600 dark:text-gray-400"
 											/>
 											<span class="font-medium text-gray-700 dark:text-gray-200">{method}</span>
@@ -1146,9 +1147,9 @@
 			isOpen={showMessageModal}
 			yardSaleId={yardSale.id}
 			yardSaleTitle={yardSale.title}
-			otherUserId={isOwner ? currentUserId : yardSale.owner_id}
+			otherUserId={isOwner ? currentUserId || 0 : yardSale.owner_id}
 			otherUsername={isOwner ? 'You' : yardSale.owner_username}
-			{currentUserId}
+			currentUserId={currentUserId || 0}
 			onClose={handleCloseMessageModal}
 		/>
 	{/if}
