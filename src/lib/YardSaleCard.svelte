@@ -102,9 +102,7 @@
 </script>
 
 <div
-	class="group cursor-pointer overflow-hidden rounded-3xl transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98] {isVisited
-		? 'bg-white/30 opacity-60 shadow-lg backdrop-blur-md dark:bg-gray-800/30 dark:opacity-60'
-		: 'bg-white/80 shadow-xl shadow-black/5 backdrop-blur-xl hover:shadow-2xl hover:shadow-black/10 dark:bg-gray-800/80 dark:shadow-black/20 dark:hover:shadow-black/30'}"
+	class="group cursor-pointer overflow-hidden rounded-3xl bg-white/80 shadow-xl shadow-black/5 backdrop-blur-xl transition-all duration-500 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:shadow-black/10 active:scale-[0.98] dark:bg-gray-800/80 dark:shadow-black/20 dark:hover:shadow-black/30"
 	onclick={handleCardClick}
 	onkeydown={(e) => e.key === 'Enter' && handleCardClick()}
 	role="button"
