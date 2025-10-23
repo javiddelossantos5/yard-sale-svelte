@@ -136,7 +136,8 @@ export interface Message {
 	content: string;
 	is_read: boolean;
 	created_at: string;
-	yard_sale_id: number;
+	yard_sale_id?: number; // Optional for conversation messages
+	conversation_id?: number; // For conversation-based messages
 	sender_id: number;
 	sender_username: string;
 	recipient_id: number;
@@ -189,14 +190,6 @@ export async function sendMessage(
 	return response.json();
 }
 
-export async function getAllUserMessages(): Promise<Message[]> {
-	const response = await fetch('/api/messages');
-	if (!response.ok) {
-		throw new Error('Failed to fetch user messages');
-	}
-	return response.json();
-}
-
 export async function markMessageAsRead(messageId: number): Promise<void> {
 	const response = await fetch(`/api/messages/${messageId}/read`, {
 		method: 'PUT'
@@ -214,7 +207,28 @@ export async function getUnreadCount(): Promise<{ count: number }> {
 	return response.json();
 }
 
-// Conversation-based messaging for direct user-to-user communication
+// Get all messages for the current user (your backend structure)
+export async function getAllUserMessages(): Promise<Message[]> {
+	const response = await fetch('/api/messages', {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch messages');
+	}
+	return response.json();
+}
+
+// Get messages for a specific conversation
 export async function getConversationMessages(conversationId: number): Promise<Message[]> {
 	const response = await fetch(`/api/conversations/${conversationId}/messages`, {
 		headers: {
@@ -263,16 +277,17 @@ export async function sendConversationMessage(
 	return response.json();
 }
 
-// Get or create a conversation between two users
-export async function getOrCreateConversation(otherUserId: number): Promise<{ id: number }> {
-	const response = await fetch('/api/conversations', {
+// Send a message to start a new conversation with a user (using general /messages endpoint)
+export async function sendMessageToUser(recipientId: number, content: string): Promise<Message> {
+	const response = await fetch('/api/messages', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		},
 		body: JSON.stringify({
-			other_user_id: otherUserId
+			recipient_id: recipientId,
+			content: content.trim()
 		})
 	});
 
@@ -284,9 +299,69 @@ export async function getOrCreateConversation(otherUserId: number): Promise<{ id
 	}
 
 	if (!response.ok) {
-		throw new Error('Failed to get or create conversation');
+		throw new Error('Failed to send message to user');
 	}
 	return response.json();
+}
+
+// Get or create a conversation between two users
+export async function getOrCreateConversation(otherUserId: number): Promise<{ id: number | null }> {
+	// Get current user ID from token
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('No authentication token found');
+	}
+
+	try {
+		const payload = JSON.parse(atob(token.split('.')[1]));
+		console.log('JWT payload:', payload);
+
+		// Handle both string and numeric user IDs
+		let currentUserId: number | null = null;
+		if (typeof payload.sub === 'number') {
+			currentUserId = payload.sub;
+		} else if (typeof payload.sub === 'string') {
+			// Try to parse as integer first
+			const parsed = parseInt(payload.sub);
+			if (!isNaN(parsed)) {
+				currentUserId = parsed;
+			} else {
+				// If it's a string like "javiddelossantos", we need to get the actual user ID
+				// For now, let's use the getCurrentUser API to get the proper user ID
+				const currentUser = await getCurrentUser();
+				currentUserId = currentUser?.id || null;
+			}
+		}
+
+		console.log('Current user ID:', currentUserId);
+
+		if (!currentUserId) {
+			throw new Error('Could not determine current user ID from token');
+		}
+
+		// Get all messages to find existing conversation
+		const allMessages = await getAllUserMessages();
+
+		// Find existing conversation between current user and other user
+		const existingConversation = allMessages.find(
+			(message) =>
+				(message.sender_id === currentUserId && message.recipient_id === otherUserId) ||
+				(message.sender_id === otherUserId && message.recipient_id === currentUserId)
+		);
+
+		if (existingConversation && existingConversation.conversation_id) {
+			console.log('Found existing conversation:', existingConversation.conversation_id);
+			return { id: existingConversation.conversation_id };
+		}
+
+		// If no existing conversation, return null
+		// The conversation will be created when the first message is sent
+		console.log('No existing conversation found, will create new one when first message is sent');
+		return { id: null };
+	} catch (error) {
+		console.error('Error parsing JWT token:', error);
+		throw new Error('Could not parse authentication token');
+	}
 }
 
 // Visited Yard Sales API functions

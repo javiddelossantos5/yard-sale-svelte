@@ -121,8 +121,16 @@
 	}
 
 	function handleMessageUser() {
+		console.log('handleMessageUser called');
+		console.log('currentUser:', currentUser);
+		console.log('isOwnProfile:', isOwnProfile);
+		console.log('profileUser:', profileUser);
+
 		if (currentUser && !isOwnProfile) {
+			console.log('Opening message modal');
 			showMessageModal = true;
+		} else {
+			console.log('Cannot open message modal - conditions not met');
 		}
 	}
 

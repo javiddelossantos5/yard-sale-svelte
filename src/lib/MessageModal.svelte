@@ -6,6 +6,7 @@
 		markMessageAsRead,
 		getConversationMessages,
 		sendConversationMessage,
+		sendMessageToUser,
 		getOrCreateConversation,
 		type Message
 	} from './api';
@@ -60,24 +61,34 @@
 	});
 
 	$effect(() => {
-		if (isOpen && yardSaleId && otherUserId) {
+		if (isOpen && otherUserId) {
 			console.log('MessageModal opened:', { fullPage, yardSaleId, otherUserId });
 			loadMessages();
 		}
 	});
 
 	async function loadMessages() {
+		console.log('loadMessages called with yardSaleId:', yardSaleId, 'otherUserId:', otherUserId);
 		loading = true;
 		error = null;
 		try {
 			// Handle profile messaging (yardSaleId = 0)
 			if (yardSaleId === 0) {
+				console.log('Loading profile conversation messages...');
 				// Get or create conversation between current user and other user
 				const conversation = await getOrCreateConversation(otherUserId);
+				console.log('Got conversation:', conversation);
 				conversationId = conversation.id;
 
-				// Load conversation messages
-				messages = await getConversationMessages(conversationId);
+				// Load conversation messages only if conversation exists
+				if (conversationId) {
+					messages = await getConversationMessages(conversationId);
+					console.log('Loaded conversation messages:', messages);
+				} else {
+					// No existing conversation, start with empty messages
+					messages = [];
+					console.log('No existing conversation, starting fresh');
+				}
 			} else {
 				// Handle yard sale messaging
 				messages = await getYardSaleMessages(yardSaleId);
@@ -97,6 +108,7 @@
 				}
 			}, 100);
 		} catch (err) {
+			console.error('Error loading messages:', err);
 			error = err instanceof Error ? err.message : 'Failed to load messages';
 		} finally {
 			loading = false;
@@ -114,11 +126,15 @@
 
 			// Handle profile messaging (yardSaleId = 0)
 			if (yardSaleId === 0) {
-				if (!conversationId) {
-					error = 'Conversation not found. Please try again.';
-					return;
+				if (conversationId) {
+					// Send message in existing conversation
+					message = await sendConversationMessage(conversationId, newMessage.trim());
+				} else {
+					// Start new conversation by sending message to user
+					message = await sendMessageToUser(otherUserId, newMessage.trim());
+					// After sending, reload messages to get the new conversation
+					await loadMessages();
 				}
-				message = await sendConversationMessage(conversationId, newMessage.trim());
 			} else {
 				// Handle yard sale messaging
 				let recipientId: number;
