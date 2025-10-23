@@ -337,7 +337,7 @@
 													{/each}
 												</div>
 												<span class="text-sm font-medium text-gray-900 dark:text-white">
-													{rating.rater_username}
+													{rating.reviewer_username || 'Anonymous'}
 												</span>
 												<span class="text-xs text-gray-500 dark:text-gray-400">
 													{formatDate(rating.created_at)}

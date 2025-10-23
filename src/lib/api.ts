@@ -435,14 +435,15 @@ export interface VerificationBadge {
 
 export interface Rating {
 	id: number;
-	rater_id: number;
-	rated_user_id: number;
-	yard_sale_id?: number;
 	rating: number; // 1-5
 	review_text?: string;
 	created_at: string;
-	rater_username?: string;
-	yard_sale_title?: string;
+	reviewer_id: number;
+	reviewer_username: string;
+	rated_user_id: number;
+	rated_user_username: string;
+	yard_sale_id?: number | null;
+	yard_sale_title?: string | null;
 }
 
 export interface Report {
