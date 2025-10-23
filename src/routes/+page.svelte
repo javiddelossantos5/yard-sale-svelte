@@ -19,6 +19,7 @@
 		migrateOldVisitedData
 	} from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { unreadCount } from '$lib/notifications';
 
 	let yardSales = $state<YardSale[]>([]);
 	let loading = $state(true);
@@ -291,10 +292,17 @@
 						{#if currentUser}
 							<button
 								onclick={goToProfile}
-								class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								class="relative inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 								aria-label="View Profile"
 							>
 								<FontAwesomeIcon icon="user" class="h-4 w-4" />
+								{#if $unreadCount > 0}
+									<span
+										class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
+									>
+										{$unreadCount > 99 ? '99+' : $unreadCount}
+									</span>
+								{/if}
 							</button>
 						{/if}
 						<button
@@ -337,10 +345,17 @@
 						{#if currentUser}
 							<button
 								onclick={goToProfile}
-								class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 							>
 								<FontAwesomeIcon icon="user" class="mr-2 h-4 w-4" />
 								My Profile
+								{#if $unreadCount > 0}
+									<span
+										class="ml-2 rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white"
+									>
+										{$unreadCount > 99 ? '99+' : $unreadCount}
+									</span>
+								{/if}
 							</button>
 						{/if}
 						<button

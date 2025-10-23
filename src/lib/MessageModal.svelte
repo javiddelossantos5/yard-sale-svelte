@@ -10,6 +10,7 @@
 		getOrCreateConversation,
 		type Message
 	} from './api';
+	import { addMessageNotification } from './notifications';
 
 	let {
 		isOpen,
@@ -214,6 +215,67 @@
 			});
 		}
 	}
+
+	// Check for new messages and trigger notifications
+	async function checkForNewMessages() {
+		if (!isOpen || !otherUserId || !currentUserId) return;
+
+		try {
+			let newMessages: Message[] = [];
+
+			if (yardSaleId === 0) {
+				// Check for new conversation messages
+				if (conversationId) {
+					newMessages = await getConversationMessages(conversationId);
+				}
+			} else {
+				// Check for new yard sale messages
+				newMessages = await getYardSaleMessages(yardSaleId);
+			}
+
+			// Find new unread messages from the other user
+			const unreadFromOther = newMessages.filter(
+				(msg) => !msg.is_read && msg.sender_id !== currentUserId
+			);
+
+			// Trigger notifications for new messages
+			for (const message of unreadFromOther) {
+				const senderUsername = message.sender_username || 'Unknown User';
+				addMessageNotification(
+					message.sender_id,
+					senderUsername,
+					message.content,
+					message.conversation_id || undefined,
+					message.yard_sale_id || undefined
+				);
+			}
+		} catch (error) {
+			console.warn('Error checking for new messages:', error);
+		}
+	}
+
+	// Set up periodic message checking when modal is open
+	let messageCheckInterval: number | null = null;
+
+	$effect(() => {
+		if (isOpen) {
+			// Check for new messages every 10 seconds
+			messageCheckInterval = setInterval(checkForNewMessages, 10000);
+		} else {
+			// Clear interval when modal is closed
+			if (messageCheckInterval) {
+				clearInterval(messageCheckInterval);
+				messageCheckInterval = null;
+			}
+		}
+
+		// Cleanup on component destroy
+		return () => {
+			if (messageCheckInterval) {
+				clearInterval(messageCheckInterval);
+			}
+		};
+	});
 </script>
 
 {#if isOpen}

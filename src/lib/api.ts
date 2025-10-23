@@ -144,6 +144,20 @@ export interface Message {
 	recipient_username: string;
 }
 
+export interface Notification {
+	id: number;
+	type: 'message' | 'rating' | 'comment' | 'visit' | 'info' | 'success' | 'warning' | 'error';
+	title: string;
+	message: string;
+	is_read: boolean;
+	created_at: string;
+	user_id: number;
+	related_user_id?: number;
+	related_yard_sale_id?: number;
+	related_message_id?: number;
+	metadata?: Record<string, any>;
+}
+
 export interface MessageThread {
 	yard_sale_id: number;
 	yard_sale_title: string;
@@ -822,6 +836,123 @@ export async function requestVerification(
 		throw new Error(errorData.detail || 'Failed to request verification');
 	}
 	return response.json();
+}
+
+// ===== NOTIFICATION API FUNCTIONS =====
+
+// Get user's notifications with pagination and filtering
+export async function getNotifications(
+	page: number = 1,
+	limit: number = 50,
+	unreadOnly: boolean = false
+): Promise<{ notifications: Notification[]; total: number; unread_count: number }> {
+	const params = new URLSearchParams({
+		page: page.toString(),
+		limit: limit.toString(),
+		...(unreadOnly && { unread_only: 'true' })
+	});
+
+	const response = await fetch(`/api/notifications?${params}`, {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch notifications');
+	}
+	return response.json();
+}
+
+// Get notification counts
+export async function getNotificationCounts(): Promise<{ total: number; unread: number }> {
+	const response = await fetch('/api/notifications/count', {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch notification counts');
+	}
+	return response.json();
+}
+
+// Mark a specific notification as read
+export async function markNotificationAsRead(notificationId: number): Promise<void> {
+	const response = await fetch(`/api/notifications/${notificationId}/read`, {
+		method: 'PUT',
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to mark notification as read');
+	}
+}
+
+// Mark all notifications as read
+export async function markAllNotificationsAsRead(): Promise<void> {
+	const response = await fetch('/api/notifications/read-all', {
+		method: 'PUT',
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to mark all notifications as read');
+	}
+}
+
+// Delete a specific notification
+export async function deleteNotification(notificationId: number): Promise<void> {
+	const response = await fetch(`/api/notifications/${notificationId}`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to delete notification');
+	}
 }
 
 export async function getUserVerifications(userId: number): Promise<VerificationBadge[]> {

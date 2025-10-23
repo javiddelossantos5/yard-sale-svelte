@@ -6,6 +6,9 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { setupAuthFetch, isLoggedIn } from '$lib/auth';
 	import { darkMode, toggleDarkMode } from '$lib/darkMode';
+	import NotificationCenter from '$lib/NotificationCenter.svelte';
+	import { loadNotificationCounts } from '$lib/notifications';
+	import '$lib/messagePoller'; // Start message polling
 	import '$lib/fontawesome';
 
 	let { children } = $props();
@@ -15,6 +18,11 @@
 
 		// Check authentication on every page load
 		checkAuth();
+
+		// Load notification counts if user is logged in
+		if (isLoggedIn()) {
+			loadNotificationCounts();
+		}
 	});
 
 	// Reactive check for authentication (only when path changes)
@@ -42,8 +50,16 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<!-- Dark Mode Toggle -->
-<div class="fixed top-4 right-4 z-50">
+<!-- Top Right Controls -->
+<div class="fixed top-4 right-4 z-50 flex items-center gap-3">
+	<!-- Notification Center (only show if logged in) -->
+	{#if isLoggedIn()}
+		<div class="relative">
+			<NotificationCenter />
+		</div>
+	{/if}
+
+	<!-- Dark Mode Toggle -->
 	<button
 		onclick={toggleDarkMode}
 		class="rounded-full bg-white/90 p-2 shadow-lg ring-1 ring-gray-900/5 transition-all hover:bg-white dark:bg-gray-800/90 dark:ring-gray-100/10 dark:hover:bg-gray-800"
