@@ -13,7 +13,11 @@
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import { logout } from '$lib/auth';
 	import { getYardSaleStatus, isYardSaleActive, isYardSaleActiveOnDate } from '$lib/yardSaleUtils';
-	import { isYardSaleVisited, syncVisitedStatus } from '$lib/visitedYardSales';
+	import {
+		isYardSaleVisited,
+		syncVisitedStatus,
+		migrateOldVisitedData
+	} from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 
 	let yardSales = $state<YardSale[]>([]);
@@ -57,6 +61,8 @@
 	async function loadCurrentUser() {
 		try {
 			currentUser = await getCurrentUser();
+			// Migrate old localStorage data to user-specific keys
+			migrateOldVisitedData();
 			// Sync visited status with backend when user is loaded
 			if (currentUser) {
 				await syncVisitedStatus();
