@@ -176,7 +176,8 @@
 
 				switch (statusFilter) {
 					case 'active':
-						matchesStatus = status === 'active';
+						// Active yard sales that haven't been visited
+						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id);
 						break;
 					case 'upcoming':
 						matchesStatus = status === 'upcoming';
@@ -187,11 +188,15 @@
 					case 'on_break':
 						matchesStatus = status === 'on_break';
 						break;
+					case 'visited':
+						// Only show visited yard sales
+						matchesStatus = isYardSaleVisited(sale.id);
+						break;
 					case 'all':
 						matchesStatus = true;
 						break;
 					default:
-						matchesStatus = status === 'active';
+						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id);
 				}
 
 				return matchesSearch && matchesCity && matchesZipCode && matchesDate && matchesStatus;
@@ -428,6 +433,7 @@
 						<option value="upcoming">Upcoming</option>
 						<option value="ended">Ended</option>
 						<option value="on_break">On Break</option>
+						<option value="visited">Already Visited</option>
 						<option value="all">All Statuses</option>
 					</select>
 				</div>
@@ -509,9 +515,11 @@
 					<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						{searchTerm || selectedCity || zipCodeSearch || selectedDate
 							? 'Try adjusting your search or filters.'
-							: statusFilter !== 'active'
-								? 'No yard sales found with the selected status filter.'
-								: 'No yard sales are currently active right now. Try changing the status filter to see upcoming, ended, or other yard sales.'}
+							: statusFilter === 'visited'
+								? "You haven't visited any yard sales yet. Mark yard sales as visited to see them here."
+								: statusFilter !== 'active'
+									? 'No yard sales found with the selected status filter.'
+									: 'No yard sales are currently active right now. Try changing the status filter to see upcoming, ended, or other yard sales.'}
 					</p>
 				</div>
 			{:else}
