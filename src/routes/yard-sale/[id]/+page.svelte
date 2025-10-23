@@ -72,7 +72,7 @@
 	// Delete confirmation modal state
 	let showDeleteModal = $state(false);
 
-	let yardSaleId = $derived(parseInt($page.params.id || '0'));
+	let yardSaleId = $derived($page.params.id || '');
 
 	// Helper function to handle authentication redirects
 	async function requireAuth(action: () => Promise<void> | void) {
@@ -86,7 +86,7 @@
 	}
 
 	onMount(async () => {
-		if (isNaN(yardSaleId)) {
+		if (!yardSaleId || yardSaleId.trim() === '') {
 			error = 'Invalid yard sale ID';
 			loading = false;
 			return;
@@ -1198,9 +1198,9 @@
 			isOpen={showMessageModal}
 			yardSaleId={yardSale.id}
 			yardSaleTitle={yardSale.title}
-			otherUserId={isOwner ? currentUserId || 0 : yardSale.owner_id}
+			otherUserId={isOwner ? currentUserId || '' : yardSale.owner_id}
 			otherUsername={isOwner ? 'You' : yardSale.owner_username}
-			currentUserId={currentUserId || 0}
+			currentUserId={currentUserId || ''}
 			onClose={handleCloseMessageModal}
 		/>
 	{/if}

@@ -7,7 +7,13 @@ export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 	server: {
 		proxy: {
-			'/api': {
+			// Keep /api prefix for auth and user endpoints
+			'^/api/(login|register|me)': {
+				target: 'http://localhost:8000',
+				changeOrigin: true
+			},
+			// Remove /api prefix for all other endpoints
+			'^/api/(?!login|register|me)': {
 				target: 'http://localhost:8000',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, '')

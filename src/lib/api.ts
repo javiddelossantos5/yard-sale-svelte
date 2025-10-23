@@ -6,7 +6,7 @@ export interface PaymentMethod {
 }
 
 export interface YardSale {
-	id: number;
+	id: string;
 	title: string;
 	description: string;
 	start_date: string;
@@ -33,7 +33,7 @@ export interface YardSale {
 	status_reason?: string;
 	created_at: string;
 	updated_at: string;
-	owner_id: number;
+	owner_id: string;
 	owner_username: string;
 	owner_average_rating?: number;
 	comment_count: number;
@@ -91,7 +91,7 @@ export async function getYardSalesByCategory(category: string): Promise<YardSale
 	return response.json();
 }
 
-export async function getYardSaleById(id: number): Promise<YardSale> {
+export async function getYardSaleById(id: string): Promise<YardSale> {
 	const response = await fetch(`/api/yard-sales/${id}`);
 	if (!response.ok) {
 		throw new Error('Failed to fetch yard sale');
@@ -100,16 +100,16 @@ export async function getYardSaleById(id: number): Promise<YardSale> {
 }
 
 export interface Comment {
-	id: number;
+	id: string;
 	content: string;
 	created_at: string;
 	updated_at: string;
-	user_id: number;
+	user_id: string;
 	username: string;
-	yard_sale_id: number;
+	yard_sale_id: string;
 }
 
-export async function getComments(yardSaleId: number): Promise<Comment[]> {
+export async function getComments(yardSaleId: string): Promise<Comment[]> {
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/comments`);
 	if (!response.ok) {
 		throw new Error('Failed to fetch comments');
@@ -117,7 +117,7 @@ export async function getComments(yardSaleId: number): Promise<Comment[]> {
 	return response.json();
 }
 
-export async function addComment(yardSaleId: number, content: string): Promise<Comment> {
+export async function addComment(yardSaleId: string, content: string): Promise<Comment> {
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/comments`, {
 		method: 'POST',
 		headers: {
@@ -132,42 +132,42 @@ export async function addComment(yardSaleId: number, content: string): Promise<C
 }
 
 export interface Message {
-	id: number;
+	id: string;
 	content: string;
 	is_read: boolean;
 	created_at: string;
-	yard_sale_id?: number; // Optional for conversation messages
-	conversation_id?: number; // For conversation-based messages
-	sender_id: number;
+	yard_sale_id?: string; // Optional for conversation messages
+	conversation_id?: string; // For conversation-based messages
+	sender_id: string;
 	sender_username: string;
-	recipient_id: number;
+	recipient_id: string;
 	recipient_username: string;
 }
 
 export interface Notification {
-	id: number;
+	id: string;
 	type: 'message' | 'rating' | 'comment' | 'visit' | 'info' | 'success' | 'warning' | 'error';
 	title: string;
 	message: string;
 	is_read: boolean;
 	created_at: string;
-	user_id: number;
-	related_user_id?: number;
-	related_yard_sale_id?: number;
-	related_message_id?: number;
+	user_id: string;
+	related_user_id?: string;
+	related_yard_sale_id?: string;
+	related_message_id?: string;
 	metadata?: Record<string, any>;
 }
 
 export interface MessageThread {
-	yard_sale_id: number;
+	yard_sale_id: string;
 	yard_sale_title: string;
-	other_user_id: number;
+	other_user_id: string;
 	other_username: string;
 	last_message: Message | null;
 	unread_count: number;
 }
 
-export async function getYardSaleMessages(yardSaleId: number): Promise<Message[]> {
+export async function getYardSaleMessages(yardSaleId: string): Promise<Message[]> {
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/messages`);
 	if (!response.ok) {
 		throw new Error('Failed to fetch yard sale messages');
@@ -204,7 +204,7 @@ export async function sendMessage(
 	return response.json();
 }
 
-export async function markMessageAsRead(messageId: number): Promise<void> {
+export async function markMessageAsRead(messageId: string): Promise<void> {
 	const response = await fetch(`/api/messages/${messageId}/read`, {
 		method: 'PUT'
 	});
@@ -243,7 +243,7 @@ export async function getAllUserMessages(): Promise<Message[]> {
 }
 
 // Get messages for a specific conversation
-export async function getConversationMessages(conversationId: number): Promise<Message[]> {
+export async function getConversationMessages(conversationId: string): Promise<Message[]> {
 	const response = await fetch(`/api/conversations/${conversationId}/messages`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -319,7 +319,7 @@ export async function sendMessageToUser(recipientId: number, content: string): P
 }
 
 // Get or create a conversation between two users
-export async function getOrCreateConversation(otherUserId: number): Promise<{ id: number | null }> {
+export async function getOrCreateConversation(otherUserId: string): Promise<{ id: string | null }> {
 	// Get current user ID from token
 	const token = localStorage.getItem('access_token');
 	if (!token) {
@@ -379,7 +379,7 @@ export async function getOrCreateConversation(otherUserId: number): Promise<{ id
 }
 
 // Visited Yard Sales API functions
-export async function markYardSaleAsVisited(yardSaleId: number): Promise<void> {
+export async function markYardSaleAsVisited(yardSaleId: string): Promise<void> {
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
 		method: 'POST',
 		headers: {
@@ -399,7 +399,7 @@ export async function markYardSaleAsVisited(yardSaleId: number): Promise<void> {
 	}
 }
 
-export async function markYardSaleAsNotVisited(yardSaleId: number): Promise<void> {
+export async function markYardSaleAsNotVisited(yardSaleId: string): Promise<void> {
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
 		method: 'DELETE',
 		headers: {
@@ -441,7 +441,7 @@ export async function getUserVisitedYardSales(): Promise<number[]> {
 	return data.map((item: any) => item.yard_sale_id);
 }
 
-export async function getYardSaleVisitStats(yardSaleId: number): Promise<{
+export async function getYardSaleVisitStats(yardSaleId: string): Promise<{
 	total_visits: number;
 	unique_visitors: number;
 	most_recent_visit: string | null;
@@ -615,7 +615,7 @@ export async function updateYardSale(id: number, yardSaleData: YardSaleCreate): 
 	return response.json();
 }
 
-export async function deleteYardSale(id: number): Promise<void> {
+export async function deleteYardSale(id: string): Promise<void> {
 	const response = await fetch(`/api/yard-sales/${id}`, {
 		method: 'DELETE'
 	});
@@ -634,7 +634,7 @@ export async function deleteYardSale(id: number): Promise<void> {
 }
 
 export interface CurrentUser {
-	id: number;
+	id: string;
 	username: string;
 	email: string;
 	full_name: string;
@@ -653,8 +653,8 @@ export interface CurrentUser {
 }
 
 export interface VerificationBadge {
-	id: number;
-	user_id: number;
+	id: string;
+	user_id: string;
 	verification_type: 'email' | 'phone' | 'identity' | 'address';
 	status: 'pending' | 'verified' | 'rejected';
 	verified_at?: string;
@@ -662,23 +662,23 @@ export interface VerificationBadge {
 }
 
 export interface Rating {
-	id: number;
+	id: string;
 	rating: number; // 1-5
 	review_text?: string;
 	created_at: string;
-	reviewer_id: number;
+	reviewer_id: string;
 	reviewer_username: string;
-	rated_user_id: number;
+	rated_user_id: string;
 	rated_user_username: string;
-	yard_sale_id?: number | null;
+	yard_sale_id?: string | null;
 	yard_sale_title?: string | null;
 }
 
 export interface Report {
-	id: number;
-	reporter_id: number;
-	reported_user_id?: number;
-	reported_yard_sale_id?: number;
+	id: string;
+	reporter_id: string;
+	reported_user_id?: string;
+	reported_yard_sale_id?: string;
 	report_type: 'scam' | 'inappropriate' | 'spam' | 'other';
 	description: string;
 	status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
@@ -688,34 +688,74 @@ export interface Report {
 	reported_yard_sale_title?: string;
 }
 
-export async function getCurrentUser(): Promise<CurrentUser> {
-	console.log('Fetching current user from /api/me');
+// Helper function to parse JWT token and extract user ID
+function getCurrentUserId(): string | null {
+	const token = localStorage.getItem('access_token');
+	if (!token) return null;
 
 	try {
-		const response = await fetch('/api/me');
-		console.log('getCurrentUser response status:', response.status);
+		// JWT tokens have 3 parts separated by dots: header.payload.signature
+		const parts = token.split('.');
+		if (parts.length !== 3) return null;
 
-		// Handle token expiration - don't redirect here, let calling code handle it
-		if (response.status === 401 || response.status === 403) {
-			console.log('Token expired in getCurrentUser');
-			throw new Error('Token expired');
+		// Decode the payload (second part)
+		const payload = JSON.parse(atob(parts[1]));
+
+		// Handle both string and numeric sub fields
+		if (typeof payload.sub === 'string') {
+			// If sub is a username, we need to get the actual user ID
+			// For now, return null to indicate we need to fetch from backend
+			return null;
+		} else if (typeof payload.sub === 'number') {
+			return payload.sub.toString();
 		}
 
-		if (!response.ok) {
-			throw new Error(`API returned ${response.status}`);
-		}
+		return null;
+	} catch (error) {
+		console.error('Error parsing JWT token:', error);
+		return null;
+	}
+}
 
-		const userData = await response.json();
-		console.log('getCurrentUser response data:', userData);
-		return userData;
+export async function getCurrentUser(): Promise<CurrentUser> {
+	console.log('Getting current user info');
+
+	try {
+		// First try to get user ID from JWT token
+		const userId = getCurrentUserId();
+
+		if (userId) {
+			// If we have a user ID, fetch the user profile
+			console.log('Using user ID from token:', userId);
+			return await getUserProfile(userId);
+		} else {
+			// If we can't get user ID from token, try the /me endpoint
+			console.log('Trying /api/me endpoint');
+			const response = await fetch('/api/me');
+			console.log('getCurrentUser response status:', response.status);
+
+			// Handle token expiration - don't redirect here, let calling code handle it
+			if (response.status === 401 || response.status === 403) {
+				console.log('Token expired in getCurrentUser');
+				throw new Error('Token expired');
+			}
+
+			if (!response.ok) {
+				throw new Error(`API returned ${response.status}`);
+			}
+
+			const userData = await response.json();
+			console.log('getCurrentUser response data:', userData);
+			return userData;
+		}
 	} catch (error) {
 		console.error('getCurrentUser failed:', error);
-		throw error; // Re-throw the error since backend should be working now
+		throw error;
 	}
 }
 
 // User Profile API functions
-export async function getUserProfile(userId: number): Promise<CurrentUser> {
+export async function getUserProfile(userId: string): Promise<CurrentUser> {
 	const response = await fetch(`/api/users/${userId}`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -728,7 +768,7 @@ export async function getUserProfile(userId: number): Promise<CurrentUser> {
 }
 
 // Ratings API functions
-export async function getUserRatings(userId: number): Promise<Rating[]> {
+export async function getUserRatings(userId: string): Promise<Rating[]> {
 	const response = await fetch(`/api/users/${userId}/ratings`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -903,7 +943,7 @@ export async function getNotificationCounts(): Promise<{
 }
 
 // Mark a specific notification as read
-export async function markNotificationAsRead(notificationId: number): Promise<void> {
+export async function markNotificationAsRead(notificationId: string): Promise<void> {
 	const response = await fetch(`/api/notifications/${notificationId}/read`, {
 		method: 'PUT',
 		headers: {
@@ -945,7 +985,7 @@ export async function markAllNotificationsAsRead(): Promise<void> {
 }
 
 // Delete a specific notification
-export async function deleteNotification(notificationId: number): Promise<void> {
+export async function deleteNotification(notificationId: string): Promise<void> {
 	const response = await fetch(`/api/notifications/${notificationId}`, {
 		method: 'DELETE',
 		headers: {
@@ -965,7 +1005,7 @@ export async function deleteNotification(notificationId: number): Promise<void> 
 	}
 }
 
-export async function getUserVerifications(userId: number): Promise<VerificationBadge[]> {
+export async function getUserVerifications(userId: string): Promise<VerificationBadge[]> {
 	const response = await fetch(`/api/users/${userId}/verifications`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`

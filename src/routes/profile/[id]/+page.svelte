@@ -43,7 +43,7 @@
 	let conversationLoading = $state(false);
 	let newMessageContent = $state('');
 
-	let userId = $derived(parseInt($page.params.id || '0'));
+	let userId = $derived($page.params.id || '');
 	let isOwnProfile = $derived(currentUser?.id === userId);
 	let canRate = $derived(currentUser && !isOwnProfile);
 
@@ -75,7 +75,7 @@
 	}
 
 	onMount(async () => {
-		if (isNaN(userId)) {
+		if (!userId || userId.trim() === '') {
 			error = 'Invalid user ID';
 			loading = false;
 			return;
