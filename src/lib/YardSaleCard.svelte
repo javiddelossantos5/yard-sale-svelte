@@ -48,7 +48,7 @@
 	}
 
 	// Visited state
-	let isVisited = $state(isYardSaleVisited(yardSale.id));
+	let isVisited = $state(isYardSaleVisited(yardSale.id, yardSale));
 
 	function formatDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -93,9 +93,9 @@
 		openDirections(fullAddress);
 	}
 
-	function handleToggleVisited(event: Event) {
+	async function handleToggleVisited(event: Event) {
 		event.stopPropagation();
-		isVisited = toggleYardSaleVisited(yardSale.id);
+		isVisited = await toggleYardSaleVisited(yardSale.id, yardSale);
 		// Trigger re-sorting on the main page
 		onVisitedChange?.();
 	}

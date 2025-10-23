@@ -8,6 +8,7 @@
 		addComment,
 		deleteYardSale,
 		getCurrentUser,
+		getYardSaleVisitStats,
 		type YardSale,
 		type Comment,
 		type CurrentUser
@@ -44,6 +45,12 @@
 	]);
 	let newComment = $state('');
 	let submittingComment = $state(false);
+	let visitStats = $state<{
+		total_visits: number;
+		unique_visitors: number;
+		most_recent_visit: string | null;
+		average_visits: number;
+	} | null>(null);
 
 	// Message modal state
 	let showMessageModal = $state(false);
@@ -59,12 +66,7 @@
 
 	// Debug: Watch for changes in isOwner
 	$effect(() => {
-		console.log('=== OWNERSHIP DEBUG ===');
-		console.log('isOwner changed to:', isOwner);
-		console.log('currentUserId:', currentUserId);
-		console.log('yardSale?.owner_id:', yardSale?.owner_id);
-		console.log('currentUser:', currentUser);
-		console.log('========================');
+		// console.log('isOwner changed to:', isOwner);
 	});
 
 	// Delete confirmation modal state
@@ -104,18 +106,13 @@
 	async function loadCurrentUser() {
 		try {
 			currentUser = await getCurrentUser();
-			console.log('Current user loaded:', currentUser);
-			console.log('Current user ID:', currentUser?.id);
 		} catch (error) {
 			console.warn('Failed to load current user:', error);
-			console.warn('Error details:', error);
 			// User might not be logged in, that's okay for viewing
-			// Set currentUser to null to indicate no user is logged in
 			currentUser = null;
 
 			// Check if it's a token expiration error and handle it gracefully
 			if (error instanceof Error && error.message === 'Token expired') {
-				console.log('Token expired, user will need to log in for authenticated actions');
 				// Don't redirect here - let the user view the yard sale
 				// They'll be redirected when they try to perform authenticated actions
 			}
@@ -123,35 +120,46 @@
 	}
 
 	async function loadYardSale() {
-		yardSale = await getYardSaleById(yardSaleId);
-		console.log('Yard sale loaded:', yardSale);
-		console.log('Yard sale owner_id:', yardSale?.owner_id);
-		console.log('Current user ID:', currentUserId);
+		try {
+			yardSale = await getYardSaleById(yardSaleId);
 
-		// Check if current user is the owner
-		console.log('Comparing owner_id:', yardSale?.owner_id, 'with currentUserId:', currentUserId);
-		console.log('owner_id type:', typeof yardSale?.owner_id);
-		console.log('currentUserId type:', typeof currentUserId);
-		console.log('Strict equality:', yardSale?.owner_id === currentUserId);
-		console.log('Loose equality:', yardSale?.owner_id == currentUserId);
+			// Check if current user is the owner
+			isOwner = yardSale?.owner_id === currentUserId;
 
-		isOwner = yardSale?.owner_id === currentUserId;
-		console.log('Is owner?', isOwner);
+			// Initialize visited state
+			if (yardSale) {
+				isVisited = isYardSaleVisited(yardSale.id, yardSale);
+			}
 
-		// Initialize visited state
-		if (yardSale) {
-			isVisited = isYardSaleVisited(yardSale.id);
+			// Load visit statistics (non-blocking)
+			loadVisitStats().catch((err) => {
+				console.warn('Failed to load visit stats:', err);
+			});
+		} catch (err) {
+			console.error('Error loading yard sale:', err);
+			error = err instanceof Error ? err.message : 'Failed to load yard sale';
+		}
+	}
+
+	async function loadVisitStats() {
+		if (!yardSaleId) return;
+
+		try {
+			// Only try to load visit stats if user is authenticated
+			if (currentUser) {
+				visitStats = await getYardSaleVisitStats(yardSaleId);
+			}
+		} catch (err) {
+			console.warn('Failed to load visit stats (endpoint may not be implemented yet):', err);
+			// Don't show error for visit stats, it's not critical
+			visitStats = null;
 		}
 	}
 
 	// Update ownership when current user changes
 	$effect(() => {
 		if (yardSale && currentUserId !== null) {
-			console.log('Re-evaluating ownership due to currentUserId change');
-			console.log('yardSale.owner_id:', yardSale.owner_id);
-			console.log('currentUserId:', currentUserId);
 			const newIsOwner = yardSale.owner_id === currentUserId;
-			console.log('New isOwner value:', newIsOwner);
 			isOwner = newIsOwner;
 		}
 	});
@@ -331,9 +339,9 @@
 		showDeleteModal = false;
 	}
 
-	function handleToggleVisited() {
+	async function handleToggleVisited() {
 		if (yardSale) {
-			isVisited = toggleYardSaleVisited(yardSale.id);
+			isVisited = await toggleYardSaleVisited(yardSale.id, yardSale);
 			// Trigger a page refresh to update the main page sorting
 			// This is a simple solution - in a more complex app, you'd use a global state manager
 			setTimeout(() => {
@@ -544,7 +552,7 @@
 											<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
 												Posted by {yardSale.owner_username}
 											</div>
-											{#if yardSale.owner_average_rating}
+											{#if yardSale.owner_average_rating && typeof yardSale.owner_average_rating === 'number'}
 												<div class="flex items-center">
 													<FontAwesomeIcon icon="star" class="mr-1 h-3 w-3 text-yellow-500" />
 													<span class="text-xs font-medium text-gray-600 dark:text-gray-300">
@@ -845,6 +853,47 @@
 										<p class="text-lg font-semibold text-gray-900 dark:text-white">
 											{yardSale.price_range || 'Not specified'}
 										</p>
+									</div>
+								</div>
+							</div>
+						{/if}
+
+						<!-- Visit Statistics Card -->
+						{#if visitStats}
+							<div
+								class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								<h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+									Visit Statistics
+								</h3>
+								<div class="grid grid-cols-2 gap-4">
+									<div class="text-center">
+										<div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+											{visitStats?.total_visits || 0}
+										</div>
+										<div class="text-sm text-gray-500 dark:text-gray-400">Total Visits</div>
+									</div>
+									<div class="text-center">
+										<div class="text-2xl font-bold text-green-600 dark:text-green-400">
+											{visitStats?.unique_visitors || 0}
+										</div>
+										<div class="text-sm text-gray-500 dark:text-gray-400">Unique Visitors</div>
+									</div>
+									<div class="text-center">
+										<div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+											{visitStats?.average_visits ? visitStats.average_visits.toFixed(1) : '0.0'}
+										</div>
+										<div class="text-sm text-gray-500 dark:text-gray-400">Avg Visits</div>
+									</div>
+									<div class="text-center">
+										<div class="text-xs text-gray-500 dark:text-gray-400">
+											{#if visitStats?.most_recent_visit}
+												{new Date(visitStats.most_recent_visit).toLocaleDateString()}
+											{:else}
+												No visits yet
+											{/if}
+										</div>
+										<div class="text-sm text-gray-500 dark:text-gray-400">Last Visit</div>
 									</div>
 								</div>
 							</div>

@@ -13,7 +13,7 @@
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import { logout } from '$lib/auth';
 	import { getYardSaleStatus, isYardSaleActive, isYardSaleActiveOnDate } from '$lib/yardSaleUtils';
-	import { isYardSaleVisited } from '$lib/visitedYardSales';
+	import { isYardSaleVisited, syncVisitedStatus } from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 
 	let yardSales = $state<YardSale[]>([]);
@@ -36,12 +36,9 @@
 	let showCreateModal = $state(false);
 
 	onMount(() => {
-		// Load current user
-		loadCurrentUser();
-
-		// Load yard sales
-		loadYardSales().catch((err) => {
-			error = err instanceof Error ? err.message : 'Failed to load yard sales';
+		// Load current user first, which will also load yard sales
+		loadCurrentUser().catch((err) => {
+			error = err instanceof Error ? err.message : 'Failed to load user data';
 		});
 
 		// Listen for visited status changes from detail pages
@@ -60,19 +57,29 @@
 	async function loadCurrentUser() {
 		try {
 			currentUser = await getCurrentUser();
+			// Sync visited status with backend when user is loaded
+			if (currentUser) {
+				await syncVisitedStatus();
+			}
 		} catch (error) {
 			console.warn('Failed to load current user:', error);
 			currentUser = null;
+		} finally {
+			// Always load yard sales (with or without visited status)
+			await loadYardSales(false);
 		}
 	}
 
-	async function loadYardSales() {
-		loading = true;
+	async function loadYardSales(showLoading: boolean = true) {
+		if (showLoading) {
+			loading = true;
+		}
 		error = null;
 
 		try {
-			// Always load all yard sales to populate filter options
-			const allData = await getYardSales();
+			// Load yard sales with visited status if user is authenticated
+			const includeVisited = !!currentUser;
+			const allData = await getYardSales(includeVisited);
 			yardSales = allData;
 
 			// Extract unique cities from all data
@@ -177,7 +184,7 @@
 				switch (statusFilter) {
 					case 'active':
 						// Active yard sales that haven't been visited
-						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id);
+						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id, sale);
 						break;
 					case 'upcoming':
 						matchesStatus = status === 'upcoming';
@@ -190,13 +197,13 @@
 						break;
 					case 'visited':
 						// Only show visited yard sales
-						matchesStatus = isYardSaleVisited(sale.id);
+						matchesStatus = isYardSaleVisited(sale.id, sale);
 						break;
 					case 'all':
 						matchesStatus = true;
 						break;
 					default:
-						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id);
+						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id, sale);
 				}
 
 				return matchesSearch && matchesCity && matchesZipCode && matchesDate && matchesStatus;

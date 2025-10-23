@@ -1,3 +1,10 @@
+export interface PaymentMethod {
+	id: string;
+	name: string;
+	icon: string;
+	icon_type: 'solid' | 'brand';
+}
+
 export interface YardSale {
 	id: number;
 	title: string;
@@ -31,10 +38,37 @@ export interface YardSale {
 	owner_average_rating?: number;
 	comment_count: number;
 	venmo_url?: string;
+	// Visited status fields (only present when include_visited_status=true)
+	is_visited?: boolean;
+	visit_count?: number;
+	last_visited?: string;
 }
 
-export async function getYardSales(): Promise<YardSale[]> {
-	const response = await fetch('/api/yard-sales');
+export async function getYardSales(includeVisitedStatus: boolean = true): Promise<YardSale[]> {
+	const token = localStorage.getItem('access_token');
+
+	// If we want visited status but don't have a token, fall back to regular API
+	const shouldIncludeVisited = includeVisitedStatus && !!token;
+
+	const url = shouldIncludeVisited
+		? '/api/yard-sales?include_visited_status=true'
+		: '/api/yard-sales';
+
+	const response = await fetch(url, {
+		headers: shouldIncludeVisited
+			? {
+					Authorization: `Bearer ${token}`
+				}
+			: {}
+	});
+
+	// Handle token expiration
+	if (shouldIncludeVisited && (response.status === 401 || response.status === 403)) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		throw new Error('Failed to fetch yard sales');
 	}
@@ -253,6 +287,111 @@ export async function getOrCreateConversation(otherUserId: number): Promise<{ id
 		throw new Error('Failed to get or create conversation');
 	}
 	return response.json();
+}
+
+// Visited Yard Sales API functions
+export async function markYardSaleAsVisited(yardSaleId: number): Promise<void> {
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to mark yard sale as visited');
+	}
+}
+
+export async function markYardSaleAsNotVisited(yardSaleId: number): Promise<void> {
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to mark yard sale as not visited');
+	}
+}
+
+export async function getUserVisitedYardSales(): Promise<number[]> {
+	const response = await fetch('/api/user/visited-yard-sales', {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch visited yard sales');
+	}
+
+	const data = await response.json();
+	return data.map((item: any) => item.yard_sale_id);
+}
+
+export async function getYardSaleVisitStats(yardSaleId: number): Promise<{
+	total_visits: number;
+	unique_visitors: number;
+	most_recent_visit: string | null;
+	average_visits: number;
+}> {
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit-stats`, {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch visit statistics');
+	}
+
+	return response.json();
+}
+
+export async function getAvailablePaymentMethods(): Promise<PaymentMethod[]> {
+	// For now, return a static list since this endpoint might not be implemented yet
+	// This can be updated when the backend endpoint is available
+	return [
+		{ id: 'cash', name: 'Cash', icon: 'dollar-sign', icon_type: 'solid' },
+		{ id: 'credit-card', name: 'Credit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'debit-card', name: 'Debit Card', icon: 'credit-card', icon_type: 'solid' },
+		{ id: 'venmo', name: 'Venmo', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'paypal', name: 'PayPal', icon: 'paypal', icon_type: 'brand' },
+		{ id: 'zelle', name: 'Zelle', icon: 'check-circle', icon_type: 'solid' },
+		{ id: 'apple', name: 'Apple Pay', icon: 'apple', icon_type: 'brand' },
+		{ id: 'google', name: 'Google Pay', icon: 'google', icon_type: 'brand' },
+		{ id: 'square', name: 'Square', icon: 'credit-card', icon_type: 'solid' }
+	];
 }
 
 export interface LoginRequest {
