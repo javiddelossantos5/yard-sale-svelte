@@ -158,33 +158,24 @@ export async function syncVisitedStatus(): Promise<void> {
 		const userId = getCurrentUserId();
 		const { visitedKey, syncKey } = getUserKeys(userId);
 
-		console.log(`Syncing visited status for user: ${userId}`);
-
 		// Check if we've already synced for this user
 		const hasSynced = localStorage.getItem(syncKey);
 		if (hasSynced) {
-			console.log('Already synced for this user, skipping');
 			return;
 		}
 
 		// Get visited from backend
-		console.log('Getting visited yard sales from backend...');
 		const serverVisited = await getUserVisitedYardSales();
-		console.log(`Backend returned ${serverVisited.length} visited yard sales`);
 
 		// Get visited from localStorage
 		const localVisited = getVisitedYardSales();
-		console.log(`localStorage has ${localVisited.length} visited yard sales`);
 
 		// Merge both lists (backend takes precedence)
 		const merged = [...new Set([...serverVisited, ...localVisited])];
-		console.log(`Merged to ${merged.length} visited yard sales`);
 
 		// Update localStorage with user-specific keys
 		localStorage.setItem(visitedKey, JSON.stringify(merged));
 		localStorage.setItem(syncKey, 'true');
-
-		console.log(`Visited status synced with backend for user ${userId}`);
 	} catch (error) {
 		console.warn('Failed to sync visited status with backend:', error);
 		// Continue with localStorage only
@@ -223,8 +214,6 @@ export function migrateOldVisitedData(): void {
 		const oldSync = localStorage.getItem(oldSyncKey);
 
 		if (oldVisited || oldSync) {
-			console.log('Migrating old visited data to user-specific storage...');
-
 			// Get current user
 			const userId = getCurrentUserId();
 			const { visitedKey, syncKey } = getUserKeys(userId);
@@ -232,18 +221,15 @@ export function migrateOldVisitedData(): void {
 			// If we have a user and old data exists, migrate it
 			if (userId && oldVisited) {
 				localStorage.setItem(visitedKey, oldVisited);
-				console.log(`Migrated visited data for user ${userId}`);
 			}
 
 			if (userId && oldSync) {
 				localStorage.setItem(syncKey, oldSync);
-				console.log(`Migrated sync data for user ${userId}`);
 			}
 
 			// Remove old keys
 			localStorage.removeItem(oldVisitedKey);
 			localStorage.removeItem(oldSyncKey);
-			console.log('Removed old shared visited data');
 		}
 	} catch (error) {
 		console.error('Error migrating old visited data:', error);

@@ -66,7 +66,7 @@
 
 	// Debug: Watch for changes in isOwner
 	$effect(() => {
-		// console.log('isOwner changed to:', isOwner);
+		// Track isOwner changes
 	});
 
 	// Delete confirmation modal state
@@ -77,7 +77,6 @@
 	// Helper function to handle authentication redirects
 	async function requireAuth(action: () => Promise<void> | void) {
 		if (!currentUser) {
-			console.log('User not authenticated, redirecting to login...');
 			const { handleTokenExpiration } = await import('$lib/auth');
 			handleTokenExpiration();
 			return;

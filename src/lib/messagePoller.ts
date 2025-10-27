@@ -17,7 +17,6 @@ class MessagePoller {
 			// Get current user
 			const user = await getCurrentUser();
 			if (!user) {
-				console.log('No user logged in, skipping message polling');
 				return;
 			}
 
@@ -29,8 +28,6 @@ class MessagePoller {
 			this.intervalId = setInterval(() => {
 				this.checkForNewNotifications();
 			}, 15000);
-
-			console.log('Message polling started');
 		} catch (error) {
 			console.warn('Failed to start message polling:', error);
 		}
@@ -43,7 +40,6 @@ class MessagePoller {
 			this.intervalId = null;
 		}
 		this.isPolling = false;
-		console.log('Message polling stopped');
 	}
 
 	// Check for new notifications

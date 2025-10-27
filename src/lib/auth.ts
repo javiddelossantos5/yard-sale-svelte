@@ -87,7 +87,7 @@ export function logout(): void {
 }
 
 export function handleTokenExpiration(): void {
-	console.log('Token expired, clearing session and redirecting to login...');
+	// Clear session and redirect to login
 
 	// Clear the expired token
 	logout();

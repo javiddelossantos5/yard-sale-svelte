@@ -54,10 +54,6 @@ export async function getYardSales(includeVisitedStatus: boolean = true): Promis
 		? '/api/yard-sales?include_visited_status=true'
 		: '/api/yard-sales';
 
-	console.log(
-		`getYardSales called with includeVisitedStatus=${includeVisitedStatus}, shouldIncludeVisited=${shouldIncludeVisited}, url=${url}`
-	);
-
 	const response = await fetch(url, {
 		headers: shouldIncludeVisited
 			? {
@@ -77,9 +73,6 @@ export async function getYardSales(includeVisitedStatus: boolean = true): Promis
 		throw new Error('Failed to fetch yard sales');
 	}
 	const data = await response.json();
-	console.log(
-		`getYardSales response: ${data.length} yard sales, first one has is_visited=${data[0]?.is_visited}`
-	);
 	return data;
 }
 
@@ -336,7 +329,6 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
 
 	try {
 		const payload = JSON.parse(atob(token.split('.')[1]));
-		console.log('JWT payload:', payload);
 
 		// Handle both string and numeric user IDs
 		let currentUserId: number | null = null;
@@ -355,8 +347,6 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
 			}
 		}
 
-		console.log('Current user ID:', currentUserId);
-
 		if (!currentUserId) {
 			throw new Error('Could not determine current user ID from token');
 		}
@@ -372,13 +362,11 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
 		);
 
 		if (existingConversation && existingConversation.conversation_id) {
-			console.log('Found existing conversation:', existingConversation.conversation_id);
 			return { id: existingConversation.conversation_id };
 		}
 
 		// If no existing conversation, return null
 		// The conversation will be created when the first message is sent
-		console.log('No existing conversation found, will create new one when first message is sent');
 		return { id: null };
 	} catch (error) {
 		console.error('Error parsing JWT token:', error);
@@ -388,16 +376,12 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
 
 // Visited Yard Sales API functions
 export async function markYardSaleAsVisited(yardSaleId: string): Promise<void> {
-	console.log(`markYardSaleAsVisited called with yardSaleId=${yardSaleId}`);
-
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
-
-	console.log(`markYardSaleAsVisited response status: ${response.status}`);
 
 	// Handle token expiration
 	if (response.status === 401 || response.status === 403) {
@@ -412,16 +396,12 @@ export async function markYardSaleAsVisited(yardSaleId: string): Promise<void> {
 }
 
 export async function markYardSaleAsNotVisited(yardSaleId: string): Promise<void> {
-	console.log(`markYardSaleAsNotVisited called with yardSaleId=${yardSaleId}`);
-
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
 		method: 'DELETE',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
-
-	console.log(`markYardSaleAsNotVisited response status: ${response.status}`);
 
 	// Handle token expiration
 	if (response.status === 401 || response.status === 403) {
@@ -734,25 +714,19 @@ function getCurrentUserId(): string | null {
 }
 
 export async function getCurrentUser(): Promise<CurrentUser> {
-	console.log('Getting current user info');
-
 	try {
 		// First try to get user ID from JWT token
 		const userId = getCurrentUserId();
 
 		if (userId) {
 			// If we have a user ID, fetch the user profile
-			console.log('Using user ID from token:', userId);
 			return await getUserProfile(userId);
 		} else {
 			// If we can't get user ID from token, try the /me endpoint
-			console.log('Trying /api/me endpoint');
 			const response = await fetch('/api/me');
-			console.log('getCurrentUser response status:', response.status);
 
 			// Handle token expiration - don't redirect here, let calling code handle it
 			if (response.status === 401 || response.status === 403) {
-				console.log('Token expired in getCurrentUser');
 				throw new Error('Token expired');
 			}
 
@@ -761,7 +735,6 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 			}
 
 			const userData = await response.json();
-			console.log('getCurrentUser response data:', userData);
 			return userData;
 		}
 	} catch (error) {

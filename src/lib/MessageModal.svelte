@@ -63,32 +63,26 @@
 
 	$effect(() => {
 		if (isOpen && otherUserId) {
-			console.log('MessageModal opened:', { fullPage, yardSaleId, otherUserId });
 			loadMessages();
 		}
 	});
 
 	async function loadMessages() {
-		console.log('loadMessages called with yardSaleId:', yardSaleId, 'otherUserId:', otherUserId);
 		loading = true;
 		error = null;
 		try {
 			// Handle profile messaging (yardSaleId = "")
 			if (yardSaleId === '' || yardSaleId === '0') {
-				console.log('Loading profile conversation messages...');
 				// Get or create conversation between current user and other user
 				const conversation = await getOrCreateConversation(otherUserId);
-				console.log('Got conversation:', conversation);
 				conversationId = conversation.id;
 
 				// Load conversation messages only if conversation exists
 				if (conversationId) {
 					messages = await getConversationMessages(conversationId);
-					console.log('Loaded conversation messages:', messages);
 				} else {
 					// No existing conversation, start with empty messages
 					messages = [];
-					console.log('No existing conversation, starting fresh');
 				}
 			} else {
 				// Handle yard sale messaging

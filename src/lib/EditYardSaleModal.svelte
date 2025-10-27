@@ -697,13 +697,13 @@
 									oninput={() => {
 										// Automatically select Venmo payment method if URL is provided
 										if (formData.venmo_url && formData.venmo_url.trim() !== '') {
-											if (!formData.payment_methods?.includes('venmo')) {
-												formData.payment_methods = [...(formData.payment_methods || []), 'venmo'];
+											if (!formData.payment_methods?.includes('Venmo')) {
+												formData.payment_methods = [...(formData.payment_methods || []), 'Venmo'];
 											}
 										} else {
 											// Remove Venmo from payment methods if URL is cleared
 											formData.payment_methods = (formData.payment_methods || []).filter(
-												(method) => method !== 'venmo'
+												(method) => method !== 'Venmo'
 											);
 										}
 									}}

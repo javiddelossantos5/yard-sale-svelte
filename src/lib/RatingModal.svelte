@@ -53,8 +53,6 @@
 		localStorage.setItem('rating_debug', JSON.stringify(debugInfo));
 
 		try {
-			console.log('Submitting rating:', debugInfo);
-
 			await createRating(ratedUserId, rating, reviewText.trim() || undefined, yardSaleId);
 
 			// Update debug info for success
@@ -66,8 +64,6 @@
 					successTime: new Date().toISOString()
 				})
 			);
-
-			console.log('Rating submitted successfully');
 
 			// Update debug info for success
 			localStorage.setItem(

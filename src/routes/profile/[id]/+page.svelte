@@ -140,12 +140,8 @@
 			action: 'rate_user_clicked'
 		};
 
-		console.log('handleRateUser called:', debugInfo);
-		localStorage.setItem('profile_debug', JSON.stringify(debugInfo));
-
 		if (canRate) {
 			showRatingModal = true;
-			console.log('Rating modal opened');
 			localStorage.setItem(
 				'profile_debug',
 				JSON.stringify({
@@ -154,7 +150,6 @@
 				})
 			);
 		} else {
-			console.log('Cannot rate user:', { canRate, currentUser, isOwnProfile });
 			localStorage.setItem(
 				'profile_debug',
 				JSON.stringify({
@@ -172,16 +167,9 @@
 	}
 
 	function handleMessageUser() {
-		console.log('handleMessageUser called');
-		console.log('currentUser:', currentUser);
-		console.log('isOwnProfile:', isOwnProfile);
-		console.log('profileUser:', profileUser);
-
 		if (currentUser && !isOwnProfile) {
-			console.log('Opening message modal');
 			showMessageModal = true;
 		} else {
-			console.log('Cannot open message modal - conditions not met');
 		}
 	}
 
@@ -235,7 +223,6 @@
 			}
 		} else {
 			// If no conversation_id, show a simple alert or could open a new conversation modal
-			console.log('Message has no conversation_id, cannot open conversation');
 		}
 	}
 
@@ -271,12 +258,8 @@
 			profileUserId: profileUser?.id
 		};
 
-		console.log('Rating submitted successfully, refreshing data...');
-		localStorage.setItem('profile_debug', JSON.stringify(debugInfo));
-
 		try {
 			await Promise.all([loadRatings(), loadProfileUser()]);
-			console.log('Data refreshed successfully');
 			localStorage.setItem(
 				'profile_debug',
 				JSON.stringify({
