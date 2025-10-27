@@ -47,13 +47,16 @@ export async function loadNotifications(page: number = 1, limit: number = 50) {
 
 	try {
 		const response = await getNotifications(page, limit);
-		notifications.set(response.notifications);
+		// Handle undefined notifications array
+		const notificationsArray = response.notifications || [];
+		notifications.set(notificationsArray);
+
 		// Handle both field name formats
 		const unreadCountValue = response.unread_count || response.unread_notifications || 0;
 		unreadCount.set(unreadCountValue);
 
 		// Calculate message-specific unread count
-		const messageUnreadCount = response.notifications.filter(
+		const messageUnreadCount = notificationsArray.filter(
 			(n) => n.type === 'message' && !n.is_read
 		).length;
 		unreadMessageCount.set(messageUnreadCount);

@@ -33,6 +33,7 @@
 
 	// Visited state tracker to trigger re-sorting when visited status changes
 	let visitedStateTracker = $state(0);
+	let isLoadingUser = $state(false);
 
 	// Get unique cities for filters
 	let cities = $state<string[]>([]);
@@ -40,11 +41,13 @@
 	// Create yard sale modal state
 	let showCreateModal = $state(false);
 
-	onMount(() => {
+	onMount(async () => {
 		// Load current user first, which will also load yard sales
-		loadCurrentUser().catch((err) => {
+		try {
+			await loadCurrentUser();
+		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load user data';
-		});
+		}
 
 		// Listen for visited status changes from detail pages
 		const handleVisitedStatusChanged = () => {
@@ -60,20 +63,41 @@
 	});
 
 	async function loadCurrentUser() {
+		// Prevent multiple simultaneous calls
+		if (isLoadingUser) {
+			console.log('User loading already in progress, skipping');
+			return;
+		}
+
+		isLoadingUser = true;
+
 		try {
+			console.log('Loading current user...');
 			currentUser = await getCurrentUser();
+			console.log('Current user loaded:', currentUser?.username);
+
 			// Migrate old localStorage data to user-specific keys
 			migrateOldVisitedData();
+
 			// Sync visited status with backend when user is loaded
 			if (currentUser) {
+				console.log('Syncing visited status...');
 				await syncVisitedStatus();
+				console.log('Visited status synced');
 			}
+
+			// Load yard sales with visited status after user is loaded
+			console.log('Loading yard sales with visited status...');
+			await loadYardSales(false);
+			console.log('Yard sales loaded');
 		} catch (error) {
 			console.warn('Failed to load current user:', error);
 			currentUser = null;
-		} finally {
-			// Always load yard sales (with or without visited status)
+			// Load yard sales without visited status on error
+			console.log('Loading yard sales without visited status...');
 			await loadYardSales(false);
+		} finally {
+			isLoadingUser = false;
 		}
 	}
 
@@ -86,6 +110,9 @@
 		try {
 			// Load yard sales with visited status if user is authenticated
 			const includeVisited = !!currentUser;
+			console.log(
+				`loadYardSales called with currentUser=${!!currentUser}, includeVisited=${includeVisited}`
+			);
 			const allData = await getYardSales(includeVisited);
 			yardSales = allData;
 
@@ -139,8 +166,10 @@
 	}
 
 	// Function to trigger re-sorting when visited status changes
-	function triggerVisitedStateUpdate() {
+	async function triggerVisitedStateUpdate() {
 		visitedStateTracker++;
+		// Reload yard sales data to get updated visited status from backend
+		await loadYardSales(false);
 	}
 
 	function handleCreateYardSale() {
@@ -191,7 +220,8 @@
 				switch (statusFilter) {
 					case 'active':
 						// Active yard sales that haven't been visited
-						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id, sale);
+						const isVisited = isYardSaleVisited(sale.id, sale);
+						matchesStatus = status === 'active' && !isVisited;
 						break;
 					case 'upcoming':
 						matchesStatus = status === 'upcoming';

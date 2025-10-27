@@ -54,6 +54,10 @@ export async function getYardSales(includeVisitedStatus: boolean = true): Promis
 		? '/api/yard-sales?include_visited_status=true'
 		: '/api/yard-sales';
 
+	console.log(
+		`getYardSales called with includeVisitedStatus=${includeVisitedStatus}, shouldIncludeVisited=${shouldIncludeVisited}, url=${url}`
+	);
+
 	const response = await fetch(url, {
 		headers: shouldIncludeVisited
 			? {
@@ -72,7 +76,11 @@ export async function getYardSales(includeVisitedStatus: boolean = true): Promis
 	if (!response.ok) {
 		throw new Error('Failed to fetch yard sales');
 	}
-	return response.json();
+	const data = await response.json();
+	console.log(
+		`getYardSales response: ${data.length} yard sales, first one has is_visited=${data[0]?.is_visited}`
+	);
+	return data;
 }
 
 export async function getYardSalesByCity(city: string): Promise<YardSale[]> {
@@ -380,12 +388,16 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
 
 // Visited Yard Sales API functions
 export async function markYardSaleAsVisited(yardSaleId: string): Promise<void> {
+	console.log(`markYardSaleAsVisited called with yardSaleId=${yardSaleId}`);
+
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
+
+	console.log(`markYardSaleAsVisited response status: ${response.status}`);
 
 	// Handle token expiration
 	if (response.status === 401 || response.status === 403) {
@@ -400,12 +412,16 @@ export async function markYardSaleAsVisited(yardSaleId: string): Promise<void> {
 }
 
 export async function markYardSaleAsNotVisited(yardSaleId: string): Promise<void> {
+	console.log(`markYardSaleAsNotVisited called with yardSaleId=${yardSaleId}`);
+
 	const response = await fetch(`/api/yard-sales/${yardSaleId}/visit`, {
 		method: 'DELETE',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
+
+	console.log(`markYardSaleAsNotVisited response status: ${response.status}`);
 
 	// Handle token expiration
 	if (response.status === 401 || response.status === 403) {

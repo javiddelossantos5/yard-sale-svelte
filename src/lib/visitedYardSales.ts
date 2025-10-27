@@ -158,24 +158,33 @@ export async function syncVisitedStatus(): Promise<void> {
 		const userId = getCurrentUserId();
 		const { visitedKey, syncKey } = getUserKeys(userId);
 
+		console.log(`Syncing visited status for user: ${userId}`);
+
 		// Check if we've already synced for this user
 		const hasSynced = localStorage.getItem(syncKey);
-		if (hasSynced) return;
+		if (hasSynced) {
+			console.log('Already synced for this user, skipping');
+			return;
+		}
 
 		// Get visited from backend
+		console.log('Getting visited yard sales from backend...');
 		const serverVisited = await getUserVisitedYardSales();
+		console.log(`Backend returned ${serverVisited.length} visited yard sales`);
 
 		// Get visited from localStorage
 		const localVisited = getVisitedYardSales();
+		console.log(`localStorage has ${localVisited.length} visited yard sales`);
 
 		// Merge both lists (backend takes precedence)
 		const merged = [...new Set([...serverVisited, ...localVisited])];
+		console.log(`Merged to ${merged.length} visited yard sales`);
 
 		// Update localStorage with user-specific keys
 		localStorage.setItem(visitedKey, JSON.stringify(merged));
 		localStorage.setItem(syncKey, 'true');
 
-		// Visited status synced successfully
+		console.log(`Visited status synced with backend for user ${userId}`);
 	} catch (error) {
 		console.warn('Failed to sync visited status with backend:', error);
 		// Continue with localStorage only
