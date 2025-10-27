@@ -11,7 +11,7 @@ const SYNC_KEY_PREFIX = 'visited_sync_completed_';
 /**
  * Get user-specific localStorage keys
  */
-function getUserKeys(userId: number | null): { visitedKey: string; syncKey: string } {
+function getUserKeys(userId: string | null): { visitedKey: string; syncKey: string } {
 	const userSuffix = userId ? `user_${userId}` : 'anonymous';
 	return {
 		visitedKey: `${VISITED_KEY_PREFIX}${userSuffix}`,
@@ -22,7 +22,7 @@ function getUserKeys(userId: number | null): { visitedKey: string; syncKey: stri
 /**
  * Get current user ID from localStorage token
  */
-function getCurrentUserId(): number | null {
+function getCurrentUserId(): string | null {
 	if (!browser) return null;
 
 	try {
@@ -31,7 +31,7 @@ function getCurrentUserId(): number | null {
 
 		// Decode JWT to get user ID (simple base64 decode)
 		const payload = JSON.parse(atob(token.split('.')[1]));
-		return payload.sub ? parseInt(payload.sub) || null : null;
+		return payload.sub || null;
 	} catch (error) {
 		console.warn('Failed to get current user ID from token:', error);
 		return null;
@@ -41,7 +41,7 @@ function getCurrentUserId(): number | null {
 /**
  * Get all visited yard sale IDs from localStorage for current user
  */
-export function getVisitedYardSales(): number[] {
+export function getVisitedYardSales(): string[] {
 	if (!browser) return [];
 
 	try {
@@ -58,26 +58,23 @@ export function getVisitedYardSales(): number[] {
 /**
  * Check if a yard sale has been visited (backend first, localStorage fallback)
  */
-export function isYardSaleVisited(yardSaleId: number, yardSale?: any): boolean {
+export function isYardSaleVisited(yardSaleId: string, yardSale?: any): boolean {
 	if (!browser) return false;
 
 	// If yard sale object has visited status from API, use that
 	if (yardSale && typeof yardSale.is_visited === 'boolean') {
-		console.log(`Using API visited status for yard sale ${yardSaleId}: ${yardSale.is_visited}`);
 		return yardSale.is_visited;
 	}
 
 	// Fallback to localStorage
 	const visited = getVisitedYardSales();
-	const isVisited = visited.includes(yardSaleId);
-	console.log(`Using localStorage visited status for yard sale ${yardSaleId}: ${isVisited}`);
-	return isVisited;
+	return visited.includes(yardSaleId);
 }
 
 /**
  * Mark a yard sale as visited (backend + localStorage)
  */
-export async function markYardSaleAsVisited(yardSaleId: number): Promise<void> {
+export async function markYardSaleAsVisited(yardSaleId: string): Promise<void> {
 	if (!browser) return;
 
 	try {
@@ -109,7 +106,7 @@ export async function markYardSaleAsVisited(yardSaleId: number): Promise<void> {
 /**
  * Mark a yard sale as not visited (backend + localStorage)
  */
-export async function markYardSaleAsNotVisited(yardSaleId: number): Promise<void> {
+export async function markYardSaleAsNotVisited(yardSaleId: string): Promise<void> {
 	if (!browser) return;
 
 	try {
@@ -137,19 +134,16 @@ export async function markYardSaleAsNotVisited(yardSaleId: number): Promise<void
 /**
  * Toggle visited status for a yard sale (backend + localStorage)
  */
-export async function toggleYardSaleVisited(yardSaleId: number, yardSale?: any): Promise<boolean> {
+export async function toggleYardSaleVisited(yardSaleId: string, yardSale?: any): Promise<boolean> {
 	if (!browser) return false;
 
 	const isVisited = isYardSaleVisited(yardSaleId, yardSale);
-	console.log(`Toggling visited status for yard sale ${yardSaleId}: currently ${isVisited}`);
 
 	if (isVisited) {
 		await markYardSaleAsNotVisited(yardSaleId);
-		console.log(`Marked yard sale ${yardSaleId} as NOT visited`);
 		return false;
 	} else {
 		await markYardSaleAsVisited(yardSaleId);
-		console.log(`Marked yard sale ${yardSaleId} as visited`);
 		return true;
 	}
 }
@@ -181,7 +175,7 @@ export async function syncVisitedStatus(): Promise<void> {
 		localStorage.setItem(visitedKey, JSON.stringify(merged));
 		localStorage.setItem(syncKey, 'true');
 
-		console.log(`Visited status synced with backend for user ${userId}`);
+		// Visited status synced successfully
 	} catch (error) {
 		console.warn('Failed to sync visited status with backend:', error);
 		// Continue with localStorage only
