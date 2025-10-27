@@ -762,6 +762,9 @@ export async function getUserProfile(userId: string): Promise<CurrentUser> {
 		}
 	});
 	if (!response.ok) {
+		if (response.status === 404) {
+			throw new Error('User profile endpoint not implemented on backend');
+		}
 		throw new Error(`Failed to fetch user profile: ${response.status}`);
 	}
 	return response.json();
@@ -775,6 +778,9 @@ export async function getUserRatings(userId: string): Promise<Rating[]> {
 		}
 	});
 	if (!response.ok) {
+		if (response.status === 404 || response.status === 405) {
+			throw new Error('User ratings endpoint not implemented on backend');
+		}
 		throw new Error(`Failed to fetch user ratings: ${response.status}`);
 	}
 	return response.json();
@@ -1012,6 +1018,9 @@ export async function getUserVerifications(userId: string): Promise<Verification
 		}
 	});
 	if (!response.ok) {
+		if (response.status === 404 || response.status === 405) {
+			throw new Error('User verifications endpoint not implemented on backend');
+		}
 		throw new Error(`Failed to fetch user verifications: ${response.status}`);
 	}
 	return response.json();

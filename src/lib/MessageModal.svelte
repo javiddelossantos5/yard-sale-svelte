@@ -73,8 +73,8 @@
 		loading = true;
 		error = null;
 		try {
-			// Handle profile messaging (yardSaleId = 0)
-			if (yardSaleId === 0) {
+			// Handle profile messaging (yardSaleId = "")
+			if (yardSaleId === '' || yardSaleId === '0') {
 				console.log('Loading profile conversation messages...');
 				// Get or create conversation between current user and other user
 				const conversation = await getOrCreateConversation(otherUserId);
@@ -119,14 +119,14 @@
 	async function handleSendMessage() {
 		if (!newMessage.trim() || sending) return;
 
-		// Handle profile messaging (yardSaleId = 0) - will be handled in the try block
+		// Handle profile messaging (yardSaleId = "") - will be handled in the try block
 
 		sending = true;
 		try {
 			let message: Message;
 
-			// Handle profile messaging (yardSaleId = 0)
-			if (yardSaleId === 0) {
+			// Handle profile messaging (yardSaleId = "")
+			if (yardSaleId === '' || yardSaleId === '0') {
 				if (conversationId) {
 					// Send message in existing conversation
 					message = await sendConversationMessage(conversationId, newMessage.trim());
@@ -223,7 +223,7 @@
 		try {
 			let newMessages: Message[] = [];
 
-			if (yardSaleId === 0) {
+			if (yardSaleId === '' || yardSaleId === '0') {
 				// Check for new conversation messages
 				if (conversationId) {
 					newMessages = await getConversationMessages(conversationId);

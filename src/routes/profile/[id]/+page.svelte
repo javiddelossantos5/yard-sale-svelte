@@ -533,7 +533,7 @@
 {#if showMessageModal && profileUser && currentUser}
 	<MessageModal
 		isOpen={showMessageModal}
-		yardSaleId={0}
+		yardSaleId=""
 		yardSaleTitle="Profile Message"
 		otherUserId={profileUser.id}
 		otherUsername={profileUser.full_name || profileUser.username || 'Unknown User'}
