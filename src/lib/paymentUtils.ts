@@ -24,7 +24,6 @@ export async function getPaymentMethods(): Promise<PaymentMethod[]> {
 function getFallbackPaymentMethods(): PaymentMethod[] {
 	return [
 		{ id: 'cash', name: 'Cash', icon: 'dollar-sign', icon_type: 'solid' },
-		{ id: 'venmo', name: 'Venmo', icon: 'check-circle', icon_type: 'solid' },
 		{ id: 'paypal', name: 'PayPal', icon: 'paypal', icon_type: 'brand' },
 		{ id: 'zelle', name: 'Zelle', icon: 'check-circle', icon_type: 'solid' },
 		{ id: 'apple', name: 'Apple Pay', icon: 'apple', icon_type: 'brand' },

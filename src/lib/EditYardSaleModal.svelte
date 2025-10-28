@@ -700,17 +700,7 @@
 										}
 									}}
 									oninput={() => {
-										// Automatically select Venmo payment method if URL is provided
-										if (formData.venmo_url && formData.venmo_url.trim() !== '') {
-											if (!formData.payment_methods?.includes('Venmo')) {
-												formData.payment_methods = [...(formData.payment_methods || []), 'Venmo'];
-											}
-										} else {
-											// Remove Venmo from payment methods if URL is cleared
-											formData.payment_methods = (formData.payment_methods || []).filter(
-												(method) => method !== 'Venmo'
-											);
-										}
+										// Venmo URL is independent of payment methods
 									}}
 									placeholder="https://venmo.com/your-username"
 									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"

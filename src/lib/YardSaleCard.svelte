@@ -16,7 +16,6 @@
 		{ id: 'cash', name: 'Cash', icon: 'dollar-sign', icon_type: 'solid' },
 		{ id: 'credit-card', name: 'Credit Card', icon: 'credit-card', icon_type: 'solid' },
 		{ id: 'debit-card', name: 'Debit Card', icon: 'credit-card', icon_type: 'solid' },
-		{ id: 'venmo', name: 'Venmo', icon: 'check-circle', icon_type: 'solid' },
 		{ id: 'paypal', name: 'PayPal', icon: 'paypal', icon_type: 'brand' },
 		{ id: 'zelle', name: 'Zelle', icon: 'check-circle', icon_type: 'solid' },
 		{ id: 'apple', name: 'Apple Pay', icon: 'apple', icon_type: 'brand' },
@@ -476,37 +475,30 @@
 			<div class="flex flex-wrap gap-2.5">
 				{#each yardSale.payment_methods as method}
 					{@const iconInfo = getPaymentMethodIcon(method, availablePaymentMethods)}
-					{@const isVenmoWithUrl = method.toLowerCase().includes('venmo') && yardSale.venmo_url}
-					{#if isVenmoWithUrl}
-						<a
-							href={yardSale.venmo_url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="inline-flex items-center rounded-2xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-							title="Pay with Venmo"
-						>
-							<FontAwesomeIcon
-								icon={iconInfo.iconType === 'brand'
-									? ['fab', iconInfo.icon]
-									: (iconInfo.icon as any)}
-								class="mr-2 h-4 w-4"
-							/>
-							{method}
-						</a>
-					{:else}
-						<div
-							class="inline-flex items-center rounded-2xl bg-white/80 px-4 py-2.5 text-xs font-bold text-gray-700 shadow-lg backdrop-blur-sm dark:bg-gray-600/80 dark:text-gray-200"
-						>
-							<FontAwesomeIcon
-								icon={iconInfo.iconType === 'brand'
-									? ['fab', iconInfo.icon]
-									: (iconInfo.icon as any)}
-								class="mr-2 h-4 w-4"
-							/>
-							{method}
-						</div>
-					{/if}
+					<div
+						class="inline-flex items-center rounded-2xl bg-white/80 px-4 py-2.5 text-xs font-bold text-gray-700 shadow-lg backdrop-blur-sm dark:bg-gray-600/80 dark:text-gray-200"
+					>
+						<FontAwesomeIcon
+							icon={iconInfo.iconType === 'brand' ? ['fab', iconInfo.icon] : (iconInfo.icon as any)}
+							class="mr-2 h-4 w-4"
+						/>
+						{method}
+					</div>
 				{/each}
+
+				<!-- Venmo URL link (independent of payment methods) -->
+				{#if yardSale.venmo_url}
+					<a
+						href={yardSale.venmo_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center rounded-2xl bg-linear-to-r from-blue-500 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+						title="Pay with Venmo"
+					>
+						<FontAwesomeIcon icon="check-circle" class="mr-2 h-4 w-4" />
+						Venmo
+					</a>
+				{/if}
 			</div>
 		</div>
 	</div>
