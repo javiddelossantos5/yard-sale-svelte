@@ -1027,7 +1027,23 @@ export interface UploadedImage {
 
 // Helper function to get the proxy URL for an image
 export function getImageProxyUrl(imageKey: string): string {
-	return `https://garage.javidscript.com/api/image-proxy/${imageKey}`;
+	return `http://localhost:8000/image-proxy/${imageKey}`;
+}
+
+// Helper function to get authenticated image URL
+export function getAuthenticatedImageUrl(imageUrl: string): string {
+	if (!imageUrl) return '';
+
+	// If it's already a localhost:8000 URL, add the token as a query parameter
+	if (imageUrl.includes('localhost:8000')) {
+		const token = localStorage.getItem('access_token');
+		if (token) {
+			const separator = imageUrl.includes('?') ? '&' : '?';
+			return `${imageUrl}${separator}token=${token}`;
+		}
+	}
+
+	return imageUrl;
 }
 
 export async function uploadImage(file: File): Promise<UploadedImage> {
@@ -1054,6 +1070,7 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 
 	const result = await response.json();
 	// Transform the backend response to match our interface
+	// Backend now returns URLs pointing to localhost:8000
 	return {
 		id: result.file_name,
 		key: result.file_name,
@@ -1083,10 +1100,11 @@ export async function getUserImages(): Promise<UploadedImage[]> {
 
 	const data = await response.json();
 	// Transform the backend response to match our interface
+	// Backend now returns URLs pointing to localhost:8000
 	return data.images.map((img: any) => ({
 		id: img.key,
 		key: img.key,
-		url: img.url,
+		url: img.url, // Backend now returns localhost:8000 URLs directly
 		filename: img.filename,
 		size: img.size,
 		uploaded_at: img.last_modified

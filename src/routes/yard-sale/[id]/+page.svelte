@@ -9,6 +9,7 @@
 		deleteYardSale,
 		getCurrentUser,
 		getYardSaleVisitStats,
+		getAuthenticatedImageUrl,
 		type YardSale,
 		type Comment,
 		type CurrentUser
@@ -543,7 +544,7 @@
 											<!-- Single Image -->
 											<div class="overflow-hidden rounded-2xl">
 												<img
-													src={yardSale.photos[0]}
+													src={getAuthenticatedImageUrl(yardSale.photos[0])}
 													alt={yardSale.title}
 													class="h-64 w-full object-cover sm:h-80"
 													loading="lazy"
@@ -555,7 +556,7 @@
 												{#each yardSale.photos.slice(0, 4) as photo, index}
 													<div class="overflow-hidden rounded-2xl">
 														<img
-															src={photo}
+															src={getAuthenticatedImageUrl(photo)}
 															alt="{yardSale.title} - Image {index + 1}"
 															class="h-32 w-full object-cover sm:h-40"
 															loading="lazy"

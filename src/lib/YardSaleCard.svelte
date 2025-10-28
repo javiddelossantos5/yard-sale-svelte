@@ -6,7 +6,7 @@
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { getPaymentMethodIcon } from './paymentUtils';
-	import { getCurrentUser, type CurrentUser } from './api';
+	import { getCurrentUser, type CurrentUser, getAuthenticatedImageUrl } from './api';
 
 	let { yardSale, onVisitedChange }: { yardSale: YardSale; onVisitedChange?: () => void } =
 		$props();
@@ -118,7 +118,7 @@
 		{#if yardSale.photos && yardSale.photos.length > 0}
 			<div class="mb-4">
 				<img
-					src={yardSale.photos[0]}
+					src={getAuthenticatedImageUrl(yardSale.photos[0])}
 					alt={yardSale.title}
 					class="h-48 w-full rounded-2xl object-cover shadow-lg"
 					loading="lazy"

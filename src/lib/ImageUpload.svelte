@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { uploadImage, deleteImage, getUserImages, type UploadedImage } from './api';
+	import {
+		uploadImage,
+		deleteImage,
+		getUserImages,
+		getAuthenticatedImageUrl,
+		type UploadedImage
+	} from './api';
 
 	let {
 		images = [],
@@ -251,7 +257,7 @@
 							aria-label="Add {image.filename} to yard sale"
 						>
 							<img
-								src={image.url}
+								src={getAuthenticatedImageUrl(image.url)}
 								alt={image.filename}
 								class="h-24 w-full rounded-lg border border-gray-200 object-cover opacity-60 transition-opacity duration-200 group-hover:opacity-100 dark:border-gray-700"
 							/>
@@ -292,7 +298,7 @@
 				{#each uploadedImages as image, index}
 					<div class="group relative">
 						<img
-							src={image.url}
+							src={getAuthenticatedImageUrl(image.url)}
 							alt={image.filename}
 							class="h-24 w-full rounded-lg border border-gray-200 object-cover dark:border-gray-700"
 						/>
