@@ -114,6 +114,18 @@
 			{yardSale.title}
 		</h3>
 
+		<!-- Featured Image -->
+		{#if yardSale.photos && yardSale.photos.length > 0}
+			<div class="mb-4">
+				<img
+					src={yardSale.photos[0]}
+					alt={yardSale.title}
+					class="h-48 w-full rounded-2xl object-cover shadow-lg"
+					loading="lazy"
+				/>
+			</div>
+		{/if}
+
 		<!-- Owner Information -->
 		<div class="mb-5 flex items-center justify-between">
 			<button

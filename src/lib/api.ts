@@ -1014,3 +1014,100 @@ export async function getUserVerifications(userId: string): Promise<Verification
 	}
 	return response.json();
 }
+
+// Image Upload API functions
+export interface UploadedImage {
+	id: string;
+	key: string;
+	url: string;
+	filename: string;
+	size: number;
+	uploaded_at: string;
+}
+
+// Helper function to get the proxy URL for an image
+export function getImageProxyUrl(imageKey: string): string {
+	return `https://garage.javidscript.com/api/image-proxy/${imageKey}`;
+}
+
+export async function uploadImage(file: File): Promise<UploadedImage> {
+	const formData = new FormData();
+	formData.append('file', file);
+
+	const response = await fetch('/upload/image', {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: formData
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error(`Failed to upload image: ${response.status}`);
+	}
+
+	const result = await response.json();
+	// Transform the backend response to match our interface
+	return {
+		id: result.file_name,
+		key: result.file_name,
+		url: result.image_url,
+		filename: result.file_name,
+		size: result.file_size,
+		uploaded_at: new Date().toISOString()
+	};
+}
+
+export async function getUserImages(): Promise<UploadedImage[]> {
+	const response = await fetch('/images', {
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error(`Failed to fetch images: ${response.status}`);
+	}
+
+	const data = await response.json();
+	// Transform the backend response to match our interface
+	return data.images.map((img: any) => ({
+		id: img.key,
+		key: img.key,
+		url: img.url,
+		filename: img.filename,
+		size: img.size,
+		uploaded_at: img.last_modified
+	}));
+}
+
+export async function deleteImage(imageKey: string): Promise<void> {
+	const response = await fetch(`/images/${imageKey}`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error(`Failed to delete image: ${response.status}`);
+	}
+}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createYardSale, updateYardSale, type YardSaleCreate, type YardSale } from './api';
+	import ImageUpload from './ImageUpload.svelte';
 
 	let {
 		isOpen,
@@ -36,7 +37,8 @@
 		payment_methods: [],
 		status: 'active',
 		status_reason: '',
-		venmo_url: ''
+		venmo_url: '',
+		photos: []
 	});
 
 	let loading = $state(false);
@@ -161,7 +163,8 @@
 				payment_methods: yardSale.payment_methods || [],
 				status: yardSale.status || 'active',
 				status_reason: yardSale.status_reason || '',
-				venmo_url: yardSale.venmo_url || ''
+				venmo_url: yardSale.venmo_url || '',
+				photos: yardSale.photos || []
 			};
 		} else if (!yardSale && isOpen) {
 			resetForm();
@@ -204,10 +207,11 @@
 		error = null;
 
 		try {
-			// Format the Venmo URL before submission
+			// Format the Venmo URL and filter photos before submission
 			const formattedData = {
 				...formData,
-				venmo_url: formData.venmo_url ? formatVenmoUrl(formData.venmo_url) : ''
+				venmo_url: formData.venmo_url ? formatVenmoUrl(formData.venmo_url) : '',
+				photos: (formData.photos || []).filter((photo) => photo && photo.trim() !== '')
 			};
 
 			if (isEditing && yardSale) {
@@ -249,7 +253,8 @@
 			payment_methods: [],
 			status: 'active',
 			status_reason: '',
-			venmo_url: ''
+			venmo_url: '',
+			photos: []
 		};
 	}
 
@@ -713,6 +718,20 @@
 								<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 									Add your Venmo profile URL to allow customers to pay directly
 								</p>
+							</div>
+
+							<!-- Images -->
+							<div>
+								<label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+									Photos <span class="text-xs text-gray-400">(Optional)</span>
+								</label>
+								<ImageUpload
+									images={formData.photos || []}
+									maxImages={10}
+									onImagesChange={(images) => {
+										formData.photos = images;
+									}}
+								/>
 							</div>
 
 							<!-- Allow Messages -->

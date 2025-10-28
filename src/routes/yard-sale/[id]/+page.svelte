@@ -536,6 +536,42 @@
 									{yardSale.title}
 								</h1>
 
+								<!-- Image Gallery -->
+								{#if yardSale.photos && yardSale.photos.length > 0}
+									<div class="mb-6">
+										{#if yardSale.photos.length === 1}
+											<!-- Single Image -->
+											<div class="overflow-hidden rounded-2xl">
+												<img
+													src={yardSale.photos[0]}
+													alt={yardSale.title}
+													class="h-64 w-full object-cover sm:h-80"
+													loading="lazy"
+												/>
+											</div>
+										{:else}
+											<!-- Multiple Images Grid -->
+											<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+												{#each yardSale.photos.slice(0, 4) as photo, index}
+													<div class="overflow-hidden rounded-2xl">
+														<img
+															src={photo}
+															alt="{yardSale.title} - Image {index + 1}"
+															class="h-32 w-full object-cover sm:h-40"
+															loading="lazy"
+														/>
+													</div>
+												{/each}
+											</div>
+											{#if yardSale.photos.length > 4}
+												<p class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+													+{yardSale.photos.length - 4} more images
+												</p>
+											{/if}
+										{/if}
+									</div>
+								{/if}
+
 								<!-- Owner Information -->
 								<div class="mb-6">
 									<button

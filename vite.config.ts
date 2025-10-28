@@ -17,6 +17,11 @@ export default defineConfig({
 				target: 'http://localhost:8000',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, '')
+			},
+			// Proxy image upload endpoints directly
+			'^/(upload|images)': {
+				target: 'http://localhost:8000',
+				changeOrigin: true
 			}
 		}
 	}
