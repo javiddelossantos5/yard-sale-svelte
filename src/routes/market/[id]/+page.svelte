@@ -9,8 +9,10 @@
 		watchMarketItem,
 		unwatchMarketItem,
 		getAuthenticatedImageUrl,
+		getCurrentUser,
 		type MarketItem,
-		type MarketItemComment
+		type MarketItemComment,
+		type CurrentUser
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
@@ -28,6 +30,7 @@
 	let error = $state<string | null>(null);
 	let newComment = $state('');
 	let isWatched = $state(false);
+	let currentUser = $state<CurrentUser | null>(null);
 
 	function formatDateTime(iso: string): string {
 		try {
@@ -49,6 +52,9 @@
 		error = null;
 		try {
 			const id = $page.params.id || '';
+			getCurrentUser()
+				.then((u) => (currentUser = u))
+				.catch(() => (currentUser = null));
 			item = await getMarketItemById(id);
 			comments = await getMarketItemComments(id);
 		} catch (e: any) {
@@ -202,30 +208,43 @@
 
 			<div class="space-y-4">
 				{#each comments as c}
-					<div
-						class="rounded-3xl bg-white/90 p-4 shadow-[0_1px_0_rgba(255,255,255,0.5),0_20px_40px_rgba(0,0,0,0.06)] ring-1 ring-black/5 backdrop-blur-lg dark:bg-gray-800/90 dark:shadow-black/30 dark:ring-gray-700"
-					>
-						<div class="flex items-center justify-between">
-							<div class="text-[15px] font-semibold text-gray-900 dark:text-gray-100">
-								{c.username ?? 'Anonymous'}
+					{@const isMine = currentUser && c.user_id === currentUser.id}
+					<div class={isMine ? 'flex justify-end' : 'flex justify-start'}>
+						<div
+							class={(isMine
+								? 'bg-indigo-600 text-white ring-indigo-500/20'
+								: 'bg-white/90 text-gray-900 ring-black/5 dark:bg-gray-800/90 dark:text-gray-100 dark:ring-gray-700') +
+								' max-w-[85%] rounded-3xl p-4 shadow-[0_1px_0_rgba(255,255,255,0.5),0_20px_40px_rgba(0,0,0,0.06)] ring-1 backdrop-blur-lg'}
+						>
+							<div class="flex items-center justify-between">
+								<div class="text-[15px] font-semibold">
+									{isMine ? 'You' : (c.username ?? 'Anonymous')}
+								</div>
+								<div
+									class={isMine
+										? 'rounded-full bg-white/20 px-2 py-0.5 text-[11px]'
+										: 'rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600 ring-1 ring-gray-200 ring-inset dark:bg-gray-700/70 dark:text-gray-300 dark:ring-gray-600'}
+								>
+									{formatDateTime(c.created_at)}
+								</div>
 							</div>
 							<div
-								class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600 ring-1 ring-gray-200 ring-inset dark:bg-gray-700/70 dark:text-gray-300 dark:ring-gray-600"
+								class={(isMine
+									? 'bg-white/10 text-white ring-white/20'
+									: 'bg-gray-50 text-gray-800 ring-gray-200 dark:bg-gray-700/60 dark:text-gray-100 dark:ring-gray-600') +
+									' mt-2 rounded-2xl px-4 py-3 text-[15px] leading-relaxed ring-1 ring-inset'}
 							>
-								{formatDateTime(c.created_at)}
+								{c.content}
 							</div>
-						</div>
-						<div
-							class="mt-2 rounded-2xl bg-gray-50 px-4 py-3 text-[15px] leading-relaxed text-gray-800 ring-1 ring-gray-200 ring-inset dark:bg-gray-700/60 dark:text-gray-100 dark:ring-gray-600"
-						>
-							{c.content}
-						</div>
-						<div class="mt-2 flex justify-end">
-							<button
-								onclick={() => handleDeleteComment(c.id)}
-								class="rounded-full px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-								>Delete</button
-							>
+							<div class={'mt-2 flex ' + (isMine ? 'justify-start' : 'justify-end')}>
+								<button
+									onclick={() => handleDeleteComment(c.id)}
+									class={isMine
+										? 'rounded-full px-2 py-1 text-xs font-medium text-white/80 hover:bg-white/10'
+										: 'rounded-full px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}
+									>Delete</button
+								>
+							</div>
 						</div>
 					</div>
 				{/each}
