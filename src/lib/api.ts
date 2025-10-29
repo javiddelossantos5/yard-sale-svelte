@@ -564,9 +564,7 @@ export interface YardSaleCreate {
 	status_reason?: string;
 	venmo_url?: string;
 	facebook_url?: string;
-}
-
-export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
+}export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
 	const response = await fetch('/api/yard-sales', {
 		method: 'POST',
 		headers: {
