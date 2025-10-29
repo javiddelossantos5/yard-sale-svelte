@@ -1023,38 +1023,46 @@
 							<div class="space-y-3">
 								{#each yardSale.payment_methods as method}
 									{@const iconInfo = getPaymentMethodIcon(method, availablePaymentMethods)}
-									{@const isVenmoWithUrl =
-										method.toLowerCase().includes('venmo') && yardSale.venmo_url}
-									{#if isVenmoWithUrl}
-										<a
-											href={yardSale.venmo_url}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="flex items-center space-x-3 rounded-lg bg-blue-500 p-3 transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-											title="Pay with Venmo"
-										>
-											<FontAwesomeIcon
-												icon={iconInfo.iconType === 'brand'
-													? (['fab', iconInfo.icon] as any)
-													: (iconInfo.icon as any)}
-												class="h-5 w-5 text-white"
-											/>
-											<span class="font-medium text-white">{method}</span>
-										</a>
-									{:else}
-										<div
-											class="flex items-center space-x-3 rounded-lg bg-gray-200 p-3 dark:bg-gray-600"
-										>
-											<FontAwesomeIcon
-												icon={iconInfo.iconType === 'brand'
-													? (['fab', iconInfo.icon] as any)
-													: (iconInfo.icon as any)}
-												class="h-5 w-5 text-gray-600 dark:text-gray-400"
-											/>
-											<span class="font-medium text-gray-700 dark:text-gray-200">{method}</span>
-										</div>
-									{/if}
+									<div
+										class="flex items-center space-x-3 rounded-lg bg-gray-200 p-3 dark:bg-gray-600"
+									>
+										<FontAwesomeIcon
+											icon={iconInfo.iconType === 'brand'
+												? (['fab', iconInfo.icon] as any)
+												: (iconInfo.icon as any)}
+											class="h-5 w-5 text-gray-600 dark:text-gray-400"
+										/>
+										<span class="font-medium text-gray-700 dark:text-gray-200">{method}</span>
+									</div>
 								{/each}
+
+								<!-- Venmo URL link (independent of payment methods) -->
+								{#if yardSale.venmo_url}
+									<a
+										href={yardSale.venmo_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="flex items-center space-x-3 rounded-lg bg-blue-500 p-3 transition-colors hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+										title="Pay with Venmo"
+									>
+										<FontAwesomeIcon icon="check-circle" class="h-5 w-5 text-white" />
+										<span class="font-medium text-white">Venmo</span>
+									</a>
+								{/if}
+
+								<!-- Facebook Marketplace link (independent of payment methods) -->
+								{#if yardSale.facebook_url}
+									<a
+										href={yardSale.facebook_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="flex items-center space-x-3 rounded-lg bg-blue-600 p-3 transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
+										title="View on Facebook Marketplace"
+									>
+										<FontAwesomeIcon icon={['fab', 'facebook']} class="h-5 w-5 text-white" />
+										<span class="font-medium text-white">Facebook Marketplace</span>
+									</a>
+								{/if}
 							</div>
 						</div>
 					</div>

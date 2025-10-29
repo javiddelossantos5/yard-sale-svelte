@@ -499,6 +499,20 @@
 						Venmo
 					</a>
 				{/if}
+
+				<!-- Facebook Marketplace link (independent of payment methods) -->
+				{#if yardSale.facebook_url}
+					<a
+						href={yardSale.facebook_url}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex items-center rounded-2xl bg-linear-to-r from-blue-600 to-blue-700 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+						title="View on Facebook Marketplace"
+					>
+						<FontAwesomeIcon icon={['fab', 'facebook']} class="mr-2 h-4 w-4" />
+						Facebook
+					</a>
+				{/if}
 			</div>
 		</div>
 	</div>

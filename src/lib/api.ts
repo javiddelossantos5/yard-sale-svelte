@@ -38,6 +38,7 @@ export interface YardSale {
 	owner_average_rating?: number;
 	comment_count: number;
 	venmo_url?: string;
+	facebook_url?: string;
 	// Visited status fields (only present when include_visited_status=true)
 	is_visited?: boolean;
 	visit_count?: number;
@@ -562,6 +563,7 @@ export interface YardSaleCreate {
 	status?: 'active' | 'on_break' | 'closed';
 	status_reason?: string;
 	venmo_url?: string;
+	facebook_url?: string;
 }
 
 export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
