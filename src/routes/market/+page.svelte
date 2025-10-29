@@ -3,6 +3,7 @@
 	import { getMarketItems, type MarketItem, getCurrentUser, type CurrentUser } from '$lib/api';
 	import { goto } from '$app/navigation';
 	import MarketItemCard from '$lib/MarketItemCard.svelte';
+	import CreateMarketItemModal from '$lib/CreateMarketItemModal.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
@@ -11,6 +12,7 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
+	let isCreateOpen = $state(false);
 
 	async function load() {
 		loading = true;
@@ -62,6 +64,13 @@
 
 					<div class="flex space-x-2">
 						<button
+							onclick={() => (isCreateOpen = true)}
+							class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-blue-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:outline-none"
+						>
+							<FontAwesomeIcon icon="plus" class="mr-1.5 h-4 w-4" />
+							New Item
+						</button>
+						<button
 							onclick={() => goto('/')}
 							class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-gray-900 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-black/90 focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:outline-none dark:bg-white dark:text-gray-900"
 						>
@@ -109,6 +118,13 @@
 					</div>
 
 					<div class="flex items-center space-x-4">
+						<button
+							onclick={() => (isCreateOpen = true)}
+							class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:outline-none"
+						>
+							<FontAwesomeIcon icon="plus" class="mr-2 h-4 w-4" />
+							New Item
+						</button>
 						<button
 							onclick={() => goto('/')}
 							class="inline-flex items-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-black/90 focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:outline-none dark:bg-white dark:text-gray-900"
@@ -159,4 +175,9 @@
 			</div>
 		{/if}
 	</div>
+	<CreateMarketItemModal
+		isOpen={isCreateOpen}
+		onClose={() => (isCreateOpen = false)}
+		onSuccess={() => load()}
+	/>
 </div>
