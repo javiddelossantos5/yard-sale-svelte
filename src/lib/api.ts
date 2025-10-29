@@ -1019,6 +1019,213 @@ export interface UploadedImage {
 	uploaded_at: string;
 }
 
+// ===== MARKETPLACE (Market Items) =====
+export interface MarketItem {
+	id: string;
+	name: string;
+	description: string;
+	price: number;
+	is_public: boolean;
+	is_available?: boolean;
+	status: 'active' | 'sold' | 'hidden';
+	category?: string;
+	photos: string[];
+	featured_image?: string | null;
+	price_range?: string;
+	payment_methods?: string[];
+	venmo_url?: string | null;
+	facebook_url?: string | null;
+	created_at: string;
+	owner_id: string;
+	owner_username: string;
+	comment_count: number;
+}
+
+export interface MarketItemCreate {
+	name: string;
+	description?: string;
+	price: number;
+	is_public?: boolean;
+	status?: 'active' | 'sold' | 'hidden';
+	category?: string;
+	photos?: string[];
+	featured_image?: string | null;
+	price_range?: string;
+	payment_methods?: string[];
+	venmo_url?: string | null;
+	facebook_url?: string | null;
+}
+
+// Listing/search
+export async function getMarketItems(
+	params: {
+		name?: string;
+		category?: string;
+		min_price?: number;
+		max_price?: number;
+		status?: 'active' | 'sold' | 'hidden';
+	} = {}
+): Promise<MarketItem[]> {
+	const query = new URLSearchParams();
+	if (params.name) query.set('name', params.name);
+	if (params.category) query.set('category', params.category);
+	if (params.min_price != null) query.set('min_price', String(params.min_price));
+	if (params.max_price != null) query.set('max_price', String(params.max_price));
+	if (params.status) query.set('status', params.status);
+	const res = await fetch(`/api/market-items${query.toString() ? `?${query}` : ''}`);
+	if (!res.ok) throw new Error('Failed to fetch market items');
+	return res.json();
+}
+
+export async function getMarketItemById(id: string): Promise<MarketItem> {
+	const res = await fetch(`/api/market-items/${id}`);
+	if (!res.ok) throw new Error('Failed to fetch market item');
+	return res.json();
+}
+
+export async function createMarketItem(data: MarketItemCreate): Promise<MarketItem> {
+	const res = await fetch('/api/market-items', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify(data)
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to create market item');
+	return res.json();
+}
+
+export async function updateMarketItem(
+	id: string,
+	data: Partial<MarketItemCreate>
+): Promise<MarketItem> {
+	const res = await fetch(`/api/market-items/${id}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify(data)
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to update market item');
+	return res.json();
+}
+
+export async function deleteMarketItem(id: string): Promise<void> {
+	const res = await fetch(`/api/market-items/${id}`, {
+		method: 'DELETE',
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to delete market item');
+}
+
+// Comments
+export interface MarketItemComment {
+	id: string;
+	content: string;
+	created_at: string;
+	updated_at: string;
+	item_id: string;
+	user_id: string;
+	username?: string;
+}
+
+export async function getMarketItemComments(itemId: string): Promise<MarketItemComment[]> {
+	const res = await fetch(`/api/market-items/${itemId}/comments`);
+	if (!res.ok) throw new Error('Failed to fetch item comments');
+	return res.json();
+}
+
+export async function addMarketItemComment(
+	itemId: string,
+	content: string
+): Promise<MarketItemComment> {
+	const res = await fetch(`/api/market-items/${itemId}/comments`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({ content })
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to add item comment');
+	return res.json();
+}
+
+export async function deleteMarketItemComment(commentId: string): Promise<void> {
+	const res = await fetch(`/api/market-items/comments/${commentId}`, {
+		method: 'DELETE',
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to delete item comment');
+}
+
+// Watchlist
+export async function watchMarketItem(itemId: string): Promise<void> {
+	const res = await fetch(`/api/market-items/${itemId}/watch`, {
+		method: 'POST',
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to watch item');
+}
+
+export async function unwatchMarketItem(itemId: string): Promise<void> {
+	const res = await fetch(`/api/market-items/${itemId}/watch`, {
+		method: 'DELETE',
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to unwatch item');
+}
+
+export async function getWatchedItems(): Promise<MarketItem[]> {
+	const res = await fetch('/api/user/watched-items', {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch watched items');
+	return res.json();
+}
+
 // Helper function to get the proxy URL for an image
 export function getImageProxyUrl(imageKey: string): string {
 	return `http://localhost:8000/image-proxy/${imageKey}`;

@@ -180,6 +180,10 @@
 		}
 	}
 
+function goToMarket() {
+    goto('/market');
+}
+
 	// Filter yard sales by search term, city, zip code, and date
 	let filteredYardSales = $derived(
 		yardSales
@@ -308,6 +312,13 @@
 							<FontAwesomeIcon icon="plus" class="mr-1.5 h-4 w-4" />
 							Post New Sale
 						</button>
+                        <button
+                            onclick={goToMarket}
+                            class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-indigo-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+                        >
+                            <FontAwesomeIcon icon="store" class="mr-1.5 h-4 w-4" />
+                            Marketplace
+                        </button>
 						{#if currentUser}
 							<button
 								onclick={goToProfile}
@@ -361,6 +372,13 @@
 							<FontAwesomeIcon icon="plus" class="mr-2 h-4 w-4" />
 							Post New Yard Sale
 						</button>
+                        <button
+                            onclick={goToMarket}
+                            class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+                        >
+                            <FontAwesomeIcon icon="store" class="mr-2 h-4 w-4" />
+                            Marketplace
+                        </button>
 						{#if currentUser}
 							<button
 								onclick={goToProfile}
