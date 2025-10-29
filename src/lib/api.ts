@@ -331,21 +331,15 @@ export async function getOrCreateConversation(otherUserId: string): Promise<{ id
 	try {
 		const payload = JSON.parse(atob(token.split('.')[1]));
 
-		// Handle both string and numeric user IDs
-		let currentUserId: number | null = null;
-		if (typeof payload.sub === 'number') {
+		// Handle both string and numeric user IDs (UUIDs are strings)
+		let currentUserId: string | null = null;
+		if (typeof payload.sub === 'string' && payload.sub.trim() !== '') {
 			currentUserId = payload.sub;
-		} else if (typeof payload.sub === 'string') {
-			// Try to parse as integer first
-			const parsed = parseInt(payload.sub);
-			if (!isNaN(parsed)) {
-				currentUserId = parsed;
-			} else {
-				// If it's a string like "javiddelossantos", we need to get the actual user ID
-				// For now, let's use the getCurrentUser API to get the proper user ID
-				const currentUser = await getCurrentUser();
-				currentUserId = currentUser?.id || null;
-			}
+		} else if (typeof payload.sub === 'number') {
+			currentUserId = String(payload.sub);
+		} else {
+			const currentUser = await getCurrentUser();
+			currentUserId = currentUser?.id || null;
 		}
 
 		if (!currentUserId) {
@@ -564,7 +558,8 @@ export interface YardSaleCreate {
 	status_reason?: string;
 	venmo_url?: string;
 	facebook_url?: string;
-}export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
+}
+export async function createYardSale(yardSaleData: YardSaleCreate): Promise<YardSale> {
 	const response = await fetch('/api/yard-sales', {
 		method: 'POST',
 		headers: {
