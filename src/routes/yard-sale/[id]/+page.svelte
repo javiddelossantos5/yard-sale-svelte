@@ -27,6 +27,7 @@
 	import { openDirections, getPlatformName } from '$lib/mapsUtils';
 	import { isYardSaleVisited, toggleYardSaleVisited } from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 	import { getPaymentMethodIcon } from '$lib/paymentUtils';
 
 	let yardSale = $state<YardSale | null>(null);
@@ -993,6 +994,19 @@
 									Get Directions
 								</button>
 
+								{#if yardSale.facebook_url}
+									<a
+										href={yardSale.facebook_url}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="inline-flex items-center w-full justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 dark:bg-blue-700 dark:hover:bg-blue-800"
+										title="View on Facebook Marketplace"
+									>
+										<FontAwesomeIcon icon={faFacebook} class="mr-2 h-4 w-4" />
+										Facebook
+									</a>
+								{/if}
+
 								<!-- Visited Toggle Button - Only show for active/started yard sales -->
 								{#if yardSale && getYardSaleStatus(yardSale) !== 'upcoming'}
 									<button
@@ -1050,19 +1064,7 @@
 									</a>
 								{/if}
 
-								<!-- Facebook Marketplace link (independent of payment methods) -->
-								{#if yardSale.facebook_url}
-									<a
-										href={yardSale.facebook_url}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="flex items-center space-x-3 rounded-lg bg-blue-600 p-3 transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
-										title="View on Facebook Marketplace"
-									>
-										<FontAwesomeIcon icon={['fab', 'facebook']} class="h-5 w-5 text-white" />
-										<span class="font-medium text-white">Facebook Marketplace</span>
-									</a>
-								{/if}
+								<!-- Facebook Marketplace link moved to actions above -->
 							</div>
 						</div>
 					</div>
@@ -1240,11 +1242,11 @@
 	{#if yardSale}
 		<MessageModal
 			isOpen={showMessageModal}
-			yardSaleId={yardSale.id}
+			yardSaleId={yardSale.id as any}
 			yardSaleTitle={yardSale.title}
-			otherUserId={isOwner ? currentUserId || '' : yardSale.owner_id}
+			otherUserId={(isOwner ? currentUserId || '' : yardSale.owner_id) as any}
 			otherUsername={isOwner ? 'You' : yardSale.owner_username}
-			currentUserId={currentUserId || ''}
+			currentUserId={(currentUserId || '') as any}
 			onClose={handleCloseMessageModal}
 		/>
 	{/if}

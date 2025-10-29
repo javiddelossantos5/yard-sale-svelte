@@ -5,6 +5,7 @@
 	import { openDirections, getPlatformName } from './mapsUtils';
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 	import { getPaymentMethodIcon } from './paymentUtils';
 	import { getCurrentUser, type CurrentUser, getAuthenticatedImageUrl } from './api';
 
@@ -447,6 +448,21 @@
 					<span class="text-sm font-bold sm:hidden">Directions</span>
 				</button>
 
+				{#if yardSale.facebook_url}
+					<a
+						href={yardSale.facebook_url}
+						onclick={(e) => e.stopPropagation()}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-blue-600 to-blue-700 px-4 text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl active:scale-95 sm:w-12 sm:px-0"
+						title="View on Facebook Marketplace"
+					>
+						<FontAwesomeIcon icon={faFacebook} class="h-5 w-5" />
+
+						<span class="text-sm font-bold sm:hidden">Facebook</span>
+					</a>
+				{/if}
+
 				<!-- Visited Toggle Button - Only show for active/started yard sales -->
 				{#if status !== 'upcoming'}
 					<button
@@ -497,20 +513,6 @@
 					>
 						<FontAwesomeIcon icon="check-circle" class="mr-2 h-4 w-4" />
 						Venmo
-					</a>
-				{/if}
-
-				<!-- Facebook Marketplace link (independent of payment methods) -->
-				{#if yardSale.facebook_url}
-					<a
-						href={yardSale.facebook_url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="inline-flex items-center rounded-2xl bg-linear-to-r from-blue-600 to-blue-700 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-						title="View on Facebook Marketplace"
-					>
-						<FontAwesomeIcon icon={['fab', 'facebook']} class="mr-2 h-4 w-4" />
-						Facebook
 					</a>
 				{/if}
 			</div>
