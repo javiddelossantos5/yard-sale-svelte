@@ -999,7 +999,7 @@
 										href={yardSale.facebook_url}
 										target="_blank"
 										rel="noopener noreferrer"
-										class="inline-flex items-center w-full justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 dark:bg-blue-700 dark:hover:bg-blue-800"
+										class="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 dark:bg-blue-700 dark:hover:bg-blue-800"
 										title="View on Facebook Marketplace"
 									>
 										<FontAwesomeIcon icon={faFacebook} class="mr-2 h-4 w-4" />
