@@ -95,7 +95,7 @@
 
 	async function loadYardSales(showLoading: boolean = true) {
 		if (showLoading) {
-			loading = true;
+		loading = true;
 		}
 		error = null;
 
@@ -582,9 +582,9 @@ function goToMarket() {
 							? 'Try adjusting your search or filters.'
 							: statusFilter === 'visited'
 								? "You haven't visited any yard sales yet. Mark yard sales as visited to see them here."
-								: statusFilter !== 'active'
-									? 'No yard sales found with the selected status filter.'
-									: 'No yard sales are currently active right now. Try changing the status filter to see upcoming, ended, or other yard sales.'}
+							: statusFilter !== 'active'
+								? 'No yard sales found with the selected status filter.'
+								: 'No yard sales are currently active right now. Try changing the status filter to see upcoming, ended, or other yard sales.'}
 					</p>
 				</div>
 			{:else}

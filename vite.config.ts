@@ -22,6 +22,11 @@ export default defineConfig({
 			'^/(upload|images)': {
 				target: 'http://localhost:8000',
 				changeOrigin: true
+			},
+			// Proxy market-items messaging endpoints directly
+			'^/market-items/(conversations|.*/messages|messages/.*)': {
+				target: 'http://localhost:8000',
+				changeOrigin: true
 			}
 		}
 	}

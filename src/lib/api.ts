@@ -1084,19 +1084,19 @@ export async function getMarketItems(
 	if (params.min_price != null) query.set('min_price', String(params.min_price));
 	if (params.max_price != null) query.set('max_price', String(params.max_price));
 	if (params.status) query.set('status', params.status);
-    const token = localStorage.getItem('access_token');
-    const res = await fetch(`/api/market-items${query.toString() ? `?${query}` : ''}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
-    });
+	const token = localStorage.getItem('access_token');
+	const res = await fetch(`/api/market-items${query.toString() ? `?${query}` : ''}`, {
+		headers: token ? { Authorization: `Bearer ${token}` } : undefined
+	});
 	if (!res.ok) throw new Error('Failed to fetch market items');
 	return res.json();
 }
 
 export async function getMarketItemById(id: string): Promise<MarketItem> {
-    const token = localStorage.getItem('access_token');
-    const res = await fetch(`/api/market-items/${id}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
-    });
+	const token = localStorage.getItem('access_token');
+	const res = await fetch(`/api/market-items/${id}`, {
+		headers: token ? { Authorization: `Bearer ${token}` } : undefined
+	});
 	if (!res.ok) throw new Error('Failed to fetch market item');
 	return res.json();
 }
@@ -1251,6 +1251,154 @@ export async function getWatchedItems(params?: {
 		throw new Error('Token expired');
 	}
 	if (!res.ok) throw new Error('Failed to fetch watched items');
+	return res.json();
+}
+
+// Messaging
+export interface MarketItemMessage {
+	id: string;
+	content: string;
+	is_read: boolean;
+	created_at: string;
+	conversation_id: string;
+	sender_id: string;
+	recipient_id: string;
+	sender_username?: string;
+	recipient_username?: string;
+}
+
+export interface MarketItemMessageCreate {
+	content: string;
+	recipient_id?: string;
+}
+
+export interface MarketItemConversation {
+	id: string;
+	item_id: string;
+	item_name?: string;
+	participant1_id: string;
+	participant1_username?: string;
+	participant2_id: string;
+	participant2_username?: string;
+	created_at: string;
+	updated_at: string;
+	last_message?: MarketItemMessage | null;
+	unread_count?: number;
+}
+
+// Send initial message (creates conversation)
+export async function sendMarketItemMessage(
+	itemId: string,
+	content: string
+): Promise<MarketItemMessage> {
+	const res = await fetch(`/market-items/${itemId}/messages`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({ content })
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to send message');
+	return res.json();
+}
+
+// Send message in existing conversation
+export async function sendMarketItemConversationMessage(
+	conversationId: string,
+	content: string
+): Promise<MarketItemMessage> {
+	const res = await fetch(`/market-items/conversations/${conversationId}/messages`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({ content })
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to send message');
+	return res.json();
+}
+
+// Get messages for an item
+export async function getMarketItemMessages(itemId: string): Promise<MarketItemMessage[]> {
+	const res = await fetch(`/market-items/${itemId}/messages`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch messages');
+	return res.json();
+}
+
+// Get messages for a conversation
+export async function getMarketItemConversationMessages(
+	conversationId: string
+): Promise<MarketItemMessage[]> {
+	const res = await fetch(`/market-items/conversations/${conversationId}/messages`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch messages');
+	return res.json();
+}
+
+// Get all conversations for current user
+export async function getMarketItemConversations(): Promise<MarketItemConversation[]> {
+	const res = await fetch(`/market-items/conversations`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch conversations');
+	return res.json();
+}
+
+// Mark message as read
+export async function markMarketItemMessageRead(messageId: string): Promise<void> {
+	const res = await fetch(`/market-items/messages/${messageId}/read`, {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to mark message as read');
+}
+
+// Get unread message count
+export async function getMarketItemUnreadCount(): Promise<{ unread_count: number }> {
+	const res = await fetch(`/market-items/messages/unread-count`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch unread count');
 	return res.json();
 }
 

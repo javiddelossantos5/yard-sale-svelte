@@ -10,10 +10,13 @@
 		unwatchMarketItem,
 		getAuthenticatedImageUrl,
 		getCurrentUser,
+		getMarketItemConversations,
 		type MarketItem,
 		type MarketItemComment,
-		type CurrentUser
+		type CurrentUser,
+		type MarketItemConversation
 	} from '$lib/api';
+	import { goto } from '$app/navigation';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 	import {
@@ -26,9 +29,11 @@
 		faPhone,
 		faUser,
 		faPencil,
-		faTag
+		faTag,
+		faMessage
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
+	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
 
 	let item = $state<MarketItem | null>(null);
 	let comments = $state<MarketItemComment[]>([]);
@@ -38,6 +43,9 @@
 	let isWatched = $state(false);
 	let currentUser = $state<CurrentUser | null>(null);
 	let isEditOpen = $state(false);
+	let isMessageOpen = $state(false);
+	let existingConversation = $state<MarketItemConversation | null>(null);
+	let checkingConversation = $state(false);
 
 	function formatDateTime(iso: string): string {
 		try {
@@ -110,18 +118,47 @@
 		error = null;
 		try {
 			const id = $page.params.id || '';
-			getCurrentUser()
-				.then((u) => (currentUser = u))
-				.catch(() => (currentUser = null));
-			item = await getMarketItemById(id);
+			const [user, loadedItem] = await Promise.all([
+				getCurrentUser().catch(() => null),
+				getMarketItemById(id)
+			]);
+			currentUser = user;
+			item = loadedItem;
+
 			if (item?.is_watched !== undefined && item?.is_watched !== null) {
 				isWatched = item.is_watched === true;
 			}
 			comments = await getMarketItemComments(id);
+
+			// Check for existing conversation if user is logged in and not the owner
+			if (user && item && user.id !== item.owner_id) {
+				await checkExistingConversation(id);
+			}
 		} catch (e: any) {
 			error = e?.message || 'Failed to load item';
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function checkExistingConversation(itemId: string) {
+		if (!currentUser) return;
+		checkingConversation = true;
+		try {
+			const conversations = await getMarketItemConversations();
+			const conv = conversations.find((c) => c.item_id === itemId);
+			existingConversation = conv || null;
+		} catch {
+			// Ignore errors checking conversation
+		} finally {
+			checkingConversation = false;
+		}
+	}
+
+	async function handleMessageSuccess() {
+		// Refresh conversation check after sending message
+		if (item) {
+			await checkExistingConversation(item.id);
 		}
 	}
 
@@ -158,6 +195,12 @@
 	}
 
 	const isOwner = $derived(currentUser && item && currentUser.id === item.owner_id);
+
+	function viewConversation() {
+		if (existingConversation) {
+			goto(`/market/messages/${existingConversation.id}`);
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -272,6 +315,29 @@
 								</button>
 							{/if}
 							{#if !isOwner}
+								{#if existingConversation}
+									<button
+										onclick={viewConversation}
+										class="inline-flex items-center rounded-xl bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-green-700 active:scale-95"
+									>
+										<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+										View Conversation
+										{#if existingConversation.unread_count && existingConversation.unread_count > 0}
+											<span class="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold"
+												>{existingConversation.unread_count}</span
+											>
+										{/if}
+									</button>
+								{:else}
+									<button
+										onclick={() => (isMessageOpen = true)}
+										disabled={checkingConversation}
+										class="inline-flex items-center rounded-xl bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+									>
+										<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+										{checkingConversation ? 'Checking...' : 'Message Seller'}
+									</button>
+								{/if}
 								<button
 									onclick={toggleWatch}
 									class="inline-flex items-center rounded-xl bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600"
@@ -468,6 +534,17 @@
 			onClose={() => (isEditOpen = false)}
 			onSuccess={handleEditSuccess}
 			{item}
+		/>
+	{/if}
+
+	<!-- Message Modal -->
+	{#if item}
+		<MarketItemMessageModal
+			isOpen={isMessageOpen}
+			itemId={item.id}
+			itemName={item.name}
+			onClose={() => (isMessageOpen = false)}
+			onSuccess={handleMessageSuccess}
 		/>
 	{/if}
 </div>

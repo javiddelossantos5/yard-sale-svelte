@@ -5,9 +5,10 @@
 	import MarketItemCard from '$lib/MarketItemCard.svelte';
 	import CreateMarketItemModal from '$lib/CreateMarketItemModal.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faHeart, faHome } from '@fortawesome/free-solid-svg-icons';
+	import { faHeart, faHome, faMessage } from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
+	import { getMarketItemUnreadCount } from '$lib/api';
 
 	let items: MarketItem[] = $state([]);
 	let loading = $state(true);
@@ -15,6 +16,7 @@
 	let currentUser = $state<CurrentUser | null>(null);
 	let isCreateOpen = $state(false);
 	let statusFilter = $state<'active' | 'sold' | 'hidden' | 'all'>('active');
+	let messageUnreadCount = $state(0);
 
 	async function load() {
 		loading = true;
@@ -28,6 +30,14 @@
 				params.status = statusFilter;
 			}
 			items = await getMarketItems(params);
+			
+			// Load unread message count
+			try {
+				const unread = await getMarketItemUnreadCount();
+				messageUnreadCount = unread.unread_count;
+			} catch {
+				// Ignore errors loading unread count
+			}
 		} catch (e: any) {
 			error = e?.message || 'Failed to load market items';
 		} finally {
@@ -74,7 +84,7 @@
 						</div>
 					</div>
 
-					<div class="flex space-x-2">
+					<div class="flex flex-wrap gap-2">
 						<button
 							onclick={() => (isCreateOpen = true)}
 							class="inline-flex flex-1 items-center justify-center rounded-xl border border-transparent bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-blue-700 hover:shadow-md focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:outline-none active:scale-95"
@@ -89,6 +99,19 @@
 							>
 								<FontAwesomeIcon icon={faHeart} class="mr-1.5 h-4 w-4" />
 								Watched
+							</button>
+							<button
+								onclick={() => goto('/market/messages')}
+								class="relative inline-flex flex-1 items-center justify-center rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							>
+								<FontAwesomeIcon icon={faMessage} class="mr-1.5 h-4 w-4" />
+								Messages
+								{#if messageUnreadCount > 0}
+									<span
+										class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
+										>{messageUnreadCount > 99 ? '99+' : messageUnreadCount}</span
+									>
+								{/if}
 							</button>
 						{/if}
 						<button
@@ -153,6 +176,19 @@
 							>
 								<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
 								Watched
+							</button>
+							<button
+								onclick={() => goto('/market/messages')}
+								class="relative inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:shadow-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							>
+								<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+								Messages
+								{#if messageUnreadCount > 0}
+									<span
+										class="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white"
+										>{messageUnreadCount > 99 ? '99+' : messageUnreadCount}</span
+									>
+								{/if}
 							</button>
 						{/if}
 						<button
