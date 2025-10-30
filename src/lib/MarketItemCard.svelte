@@ -4,7 +4,7 @@
 	import { getAuthenticatedImageUrl } from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
-	import { faCommentDots, faHandshake, faMoneyBillWave, faTag } from '@fortawesome/free-solid-svg-icons';
+	import { faCommentDots, faEnvelope, faHandshake, faMoneyBillWave, faPhone, faTag } from '@fortawesome/free-solid-svg-icons';
 
 	let { item }: { item: MarketItem } = $props();
 
@@ -28,6 +28,22 @@
 		} catch {
 			return '';
 		}
+	}
+
+	function formatPhone(phone: string): string {
+		if (!phone) return '';
+		// Remove all non-digits
+		const digits = phone.replace(/\D/g, '');
+		// Format as (XXX) XXX-XXXX
+		if (digits.length === 10) {
+			return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+		}
+		// If it has 11 digits and starts with 1, format as 1 (XXX) XXX-XXXX
+		if (digits.length === 11 && digits[0] === '1') {
+			return `1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+		}
+		// Return original if it doesn't match expected format
+		return phone;
 	}
 
 	function openItem() {
@@ -157,6 +173,28 @@
 					<FontAwesomeIcon icon={faHandshake} class="h-3 w-3" />
 					Best Offer
 				</span>
+			{/if}
+			{#if item.contact_phone}
+				<a
+					href={`tel:${item.contact_phone}`}
+					onclick={(e) => e.stopPropagation()}
+					class="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 ring-1 ring-green-200 transition hover:bg-green-100 dark:bg-green-900/30 dark:text-green-300 dark:ring-green-800/50 dark:hover:bg-green-900/50"
+					title={`Call ${formatPhone(item.contact_phone)}`}
+				>
+					<FontAwesomeIcon icon={faPhone} class="h-3 w-3" />
+					Call
+				</a>
+			{/if}
+			{#if item.contact_email}
+				<a
+					href={`mailto:${item.contact_email}`}
+					onclick={(e) => e.stopPropagation()}
+					class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200 transition hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800/50 dark:hover:bg-blue-900/50"
+					title={`Email ${item.contact_email}`}
+				>
+					<FontAwesomeIcon icon={faEnvelope} class="h-3 w-3" />
+					Email
+				</a>
 			{/if}
 			{#if item.venmo_url}
 				<span

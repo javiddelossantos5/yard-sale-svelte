@@ -18,10 +18,12 @@
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 	import {
 		faChevronLeft,
+		faEnvelope,
 		faHandshake,
 		faHeart,
 		faMoneyBillWave,
 		faPaperPlane,
+		faPhone,
 		faUser,
 		faPencil,
 		faTag
@@ -85,6 +87,22 @@
 		} catch {
 			return '';
 		}
+	}
+
+	function formatPhone(phone: string): string {
+		if (!phone) return '';
+		// Remove all non-digits
+		const digits = phone.replace(/\D/g, '');
+		// Format as (XXX) XXX-XXXX
+		if (digits.length === 10) {
+			return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+		}
+		// If it has 11 digits and starts with 1, format as 1 (XXX) XXX-XXXX
+		if (digits.length === 11 && digits[0] === '1') {
+			return `1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+		}
+		// Return original if it doesn't match expected format
+		return phone;
 	}
 
 	async function load() {
@@ -300,6 +318,37 @@
 						</a>
 					{/if}
 				</div>
+
+				<!-- Contact Information -->
+				{#if item.contact_phone || item.contact_email}
+					<div class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+						<h3 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+							Contact Information
+						</h3>
+						<div class="flex flex-wrap items-center gap-2">
+							{#if item.contact_phone}
+								<a
+									href={`tel:${item.contact_phone}`}
+									onclick={(e) => e.stopPropagation()}
+									class="inline-flex items-center rounded-xl bg-green-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-green-700 active:scale-95"
+								>
+									<FontAwesomeIcon icon={faPhone} class="mr-2 h-4 w-4" />
+									Call {formatPhone(item.contact_phone)}
+								</a>
+							{/if}
+							{#if item.contact_email}
+								<a
+									href={`mailto:${item.contact_email}`}
+									onclick={(e) => e.stopPropagation()}
+									class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 active:scale-95"
+								>
+									<FontAwesomeIcon icon={faEnvelope} class="mr-2 h-4 w-4" />
+									Email {item.contact_email}
+								</a>
+							{/if}
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 

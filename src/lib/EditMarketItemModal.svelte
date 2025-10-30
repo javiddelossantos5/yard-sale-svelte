@@ -26,7 +26,9 @@
 		payment_methods: [],
 		venmo_url: '',
 		facebook_url: '',
-		accepts_best_offer: false
+		accepts_best_offer: false,
+		contact_phone: '',
+		contact_email: ''
 	});
 
 	let loading = $state(false);
@@ -71,7 +73,9 @@
 				payment_methods: item.payment_methods || [],
 				venmo_url: item.venmo_url || '',
 				facebook_url: item.facebook_url || '',
-				accepts_best_offer: item.accepts_best_offer ?? false
+				accepts_best_offer: item.accepts_best_offer ?? false,
+				contact_phone: item.contact_phone || '',
+				contact_email: item.contact_email || ''
 			};
 		}
 	});
@@ -176,7 +180,7 @@
 								<label
 									for="edit-description"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Description</label
+									>Description <span class="text-gray-400 font-normal">(Optional)</span></label
 								>
 								<textarea
 									id="edit-description"
@@ -221,7 +225,7 @@
 								<label
 									for="edit-category"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Category</label
+									>Category <span class="text-gray-400 font-normal">(Optional)</span></label
 								>
 								<select
 									id="edit-category"
@@ -254,7 +258,7 @@
 
 							<div>
 								<label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Photos</label
+									>Photos <span class="text-gray-400 font-normal">(Optional)</span></label
 								>
 								<ImageUpload
 									images={formData.photos || []}
@@ -271,7 +275,7 @@
 									<label
 										for="edit-venmo"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Venmo URL</label
+										>Venmo URL <span class="text-gray-400 font-normal">(Optional)</span></label
 									>
 									<input
 										id="edit-venmo"
@@ -286,7 +290,7 @@
 									<label
 										for="edit-facebook"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Facebook Marketplace URL</label
+										>Facebook Marketplace URL <span class="text-gray-400 font-normal">(Optional)</span></label
 									>
 									<input
 										id="edit-facebook"
@@ -294,6 +298,37 @@
 										bind:value={formData.facebook_url}
 										onblur={() => (formData.facebook_url = normalizeUrl(formData.facebook_url))}
 										placeholder="https://www.facebook.com/marketplace/item/..."
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
+							</div>
+
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<div>
+									<label
+										for="edit-contact_phone"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>Contact Phone <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<input
+										id="edit-contact_phone"
+										type="tel"
+										bind:value={formData.contact_phone}
+										placeholder="(555) 123-4567"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
+								<div>
+									<label
+										for="edit-contact_email"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>Contact Email <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<input
+										id="edit-contact_email"
+										type="email"
+										bind:value={formData.contact_email}
+										placeholder="seller@example.com"
 										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>

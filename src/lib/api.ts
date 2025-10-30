@@ -1046,6 +1046,8 @@ export interface MarketItem {
 	price_reduction_amount?: number;
 	price_reduction_percentage?: number;
 	accepts_best_offer?: boolean;
+	contact_phone?: string | null;
+	contact_email?: string | null;
 }
 
 export interface MarketItemCreate {
@@ -1062,6 +1064,8 @@ export interface MarketItemCreate {
 	venmo_url?: string | null;
 	facebook_url?: string | null;
 	accepts_best_offer?: boolean;
+	contact_phone?: string | null;
+	contact_email?: string | null;
 }
 
 // Listing/search
