@@ -43,13 +43,26 @@
 
 		<div class="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-black/5"></div>
 
-		<!-- top-right chips -->
-		<div class="absolute top-3 right-3 flex items-center gap-2">
+		<!-- Comment Count - Left side -->
+		<div class="absolute top-3 left-3">
 			<div
 				class="rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md"
 			>
 				<FontAwesomeIcon icon={faCommentDots} class="mr-1 h-3.5 w-3.5" />
 				{item.comment_count}
+			</div>
+		</div>
+
+		<!-- Status Badge - Right side -->
+		<div class="absolute top-3 right-3">
+			<div
+				class="rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur-md {item.status === 'sold'
+					? 'bg-red-600/90 text-white'
+					: item.status === 'hidden'
+						? 'bg-gray-600/90 text-white'
+						: 'bg-green-600/90 text-white'}"
+			>
+				{item.status === 'sold' ? 'Sold' : item.status === 'hidden' ? 'Hidden' : 'Available'}
 			</div>
 		</div>
 

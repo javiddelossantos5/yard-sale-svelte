@@ -100,35 +100,31 @@
 						<div class="flex items-center space-x-3">
 							<button
 								onclick={() => goto('/market')}
-								class="mr-2 inline-flex items-center rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 							>
 								<FontAwesomeIcon icon="arrow-left" class="h-4 w-4" />
 							</button>
 							<div>
-								<h1 class="text-xl font-bold text-gray-900 dark:text-white">Watched Items</h1>
+								<h1 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+									Watched Items
+								</h1>
 								<p class="text-xs text-gray-600 dark:text-gray-300">Your saved items</p>
 							</div>
 						</div>
 					</div>
 
 					<div class="flex space-x-2">
-						<button
-							onclick={() => goto('/market')}
-							class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-gray-900 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-black/90 focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:outline-none dark:bg-white dark:text-gray-900"
-						>
-							<FontAwesomeIcon icon="arrow-left" class="mr-1.5 h-4 w-4" />
-							Back
-						</button>
 						{#if currentUser}
 							<button
 								onclick={goToProfile}
-								class="relative inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								class="relative inline-flex flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 								aria-label="View Profile"
 							>
-								<FontAwesomeIcon icon="user" class="h-4 w-4" />
+								<FontAwesomeIcon icon="user" class="mr-1.5 h-4 w-4" />
+								Profile
 								{#if $unreadMessageCount > 0}
 									<span
-										class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
+										class="ml-1.5 rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-medium text-white"
 										>{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}</span
 									>
 								{/if}
@@ -137,7 +133,7 @@
 						<button
 							onclick={handleLogout}
 							aria-label="Logout"
-							class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 						>
 							<FontAwesomeIcon icon="arrow-right" class="h-4 w-4" />
 						</button>
@@ -148,24 +144,26 @@
 					<div class="flex items-center space-x-4">
 						<button
 							onclick={() => goto('/market')}
-							class="mr-2 inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 						>
 							<FontAwesomeIcon icon="arrow-left" class="mr-2 h-4 w-4" />
-							Back to Marketplace
+							Back
 						</button>
 						<div>
-							<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Watched Items</h1>
-							<p class="mt-1 text-gray-600 dark:text-gray-300">
+							<h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+								Watched Items
+							</h1>
+							<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">
 								Items you're keeping an eye on
 							</p>
 						</div>
 					</div>
 
-					<div class="flex items-center space-x-4">
+					<div class="flex items-center space-x-3">
 						{#if currentUser}
 							<button
 								onclick={goToProfile}
-								class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 							>
 								<FontAwesomeIcon icon="user" class="mr-2 h-4 w-4" />
 								My Profile
@@ -179,7 +177,7 @@
 						{/if}
 						<button
 							onclick={handleLogout}
-							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 						>
 							<FontAwesomeIcon icon="arrow-right" class="mr-2 h-4 w-4" />
 							Logout

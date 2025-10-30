@@ -21,8 +21,10 @@
 		faHeart,
 		faMoneyBillWave,
 		faPaperPlane,
-		faUser
+		faUser,
+		faPencil
 	} from '@fortawesome/free-solid-svg-icons';
+	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 
 	let item = $state<MarketItem | null>(null);
 	let comments = $state<MarketItemComment[]>([]);
@@ -31,6 +33,7 @@
 	let newComment = $state('');
 	let isWatched = $state(false);
 	let currentUser = $state<CurrentUser | null>(null);
+	let isEditOpen = $state(false);
 
 	function formatDateTime(iso: string): string {
 		try {
@@ -94,6 +97,12 @@
 			isWatched = true;
 		}
 	}
+
+	async function handleEditSuccess() {
+		await load(); // Reload the item after editing
+	}
+
+	const isOwner = $derived(currentUser && item && currentUser.id === item.owner_id);
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -159,13 +168,25 @@
 						>
 							${item.price.toFixed(2)}
 						</div>
-						<button
-							onclick={toggleWatch}
-							class="inline-flex items-center rounded-xl bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600"
-						>
-							<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
-							{isWatched ? 'Unwatch' : 'Watch'}
-						</button>
+						{#if isOwner}
+							<button
+								onclick={() => (isEditOpen = true)}
+								class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 active:scale-95"
+								aria-label="Edit item"
+							>
+								<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4" />
+								Edit
+							</button>
+						{/if}
+						{#if !isOwner}
+							<button
+								onclick={toggleWatch}
+								class="inline-flex items-center rounded-xl bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600"
+							>
+								<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
+								{isWatched ? 'Unwatch' : 'Watch'}
+							</button>
+						{/if}
 					</div>
 				</div>
 				<div class="mt-3 flex flex-wrap items-center gap-2">
@@ -302,5 +323,15 @@
 				{/if}
 			</div>
 		</div>
+	{/if}
+
+	<!-- Edit Modal -->
+	{#if item}
+		<EditMarketItemModal
+			isOpen={isEditOpen}
+			onClose={() => (isEditOpen = false)}
+			onSuccess={handleEditSuccess}
+			{item}
+		/>
 	{/if}
 </div>
