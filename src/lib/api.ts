@@ -1039,6 +1039,7 @@ export interface MarketItem {
 	owner_id: string;
 	owner_username: string;
 	comment_count: number;
+    is_watched?: boolean | null;
 }
 
 export interface MarketItemCreate {
@@ -1072,13 +1073,19 @@ export async function getMarketItems(
 	if (params.min_price != null) query.set('min_price', String(params.min_price));
 	if (params.max_price != null) query.set('max_price', String(params.max_price));
 	if (params.status) query.set('status', params.status);
-	const res = await fetch(`/api/market-items${query.toString() ? `?${query}` : ''}`);
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`/api/market-items${query.toString() ? `?${query}` : ''}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+    });
 	if (!res.ok) throw new Error('Failed to fetch market items');
 	return res.json();
 }
 
 export async function getMarketItemById(id: string): Promise<MarketItem> {
-	const res = await fetch(`/api/market-items/${id}`);
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`/api/market-items/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+    });
 	if (!res.ok) throw new Error('Failed to fetch market item');
 	return res.json();
 }
@@ -1213,8 +1220,18 @@ export async function unwatchMarketItem(itemId: string): Promise<void> {
 	if (!res.ok) throw new Error('Failed to unwatch item');
 }
 
-export async function getWatchedItems(): Promise<MarketItem[]> {
-	const res = await fetch('/api/user/watched-items', {
+export async function getWatchedItems(params?: {
+	status?: 'active' | 'sold' | 'hidden';
+	limit?: number;
+	offset?: number;
+}): Promise<MarketItem[]> {
+	const query = new URLSearchParams();
+	if (params?.status) query.set('status', params.status);
+	if (params?.limit != null) query.set('limit', String(params.limit));
+	if (params?.offset != null) query.set('offset', String(params.offset));
+
+	const url = `/api/user/watched-items${query.toString() ? `?${query}` : ''}`;
+	const res = await fetch(url, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
 	});
 	if (res.status === 401 || res.status === 403) {

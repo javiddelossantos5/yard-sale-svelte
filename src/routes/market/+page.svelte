@@ -5,6 +5,7 @@
 	import MarketItemCard from '$lib/MarketItemCard.svelte';
 	import CreateMarketItemModal from '$lib/CreateMarketItemModal.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faHeart } from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
 
@@ -70,6 +71,15 @@
 							<FontAwesomeIcon icon="plus" class="mr-1.5 h-4 w-4" />
 							New Item
 						</button>
+						{#if currentUser}
+							<button
+								onclick={() => goto('/market/watched')}
+								class="inline-flex flex-1 items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							>
+								<FontAwesomeIcon icon={faHeart} class="mr-1.5 h-4 w-4" />
+								Watched
+							</button>
+						{/if}
 						<button
 							onclick={() => goto('/')}
 							class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-gray-900 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-black/90 focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:outline-none dark:bg-white dark:text-gray-900"
@@ -125,6 +135,15 @@
 							<FontAwesomeIcon icon="plus" class="mr-2 h-4 w-4" />
 							New Item
 						</button>
+						{#if currentUser}
+							<button
+								onclick={() => goto('/market/watched')}
+								class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							>
+								<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
+								Watched
+							</button>
+						{/if}
 						<button
 							onclick={() => goto('/')}
 							class="inline-flex items-center rounded-md border border-transparent bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-black/90 focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 focus:outline-none dark:bg-white dark:text-gray-900"

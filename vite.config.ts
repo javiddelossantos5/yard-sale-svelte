@@ -8,12 +8,12 @@ export default defineConfig({
 	server: {
 		proxy: {
 			// Keep /api prefix for auth and user endpoints
-			'^/api/(login|register|me)': {
+			'^/api/(login|register|me|user)': {
 				target: 'http://localhost:8000',
 				changeOrigin: true
 			},
 			// Remove /api prefix for all other endpoints
-			'^/api/(?!login|register|me)': {
+			'^/api/(?!login|register|me|user)': {
 				target: 'http://localhost:8000',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, '')
