@@ -1039,7 +1039,13 @@ export interface MarketItem {
 	owner_id: string;
 	owner_username: string;
 	comment_count: number;
-    is_watched?: boolean | null;
+	is_watched?: boolean | null;
+	original_price?: number | null;
+	last_price_change_date?: string | null;
+	price_reduced?: boolean;
+	price_reduction_amount?: number;
+	price_reduction_percentage?: number;
+	accepts_best_offer?: boolean;
 }
 
 export interface MarketItemCreate {
@@ -1055,6 +1061,7 @@ export interface MarketItemCreate {
 	payment_methods?: string[];
 	venmo_url?: string | null;
 	facebook_url?: string | null;
+	accepts_best_offer?: boolean;
 }
 
 // Listing/search

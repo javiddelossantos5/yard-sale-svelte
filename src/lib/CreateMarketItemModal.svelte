@@ -18,9 +18,9 @@
 		photos: [],
 		featured_image: '',
 		payment_methods: [],
-		price_range: '',
 		venmo_url: '',
-		facebook_url: ''
+		facebook_url: '',
+		accepts_best_offer: false
 	});
 
 	let loading = $state(false);
@@ -45,16 +45,6 @@
 		'Other'
 	];
 
-	const priceRanges = [
-		'Under $10',
-		'$10-$25',
-		'$25-$50',
-		'$50-$100',
-		'$100-$250',
-		'$250+',
-		'Negotiable'
-	];
-
 	function normalizeUrl(url: string): string {
 		if (!url?.trim()) return '';
 		return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
@@ -77,7 +67,8 @@
 				photos,
 				featured_image: photos[0] || '',
 				venmo_url: normalizeUrl(formData.venmo_url || ''),
-				facebook_url: normalizeUrl(formData.facebook_url || '')
+				facebook_url: normalizeUrl(formData.facebook_url || ''),
+				accepts_best_offer: formData.accepts_best_offer ?? false
 			};
 
 			await createMarketItem(payload);
@@ -102,9 +93,9 @@
 			photos: [],
 			featured_image: '',
 			payment_methods: [],
-			price_range: '',
 			venmo_url: '',
-			facebook_url: ''
+			facebook_url: '',
+			accepts_best_offer: false
 		};
 	}
 </script>
@@ -188,41 +179,35 @@
 								></textarea>
 							</div>
 
-							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<div>
-									<label
-										for="price"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Price <span class="text-red-500">*</span></label
-									>
-									<input
-										id="price"
-										type="number"
-										min="0"
-										step="0.01"
-										bind:value={formData.price}
-										required
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-								<div>
-									<label
-										for="price_range"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Price Range</label
-									>
-									<select
-										id="price_range"
-										bind:value={formData.price_range}
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-									>
-										<option value="">Select</option>
-										{#each priceRanges as range}
-											<option value={range}>{range}</option>
-										{/each}
-									</select>
-								</div>
+							<div>
+								<label
+									for="price"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>Price <span class="text-red-500">*</span></label
+								>
+								<input
+									id="price"
+									type="number"
+									min="0"
+									step="0.01"
+									bind:value={formData.price}
+									required
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+								/>
 							</div>
+
+							<label
+								class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+							>
+								<input
+									type="checkbox"
+									bind:checked={formData.accepts_best_offer}
+									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+								/>
+								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+									>Accept Best Offer</span
+								>
+							</label>
 
 							<div>
 								<label

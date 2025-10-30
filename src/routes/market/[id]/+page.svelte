@@ -18,11 +18,13 @@
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 	import {
 		faChevronLeft,
+		faHandshake,
 		faHeart,
 		faMoneyBillWave,
 		faPaperPlane,
 		faUser,
-		faPencil
+		faPencil,
+		faTag
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 
@@ -47,6 +49,41 @@
 			}).format(d);
 		} catch {
 			return iso;
+		}
+	}
+
+	function formatDate(iso: string): string {
+		try {
+			const d = new Date(iso);
+			return new Intl.DateTimeFormat(undefined, {
+				year: 'numeric',
+				month: 'short',
+				day: 'numeric'
+			}).format(d);
+		} catch {
+			return iso;
+		}
+	}
+
+	function formatPrice(price: number): string {
+		return new Intl.NumberFormat('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		}).format(price);
+	}
+
+	function getDaysAgo(dateString: string): string {
+		try {
+			const date = new Date(dateString);
+			const now = new Date();
+			const diffTime = Math.abs(now.getTime() - date.getTime());
+			const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+			if (diffDays === 0) return 'today';
+			if (diffDays === 1) return '1 day ago';
+			return `${diffDays} days ago`;
+		} catch {
+			return '';
 		}
 	}
 
@@ -161,34 +198,84 @@
 							{item.name}
 						</h1>
 						<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
+						{#if item.created_at}
+							<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+								Posted {getDaysAgo(item.created_at)}
+							</p>
+						{/if}
 					</div>
-					<div class="flex shrink-0 items-start gap-3">
-						<div
-							class="inline-flex items-center rounded-2xl bg-gray-100 px-3 py-1.5 text-sm font-semibold text-gray-900 ring-1 ring-black/5 ring-inset dark:bg-gray-700 dark:text-white dark:ring-white/10"
-						>
-							${item.price.toFixed(2)}
+					<div class="flex shrink-0 flex-col items-end gap-2">
+						<div class="flex flex-col items-end gap-1">
+							<div class="flex items-center gap-2">
+								{#if item.price_reduced && item.original_price}
+									<span class="text-sm text-gray-500 line-through dark:text-gray-400">
+										Was ${formatPrice(item.original_price)}
+									</span>
+								{/if}
+								<div
+									class="inline-flex items-center rounded-2xl bg-gray-100 px-3 py-1.5 text-base font-semibold text-gray-900 ring-1 ring-black/5 ring-inset dark:bg-gray-700 dark:text-white dark:ring-white/10"
+								>
+									Now ${formatPrice(item.price)}
+								</div>
+								{#if item.price_reduced && item.price_reduction_amount && item.price_reduction_percentage}
+									<div
+										class="inline-flex items-center gap-1 rounded-full bg-red-500/90 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md"
+										title="Reduced by $${formatPrice(
+											item.price_reduction_amount
+										)} (${item.price_reduction_percentage.toFixed(0)}%)"
+									>
+										<FontAwesomeIcon icon={faTag} class="h-3.5 w-3.5" />
+										-{item.price_reduction_percentage.toFixed(0)}%
+									</div>
+								{/if}
+							</div>
+							{#if item.price_reduced && item.price_reduction_amount && item.price_reduction_percentage}
+								<div class="text-sm font-medium text-red-600 dark:text-red-400">
+									Save ${formatPrice(item.price_reduction_amount)} ({item.price_reduction_percentage.toFixed(
+										0
+									)}% off)
+								</div>
+							{/if}
+							{#if item.price_reduced && item.last_price_change_date}
+								<div class="text-xs text-gray-500 dark:text-gray-400">
+									Reduced on {formatDate(item.last_price_change_date)}
+								</div>
+							{/if}
 						</div>
-						{#if isOwner}
-							<button
-								onclick={() => (isEditOpen = true)}
-								class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 active:scale-95"
-								aria-label="Edit item"
-							>
-								<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4" />
-								Edit
-							</button>
-						{/if}
-						{#if !isOwner}
-							<button
-								onclick={toggleWatch}
-								class="inline-flex items-center rounded-xl bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600"
-							>
-								<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
-								{isWatched ? 'Unwatch' : 'Watch'}
-							</button>
-						{/if}
+						<div class="flex items-center gap-2">
+							{#if isOwner}
+								<button
+									onclick={() => (isEditOpen = true)}
+									class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 active:scale-95"
+									aria-label="Edit item"
+								>
+									<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4" />
+									Edit
+								</button>
+							{/if}
+							{#if !isOwner}
+								<button
+									onclick={toggleWatch}
+									class="inline-flex items-center rounded-xl bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600"
+								>
+									<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
+									{isWatched ? 'Unwatch' : 'Watch'}
+								</button>
+							{/if}
+						</div>
 					</div>
 				</div>
+				{#if item.accepts_best_offer}
+					<div class="mt-3">
+						<span
+							class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1.5 text-sm font-semibold text-purple-600 ring-1 ring-purple-100 ring-inset dark:bg-purple-900/30 dark:text-purple-200 dark:ring-purple-800/60"
+							title="Accepts best offer"
+						>
+							<FontAwesomeIcon icon={faHandshake} class="h-4 w-4" />
+							Accepts Best Offer
+						</span>
+					</div>
+				{/if}
 				<div class="mt-3 flex flex-wrap items-center gap-2">
 					{#if item.venmo_url}
 						<a
