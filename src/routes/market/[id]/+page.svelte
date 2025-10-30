@@ -25,12 +25,13 @@
 		faHandshake,
 		faHeart,
 		faMoneyBillWave,
-		faPaperPlane,
 		faPhone,
-		faUser,
 		faPencil,
 		faTag,
-		faMessage
+		faMessage,
+		faPaperPlane,
+		faUser,
+		faTrash
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
@@ -46,6 +47,7 @@
 	let isMessageOpen = $state(false);
 	let existingConversation = $state<MarketItemConversation | null>(null);
 	let checkingConversation = $state(false);
+	let submittingComment = $state(false);
 
 	function formatDateTime(iso: string): string {
 		try {
@@ -128,7 +130,11 @@
 			if (item?.is_watched !== undefined && item?.is_watched !== null) {
 				isWatched = item.is_watched === true;
 			}
-			comments = await getMarketItemComments(id);
+
+			// Load comments
+			if (id) {
+				comments = await getMarketItemComments(id);
+			}
 
 			// Check for existing conversation if user is logged in and not the owner
 			if (user && item && user.id !== item.owner_id) {
@@ -166,17 +172,48 @@
 		load();
 	});
 
+	function getRelativeTime(dateString: string): string {
+		try {
+			const date = new Date(dateString);
+			const now = new Date();
+			const diffMs = now.getTime() - date.getTime();
+			const diffSecs = Math.floor(diffMs / 1000);
+			const diffMins = Math.floor(diffSecs / 60);
+			const diffHours = Math.floor(diffMins / 60);
+			const diffDays = Math.floor(diffHours / 24);
+
+			if (diffSecs < 60) return 'just now';
+			if (diffMins < 60) return `${diffMins}m ago`;
+			if (diffHours < 24) return `${diffHours}h ago`;
+			if (diffDays < 7) return `${diffDays}d ago`;
+			return formatDateTime(dateString);
+		} catch {
+			return dateString;
+		}
+	}
+
 	async function submitComment(e: Event) {
 		e.preventDefault();
-		if (!item || !newComment.trim()) return;
-		const created = await addMarketItemComment(item.id, newComment.trim());
-		comments = [created, ...comments];
-		newComment = '';
+		if (!item || !newComment.trim() || submittingComment) return;
+		submittingComment = true;
+		try {
+			const created = await addMarketItemComment(item.id, newComment.trim());
+			comments = [created, ...comments];
+			newComment = '';
+		} catch (e: any) {
+			error = e?.message || 'Failed to post comment';
+		} finally {
+			submittingComment = false;
+		}
 	}
 
 	async function handleDeleteComment(commentId: string) {
-		await deleteMarketItemComment(commentId);
-		comments = comments.filter((c) => c.id !== commentId);
+		try {
+			await deleteMarketItemComment(commentId);
+			comments = comments.filter((c) => c.id !== commentId);
+		} catch (e: any) {
+			error = e?.message || 'Failed to delete comment';
+		}
 	}
 
 	async function toggleWatch() {
@@ -421,105 +458,158 @@
 		<!-- Comments Section -->
 		<div class="mx-auto max-w-5xl px-4 pt-8 pb-12">
 			<div
-				class="rounded-3xl bg-white/90 p-6 shadow-[0_1px_0_rgba(255,255,255,0.6),0_20px_40px_rgba(0,0,0,0.06)] ring-1 ring-black/5 backdrop-blur dark:bg-gray-800/90 dark:ring-gray-700"
+				class="rounded-3xl bg-white/90 p-8 shadow-[0_1px_0_rgba(255,255,255,0.6),0_20px_40px_rgba(0,0,0,0.06)] ring-1 ring-black/5 backdrop-blur-xl dark:bg-gray-800/90 dark:ring-gray-700"
 			>
-				<h2 class="mb-6 text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
-					Comments
-					<span class="ml-2 text-base font-normal text-gray-500 dark:text-gray-400"
-						>({comments.length})</span
-					>
-				</h2>
+				<div class="mb-8">
+					<h2 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">
+						Comments
+					</h2>
+					<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+						{comments.length === 0
+							? 'No comments yet'
+							: comments.length === 1
+								? '1 comment'
+								: `${comments.length} comments`}
+					</p>
+				</div>
 
 				<!-- Comment Input -->
-				<form
-					onsubmit={submitComment}
-					class="mb-8 flex items-end gap-3 rounded-2xl bg-gray-50/80 p-3 ring-1 ring-gray-200/50 backdrop-blur-sm dark:bg-gray-700/30 dark:ring-gray-600/50"
-				>
-					<div class="flex flex-1 items-center gap-3">
-						<div
-							class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-semibold text-white shadow-sm ring-1 ring-white/20"
-						>
-							{#if currentUser?.username}
-								{currentUser.username.charAt(0).toUpperCase()}
-							{:else}
-								<FontAwesomeIcon icon={faUser} class="h-4 w-4" />
-							{/if}
-						</div>
-						<input
-							type="text"
-							class="flex-1 border-0 bg-transparent text-[15px] text-gray-900 placeholder:text-gray-500 focus:outline-none dark:text-gray-100 dark:placeholder:text-gray-400"
-							placeholder="Write a comment..."
-							bind:value={newComment}
-						/>
-					</div>
-					<button
-						type="submit"
-						disabled={!newComment.trim()}
-						class="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-blue-500 dark:hover:bg-blue-600"
+				{#if currentUser}
+					<form
+						onsubmit={submitComment}
+						class="mb-10 rounded-2xl bg-gray-50/80 p-4 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all hover:ring-gray-300/50 dark:bg-gray-700/30 dark:ring-gray-600/50 dark:hover:ring-gray-500/50"
 					>
-						<FontAwesomeIcon icon={faPaperPlane} class="h-3.5 w-3.5" />
-					</button>
-				</form>
-
-				<!-- Comments List -->
-				<div class="space-y-5">
-					{#each comments as c}
-						{@const isMine = currentUser && c.user_id === currentUser.id}
-						<div class="flex gap-3 {isMine ? 'flex-row-reverse' : ''}">
+						<div class="flex items-start gap-3">
 							<!-- Avatar -->
 							<div
-								class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br shadow-sm ring-1 {isMine
-									? 'from-blue-500 to-purple-600 ring-white/20'
-									: 'from-gray-400 to-gray-500 ring-gray-200/50 dark:ring-gray-600/50'}"
+								class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-semibold text-white shadow-sm ring-2 ring-white/50 dark:ring-gray-800/50"
 							>
-								<span class="text-xs font-semibold text-white">
-									{(c.username ?? 'Anonymous').charAt(0).toUpperCase()}
-								</span>
+								{#if currentUser.username}
+									{currentUser.username.charAt(0).toUpperCase()}
+								{:else}
+									<FontAwesomeIcon icon={faUser} class="h-5 w-5" />
+								{/if}
 							</div>
 
-							<!-- Comment Bubble -->
-							<div class="flex min-w-0 flex-1 flex-col {isMine ? 'items-end' : 'items-start'}">
-								<div
-									class="inline-flex max-w-[85%] flex-col rounded-2xl px-4 py-2.5 shadow-sm ring-1 transition-all hover:shadow-md {isMine
-										? 'bg-blue-600 text-white ring-blue-500/20'
-										: 'bg-white text-gray-900 ring-gray-200/50 dark:bg-gray-700/80 dark:text-gray-100 dark:ring-gray-600/50'}"
-								>
-									<!-- Username and Timestamp -->
-									<div class="mb-1.5 flex items-center gap-2">
-										<span class="text-[13px] font-semibold">
-											{isMine ? 'You' : (c.username ?? 'Anonymous')}
-										</span>
-										<span
-											class="text-[11px] font-normal opacity-70 {isMine
-												? 'text-white/70'
-												: 'text-gray-500 dark:text-gray-400'}"
-										>
-											{formatDateTime(c.created_at)}
-										</span>
-									</div>
-
-									<!-- Comment Content -->
-									<p class="text-[15px] leading-relaxed">{c.content}</p>
-
-									<!-- Delete Button -->
-									{#if isMine}
-										<button
-											onclick={() => handleDeleteComment(c.id)}
-											class="mt-2 self-start rounded-lg px-2 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/10 active:scale-95"
-										>
-											Delete
-										</button>
-									{/if}
+							<!-- Input -->
+							<div class="flex-1">
+								<textarea
+									bind:value={newComment}
+									placeholder="Add a comment..."
+									rows="3"
+									disabled={submittingComment}
+									class="w-full resize-none rounded-xl border-0 bg-white px-4 py-3 text-[15px] text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:outline-none dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+								></textarea>
+								<div class="mt-3 flex items-center justify-end gap-2">
+									<button
+										type="submit"
+										disabled={!newComment.trim() || submittingComment}
+										class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-blue-600 disabled:hover:shadow-sm dark:bg-blue-500 dark:hover:bg-blue-600"
+									>
+										{#if submittingComment}
+											<span
+												class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+											></span>
+											Posting...
+										{:else}
+											<FontAwesomeIcon icon={faPaperPlane} class="h-4 w-4" />
+											Post Comment
+										{/if}
+									</button>
 								</div>
 							</div>
 						</div>
-					{/each}
-				</div>
+					</form>
+				{:else}
+					<div
+						class="mb-10 rounded-2xl bg-gray-50/50 p-6 text-center ring-1 ring-gray-200/50 dark:bg-gray-700/20 dark:ring-gray-600/30"
+					>
+						<p class="text-sm text-gray-600 dark:text-gray-400">
+							<a
+								href="/login"
+								class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400">Sign in</a
+							>
+							to leave a comment
+						</p>
+					</div>
+				{/if}
 
-				{#if comments.length === 0}
-					<div class="py-12 text-center">
-						<p class="text-sm text-gray-500 dark:text-gray-400">
-							No comments yet. Be the first to comment!
+				<!-- Comments List -->
+				{#if comments.length > 0}
+					<div class="space-y-6">
+						{#each comments as c}
+							{@const isMine = currentUser && c.user_id === currentUser.id}
+							<div class="flex gap-4 {isMine ? 'flex-row-reverse' : ''}">
+								<!-- Avatar -->
+								<div
+									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br shadow-sm ring-2 {isMine
+										? 'from-blue-500 to-purple-600 ring-white/50 dark:ring-gray-800/50'
+										: 'from-gray-400 to-gray-500 ring-white/50 dark:ring-gray-800/50'}"
+								>
+									<span class="text-sm font-semibold text-white">
+										{(c.username ?? 'Anonymous').charAt(0).toUpperCase()}
+									</span>
+								</div>
+
+								<!-- Comment Content -->
+								<div class="flex min-w-0 flex-1 flex-col {isMine ? 'items-end' : 'items-start'}">
+									<div
+										class="group relative inline-flex max-w-[75%] flex-col rounded-2xl px-4 py-3 shadow-sm ring-1 transition-all hover:shadow-md {isMine
+											? 'bg-blue-600 text-white ring-blue-500/20'
+											: 'bg-gray-100 text-gray-900 ring-gray-200/50 dark:bg-gray-700/80 dark:text-gray-100 dark:ring-gray-600/50'}"
+									>
+										<!-- Username and Timestamp -->
+										<div class="mb-1.5 flex items-baseline gap-2">
+											<span
+												class="text-[13px] font-semibold {isMine
+													? 'text-white'
+													: 'text-gray-900 dark:text-gray-100'}"
+											>
+												{isMine ? 'You' : (c.username ?? 'Anonymous')}
+											</span>
+											<span
+												class="text-[11px] font-normal {isMine
+													? 'text-white/70'
+													: 'text-gray-500 dark:text-gray-400'}"
+											>
+												{getRelativeTime(c.created_at)}
+											</span>
+										</div>
+
+										<!-- Comment Text -->
+										<p
+											class="text-[15px] leading-relaxed {isMine
+												? 'text-white'
+												: 'text-gray-900 dark:text-gray-100'}"
+										>
+											{c.content}
+										</p>
+
+										<!-- Delete Button -->
+										{#if isMine}
+											<button
+												onclick={() => handleDeleteComment(c.id)}
+												class="absolute right-0 -bottom-8 mt-2 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-100 hover:text-red-600 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-red-400"
+											>
+												<FontAwesomeIcon icon={faTrash} class="h-3 w-3" />
+												Delete
+											</button>
+										{/if}
+									</div>
+								</div>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<div class="py-16 text-center">
+						<div
+							class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"
+						>
+							<FontAwesomeIcon icon={faMessage} class="h-7 w-7 text-gray-400 dark:text-gray-500" />
+						</div>
+						<p class="text-sm font-medium text-gray-900 dark:text-gray-100">No comments yet</p>
+						<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+							Be the first to share your thoughts about this item
 						</p>
 					</div>
 				{/if}
