@@ -6,7 +6,7 @@
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 	import { faCommentDots, faEnvelope, faHandshake, faMoneyBillWave, faPhone, faTag } from '@fortawesome/free-solid-svg-icons';
 
-	let { item }: { item: MarketItem } = $props();
+	let { item, hideStatusBadge = false }: { item: MarketItem; hideStatusBadge?: boolean } = $props();
 
 	function formatPrice(price: number): string {
 		return new Intl.NumberFormat('en-US', {
@@ -91,15 +91,17 @@
 			</div>
 
 			<!-- Status Badge -->
-			<div
-				class="rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md {item.status === 'sold'
-					? 'bg-red-600/90 text-white'
-					: item.status === 'hidden'
-						? 'bg-gray-600/90 text-white'
-						: 'bg-green-600/90 text-white'}"
-			>
-				{item.status === 'sold' ? 'Sold' : item.status === 'hidden' ? 'Hidden' : 'Available'}
-			</div>
+			{#if !hideStatusBadge}
+				<div
+					class="rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md {item.status === 'sold'
+						? 'bg-red-600/90 text-white'
+						: item.status === 'hidden'
+							? 'bg-gray-600/90 text-white'
+							: 'bg-green-600/90 text-white'}"
+				>
+					{item.status === 'sold' ? 'Sold' : item.status === 'hidden' ? 'Hidden' : 'Available'}
+				</div>
+			{/if}
 		</div>
 
 		<!-- Hover overlay CTA -->

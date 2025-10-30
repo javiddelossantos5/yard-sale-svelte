@@ -284,7 +284,14 @@
 		{:else}
 			<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{#each items as item}
-					<MarketItemCard {item} />
+					<MarketItemCard
+						{item}
+						hideStatusBadge={
+							(statusFilter === 'active' && item.status === 'active') ||
+							(statusFilter === 'sold' && item.status === 'sold') ||
+							(statusFilter === 'hidden' && item.status === 'hidden')
+						}
+					/>
 				{/each}
 			</div>
 		{/if}
