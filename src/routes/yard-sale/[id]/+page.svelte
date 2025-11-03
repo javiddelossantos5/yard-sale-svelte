@@ -10,11 +10,14 @@
 		getCurrentUser,
 		getYardSaleVisitStats,
 		getAuthenticatedImageUrl,
+		getYardSaleConversations,
+		getYardSaleUnreadCount,
 		type YardSale,
 		type Comment,
-		type CurrentUser
+		type CurrentUser,
+		type YardSaleConversation
 	} from '$lib/api';
-	import MessageModal from '$lib/MessageModal.svelte';
+	import YardSaleMessageModal from '$lib/YardSaleMessageModal.svelte';
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
 	import FeaturedImageModal from '$lib/FeaturedImageModal.svelte';
@@ -29,7 +32,7 @@
 	import { isYardSaleVisited, toggleYardSaleVisited } from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
-	import { faStar } from '@fortawesome/free-solid-svg-icons';
+	import { faStar, faMessage } from '@fortawesome/free-solid-svg-icons';
 	import { getPaymentMethodIcon } from '$lib/paymentUtils';
 
 	let yardSale = $state<YardSale | null>(null);
@@ -57,7 +60,10 @@
 	} | null>(null);
 
 	// Message modal state
-	let showMessageModal = $state(false);
+	let isMessageOpen = $state(false);
+	let existingConversation = $state<YardSaleConversation | null>(null);
+	let checkingConversation = $state(false);
+	let messageUnreadCount = $state(0);
 	let currentUser = $state<CurrentUser | null>(null);
 	let currentUserId = $derived(currentUser?.id || null);
 
@@ -97,6 +103,16 @@
 			await loadCurrentUser();
 			await loadYardSale();
 			await loadComments();
+
+			// Check for existing conversation if user is logged in and not the owner
+			if (currentUser && yardSale && currentUser.id !== yardSale.owner_id) {
+				await checkExistingConversation(yardSaleId);
+			}
+
+			// Load unread count if user is logged in
+			if (currentUser) {
+				await loadUnreadCount();
+			}
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load yard sale';
 		} finally {
@@ -292,16 +308,40 @@
 		});
 	}
 
-	function handleSendMessage() {
-		requireAuth(() => {
-			if (yardSale) {
-				showMessageModal = true;
-			}
-		});
+	async function checkExistingConversation(yardSaleId: string) {
+		if (!currentUser) return;
+		checkingConversation = true;
+		try {
+			const conversations = await getYardSaleConversations();
+			const conv = conversations.find((c) => c.yard_sale_id === yardSaleId);
+			existingConversation = conv || null;
+		} catch {
+			// Ignore errors checking conversation
+		} finally {
+			checkingConversation = false;
+		}
 	}
 
-	function handleCloseMessageModal() {
-		showMessageModal = false;
+	async function loadUnreadCount() {
+		try {
+			const result = await getYardSaleUnreadCount();
+			messageUnreadCount = result.unread_count;
+		} catch {
+			// Ignore errors loading unread count
+		}
+	}
+
+	async function handleMessageSuccess() {
+		// Refresh conversation check after sending message
+		if (yardSale) {
+			await checkExistingConversation(yardSale.id);
+		}
+	}
+
+	function viewConversation() {
+		if (existingConversation) {
+			goto(`/yard-sale/messages/${existingConversation.id}`);
+		}
 	}
 
 	function handleEditYardSale() {
@@ -396,6 +436,22 @@
 					<FontAwesomeIcon icon="arrow-left" class="mr-2 h-4 w-4" />
 					Back
 				</button>
+				{#if currentUser}
+					<button
+						onclick={() => goto('/yard-sale/messages')}
+						class="relative inline-flex items-center rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+					>
+						<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+						Messages
+						{#if messageUnreadCount > 0}
+							<span
+								class="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white"
+							>
+								{messageUnreadCount}
+							</span>
+						{/if}
+					</button>
+				{/if}
 			</div>
 		</div>
 	</header>
@@ -1019,21 +1075,39 @@
 									</a>
 								{/if}
 
-								<!-- Send Message Button -->
+								<!-- Message Seller Button -->
 								{#if currentUser && !isOwner}
 									{@const isDisabled = !isYardSaleActive(yardSale) || yardSale.status === 'closed'}
-									<button
-										onclick={isDisabled ? undefined : handleSendMessage}
-										disabled={isDisabled}
-										class="flex w-full items-center justify-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
-									>
-										<FontAwesomeIcon icon="envelope" class="mr-2 h-4 w-4" />
-										{yardSale.status === 'closed'
-											? 'Closed'
-											: !isYardSaleActive(yardSale)
-												? 'Event Ended'
-												: 'Send Message'}
-									</button>
+									{#if existingConversation}
+										<button
+											onclick={viewConversation}
+											class="flex w-full items-center justify-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 dark:bg-green-600 dark:hover:bg-green-700"
+										>
+											<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+											View Conversation
+											{#if existingConversation.unread_count && existingConversation.unread_count > 0}
+												<span
+													class="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold"
+													>{existingConversation.unread_count}</span
+												>
+											{/if}
+										</button>
+									{:else}
+										<button
+											onclick={() => (isMessageOpen = true)}
+											disabled={isDisabled || checkingConversation}
+											class="flex w-full items-center justify-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
+										>
+											<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+											{checkingConversation
+												? 'Checking...'
+												: yardSale.status === 'closed'
+													? 'Yard Sale Closed'
+													: !isYardSaleActive(yardSale)
+														? 'Yard Sale Not Active'
+														: 'Message Seller'}
+										</button>
+									{/if}
 								{/if}
 
 								<!-- Get Directions Button -->
@@ -1304,14 +1378,12 @@
 
 	<!-- Message Modal -->
 	{#if yardSale}
-		<MessageModal
-			isOpen={showMessageModal}
-			yardSaleId={yardSale.id as any}
+		<YardSaleMessageModal
+			isOpen={isMessageOpen}
+			yardSaleId={yardSale.id}
 			yardSaleTitle={yardSale.title}
-			otherUserId={(isOwner ? currentUserId || '' : yardSale.owner_id) as any}
-			otherUsername={isOwner ? 'You' : yardSale.owner_username}
-			currentUserId={(currentUserId || '') as any}
-			onClose={handleCloseMessageModal}
+			onClose={() => (isMessageOpen = false)}
+			onSuccess={handleMessageSuccess}
 		/>
 	{/if}
 

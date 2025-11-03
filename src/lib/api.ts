@@ -1510,6 +1510,118 @@ export async function getMarketItemUnreadCount(): Promise<{ unread_count: number
 	return res.json();
 }
 
+// Yard Sale Conversations (similar to MarketItemConversation)
+export interface YardSaleConversation {
+	id: string;
+	yard_sale_id: string;
+	yard_sale_title?: string;
+	participant1_id: string;
+	participant1_username?: string;
+	participant2_id: string;
+	participant2_username?: string;
+	created_at: string;
+	updated_at: string;
+	last_message?: Message | null;
+	unread_count?: number;
+}
+
+// Send initial message to yard sale (creates conversation)
+export async function sendYardSaleMessage(yardSaleId: string, content: string): Promise<Message> {
+	const res = await fetch(`/yard-sales/${yardSaleId}/messages`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({ content })
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to send message');
+	return res.json();
+}
+
+// Send message in existing yard sale conversation
+export async function sendYardSaleConversationMessage(
+	conversationId: string,
+	content: string
+): Promise<Message> {
+	const res = await fetch(`/yard-sales/conversations/${conversationId}/messages`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({ content })
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to send message');
+	return res.json();
+}
+
+// Get messages for a yard sale conversation
+export async function getYardSaleConversationMessages(conversationId: string): Promise<Message[]> {
+	const res = await fetch(`/yard-sales/conversations/${conversationId}/messages`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch messages');
+	return res.json();
+}
+
+// Get all yard sale conversations for current user
+export async function getYardSaleConversations(): Promise<YardSaleConversation[]> {
+	const res = await fetch(`/yard-sales/conversations`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch conversations');
+	return res.json();
+}
+
+// Mark yard sale message as read
+export async function markYardSaleMessageRead(messageId: string): Promise<void> {
+	const res = await fetch(`/yard-sales/messages/${messageId}/read`, {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to mark message as read');
+}
+
+// Get unread yard sale message count
+export async function getYardSaleUnreadCount(): Promise<{ unread_count: number }> {
+	const res = await fetch(`/yard-sales/messages/unread-count`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch unread count');
+	return res.json();
+}
+
 // Helper function to get the proxy URL for an image
 export function getImageProxyUrl(imageKey: string): string {
 	return `http://localhost:8000/image-proxy/${imageKey}`;

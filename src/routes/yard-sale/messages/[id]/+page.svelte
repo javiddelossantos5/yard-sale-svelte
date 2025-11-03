@@ -3,12 +3,12 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import {
-		getMarketItemConversationMessages,
-		sendMarketItemConversationMessage,
-		markMarketItemMessageRead,
-		getMarketItemConversations,
+		getYardSaleConversationMessages,
+		sendYardSaleConversationMessage,
+		markYardSaleMessageRead,
+		getYardSaleConversations,
 		getCurrentUser,
-		type MarketItemMessage,
+		type Message,
 		type CurrentUser
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -16,8 +16,8 @@
 
 	const conversationId = $derived($page.params.id);
 
-	let messages = $state<MarketItemMessage[]>([]);
-	let conversation = $state<{ item_name?: string } | null>(null);
+	let messages = $state<Message[]>([]);
+	let conversation = $state<{ yard_sale_title?: string } | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let newMessage = $state('');
@@ -31,17 +31,17 @@
 		error = null;
 		try {
 			const [msgs, user, convs] = await Promise.all([
-				getMarketItemConversationMessages(conversationId),
+				getYardSaleConversationMessages(conversationId),
 				getCurrentUser(),
-				getMarketItemConversations()
+				getYardSaleConversations()
 			]);
 			messages = msgs;
 			currentUser = user;
 			
-			// Find the conversation to get item name
+			// Find the conversation to get yard sale title
 			const conv = convs.find((c) => c.id === conversationId);
 			if (conv) {
-				conversation = { item_name: conv.item_name };
+				conversation = { yard_sale_title: conv.yard_sale_title };
 			}
 
 			// Mark unread messages as read
@@ -50,7 +50,7 @@
 			);
 			for (const msg of unreadMessages) {
 				try {
-					await markMarketItemMessageRead(msg.id);
+					await markYardSaleMessageRead(msg.id);
 				} catch {
 					// Ignore errors marking as read
 				}
@@ -72,7 +72,7 @@
 		sending = true;
 		error = null;
 		try {
-			const sentMessage = await sendMarketItemConversationMessage(conversationId, newMessage.trim());
+			const sentMessage = await sendYardSaleConversationMessage(conversationId, newMessage.trim());
 			messages = [...messages, sentMessage];
 			newMessage = '';
 			// Scroll to bottom
@@ -115,7 +115,7 @@
 		}
 	}
 
-	const isMyMessage = (message: MarketItemMessage) =>
+	const isMyMessage = (message: Message) =>
 		currentUser && message.sender_id === currentUser.id;
 </script>
 <div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
@@ -123,7 +123,7 @@
 	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80">
 		<div class="flex items-center gap-3 px-4 py-4">
 			<button
-				onclick={() => goto('/market/messages')}
+				onclick={() => goto('/yard-sale/messages')}
 				class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
 				aria-label="Back to messages"
 			>
@@ -131,7 +131,7 @@
 			</button>
 			<div>
 				<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-					{conversation?.item_name || 'Conversation'}
+					{conversation?.yard_sale_title || 'Conversation'}
 				</h1>
 			</div>
 		</div>

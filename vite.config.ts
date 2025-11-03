@@ -5,7 +5,14 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
+	build: {
+		sourcemap: true
+	},
 	server: {
+		sourcemapIgnoreList: false,
+		fs: {
+			allow: ['.'] // Allow opening local files
+		},
 		proxy: {
 			// Keep /api prefix for auth and user endpoints
 			'^/api/(login|register|me|user)': {
@@ -25,6 +32,11 @@ export default defineConfig({
 			},
 			// Proxy market-items messaging endpoints directly
 			'^/market-items/(conversations|.*/messages|messages/.*)': {
+				target: 'http://localhost:8000',
+				changeOrigin: true
+			},
+			// Proxy yard-sales messaging endpoints directly
+			'^/yard-sales/(conversations|.*/messages|messages/.*)': {
 				target: 'http://localhost:8000',
 				changeOrigin: true
 			}

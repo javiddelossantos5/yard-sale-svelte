@@ -6,6 +6,7 @@
 		getYardSalesByCity,
 		getYardSalesByCategory,
 		getCurrentUser,
+		getYardSaleUnreadCount,
 		type YardSale,
 		type CurrentUser
 	} from '$lib/api';
@@ -19,7 +20,16 @@
 		migrateOldVisitedData
 	} from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import {
+		faMessage,
+		faBars,
+		faStore,
+		faUser,
+		faArrowRightFromBracket
+	} from '@fortawesome/free-solid-svg-icons';
 	import { unreadMessageCount } from '$lib/notifications';
+
+	let mobileMenuOpen = $state(false);
 
 	let yardSales = $state<YardSale[]>([]);
 	let loading = $state(true);
@@ -30,6 +40,7 @@
 	let statusFilter = $state('active');
 	let zipCodeSearch = $state('');
 	let currentUser = $state<CurrentUser | null>(null);
+	let messageUnreadCount = $state(0);
 
 	// Visited state tracker to trigger re-sorting when visited status changes
 	let visitedStateTracker = $state(0);
@@ -41,13 +52,11 @@
 	// Create yard sale modal state
 	let showCreateModal = $state(false);
 
-	onMount(async () => {
+	onMount(() => {
 		// Load current user first, which will also load yard sales
-		try {
-			await loadCurrentUser();
-		} catch (err) {
+		loadCurrentUser().catch((err) => {
 			error = err instanceof Error ? err.message : 'Failed to load user data';
-		}
+		});
 
 		// Listen for visited status changes from detail pages
 		const handleVisitedStatusChanged = () => {
@@ -79,6 +88,13 @@
 			// Sync visited status with backend when user is loaded
 			if (currentUser) {
 				await syncVisitedStatus();
+				// Load unread message count
+				try {
+					const result = await getYardSaleUnreadCount();
+					messageUnreadCount = result.unread_count;
+				} catch {
+					// Ignore errors loading unread count
+				}
 			}
 
 			// Load yard sales with visited status after user is loaded
@@ -95,7 +111,7 @@
 
 	async function loadYardSales(showLoading: boolean = true) {
 		if (showLoading) {
-		loading = true;
+			loading = true;
 		}
 		error = null;
 
@@ -180,9 +196,9 @@
 		}
 	}
 
-function goToMarket() {
-    goto('/market');
-}
+	function goToMarket() {
+		goto('/market');
+	}
 
 	// Filter yard sales by search term, city, zip code, and date
 	let filteredYardSales = $derived(
@@ -279,128 +295,204 @@ function goToMarket() {
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<header class="border-b bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+	<header
+		class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-900/80"
+	>
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<div class="py-4 sm:py-6">
-				<!-- Mobile Layout -->
-				<div class="block sm:hidden">
-					<div class="mb-4 flex items-center justify-between">
-						<div class="flex items-center space-x-3">
-							<img
-								src="/icon2.png"
-								alt="Yard Sale Finder Logo"
-								class="h-10 w-10 rounded-lg object-cover"
-							/>
-							<div>
-								<h1 class="text-xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
-								<p class="text-xs text-gray-600 dark:text-gray-300">Discover amazing deals</p>
-							</div>
-						</div>
-					</div>
-
-					<div class="mb-3 flex items-center justify-between">
-						<div class="text-sm font-medium text-gray-700 dark:text-gray-300">
-							{filteredYardSales.length} yard sales found
-						</div>
-					</div>
-
-					<div class="flex space-x-2">
-						<button
-							onclick={handleCreateYardSale}
-							class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-blue-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-						>
-							<FontAwesomeIcon icon="plus" class="mr-1.5 h-4 w-4" />
-							Post New Sale
-						</button>
-                        <button
-                            onclick={goToMarket}
-                            class="inline-flex flex-1 items-center justify-center rounded-lg border border-transparent bg-indigo-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
-                        >
-                            <FontAwesomeIcon icon="store" class="mr-1.5 h-4 w-4" />
-                            Marketplace
-                        </button>
-						{#if currentUser}
-							<button
-								onclick={goToProfile}
-								class="relative inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-								aria-label="View Profile"
-							>
-								<FontAwesomeIcon icon="user" class="h-4 w-4" />
-								{#if $unreadMessageCount > 0}
-									<span
-										class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white"
-									>
-										{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
-									</span>
-								{/if}
-							</button>
-						{/if}
-						<button
-							onclick={handleLogout}
-							aria-label="Logout"
-							class="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-						>
-							<FontAwesomeIcon icon="arrow-right" class="h-4 w-4" />
-						</button>
-					</div>
-				</div>
-
-				<!-- Desktop Layout -->
-				<div class="hidden items-center justify-between sm:flex">
-					<div class="flex items-center space-x-4">
+			<!-- Mobile Layout -->
+			<div class="block sm:hidden">
+				<div class="flex h-16 items-center justify-between">
+					<!-- Logo and Title -->
+					<div class="flex items-center space-x-3">
 						<img
 							src="/icon2.png"
 							alt="Yard Sale Finder Logo"
-							class="h-12 w-12 rounded-lg object-cover"
+							class="h-8 w-8 rounded-lg object-cover"
 						/>
 						<div>
-							<h1 class="text-3xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
-							<p class="mt-1 text-gray-600 dark:text-gray-300">
-								Discover amazing deals in your neighborhood
+							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">Yard Sale Finder</h1>
+							<p class="text-xs text-gray-500 dark:text-gray-400">
+								{filteredYardSales.length} found
 							</p>
 						</div>
 					</div>
 
-					<div class="flex items-center space-x-4">
-						<div class="text-sm text-gray-500 dark:text-gray-400">
-							{filteredYardSales.length} yard sales found
-						</div>
+					<!-- Right side: Menu button and Post button -->
+					<div class="flex items-center gap-2">
+						<!-- Primary Action -->
 						<button
 							onclick={handleCreateYardSale}
-							class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+							class="flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-500/30 active:scale-95"
+						>
+							<FontAwesomeIcon icon="plus" class="h-4 w-4" />
+							<span class="xs:inline ml-1.5 hidden">Post</span>
+						</button>
+
+						<!-- Menu Button -->
+						<button
+							onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+							class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
+							aria-label="Menu"
+						>
+							<FontAwesomeIcon icon={faBars} class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+						</button>
+					</div>
+				</div>
+
+				<!-- Mobile Menu Dropdown -->
+				{#if mobileMenuOpen}
+					<div class="border-t border-gray-200 pt-4 pb-4 dark:border-gray-800">
+						<div class="space-y-1">
+							<button
+								onclick={() => {
+									goToMarket();
+									mobileMenuOpen = false;
+								}}
+								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+							>
+								<FontAwesomeIcon
+									icon={faStore}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
+								Marketplace
+							</button>
+							{#if currentUser}
+								<button
+									onclick={() => {
+										goto('/yard-sale/messages');
+										mobileMenuOpen = false;
+									}}
+									class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+								>
+									<FontAwesomeIcon
+										icon={faMessage}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
+									Messages
+									{#if messageUnreadCount > 0}
+										<span
+											class="ml-auto rounded-full bg-red-500 px-2.5 py-0.5 text-sm font-semibold text-white"
+										>
+											{messageUnreadCount > 99 ? '99+' : messageUnreadCount}
+										</span>
+									{/if}
+								</button>
+								<button
+									onclick={() => {
+										goToProfile();
+										mobileMenuOpen = false;
+									}}
+									class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+								>
+									<FontAwesomeIcon
+										icon={faUser}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
+									My Profile
+									{#if $unreadMessageCount > 0}
+										<span
+											class="ml-auto rounded-full bg-red-500 px-2.5 py-0.5 text-sm font-semibold text-white"
+										>
+											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
+										</span>
+									{/if}
+								</button>
+							{/if}
+							<button
+								onclick={() => {
+									handleLogout();
+									mobileMenuOpen = false;
+								}}
+								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+							>
+								<FontAwesomeIcon icon={faArrowRightFromBracket} class="mr-3 h-5 w-5" />
+								Logout
+							</button>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Desktop Layout -->
+			<div class="hidden sm:block">
+				<div class="flex h-20 items-center justify-between">
+					<!-- Left: Logo and Title -->
+					<div class="flex items-center space-x-4">
+						<img
+							src="/icon2.png"
+							alt="Yard Sale Finder Logo"
+							class="h-12 w-12 rounded-xl object-cover shadow-sm"
+						/>
+						<div>
+							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Yard Sale Finder</h1>
+							<div class="mt-0.5 flex items-center gap-3">
+								<p class="text-sm text-gray-600 dark:text-gray-400">
+									Discover amazing deals in your neighborhood
+								</p>
+								<span class="text-xs text-gray-500 dark:text-gray-500">
+									• {filteredYardSales.length} found
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Right: Actions -->
+					<div class="flex items-center gap-3">
+						<!-- Secondary Actions -->
+						<div class="flex items-center gap-2">
+							<button
+								onclick={goToMarket}
+								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+							>
+								<FontAwesomeIcon icon={faStore} class="mr-2 h-4 w-4" />
+								Marketplace
+							</button>
+							{#if currentUser}
+								<button
+									onclick={() => goto('/yard-sale/messages')}
+									class="relative flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+								>
+									<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+									Messages
+									{#if messageUnreadCount > 0}
+										<span
+											class="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white"
+										>
+											{messageUnreadCount > 99 ? '99+' : messageUnreadCount}
+										</span>
+									{/if}
+								</button>
+								<button
+									onclick={goToProfile}
+									class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
+									aria-label="My Profile"
+								>
+									<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-700 dark:text-gray-200" />
+									{#if $unreadMessageCount > 0}
+										<span
+											class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-semibold text-white dark:border-gray-900"
+										>
+											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
+										</span>
+									{/if}
+								</button>
+							{/if}
+							<button
+								onclick={handleLogout}
+								class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+								aria-label="Logout"
+							>
+								<FontAwesomeIcon icon={faArrowRightFromBracket} class="h-5 w-5" />
+							</button>
+						</div>
+
+						<!-- Primary Action -->
+						<button
+							onclick={handleCreateYardSale}
+							class="flex items-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-500/30 active:scale-95"
 						>
 							<FontAwesomeIcon icon="plus" class="mr-2 h-4 w-4" />
 							Post New Yard Sale
-						</button>
-                        <button
-                            onclick={goToMarket}
-                            class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
-                        >
-                            <FontAwesomeIcon icon="store" class="mr-2 h-4 w-4" />
-                            Marketplace
-                        </button>
-						{#if currentUser}
-							<button
-								onclick={goToProfile}
-								class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-							>
-								<FontAwesomeIcon icon="user" class="mr-2 h-4 w-4" />
-								My Profile
-								{#if $unreadMessageCount > 0}
-									<span
-										class="ml-2 rounded-full bg-red-500 px-2 py-1 text-xs font-medium text-white"
-									>
-										{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
-									</span>
-								{/if}
-							</button>
-						{/if}
-						<button
-							onclick={handleLogout}
-							class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-						>
-							<FontAwesomeIcon icon="arrow-right" class="mr-2 h-4 w-4" />
-							Logout
 						</button>
 					</div>
 				</div>
@@ -582,9 +674,9 @@ function goToMarket() {
 							? 'Try adjusting your search or filters.'
 							: statusFilter === 'visited'
 								? "You haven't visited any yard sales yet. Mark yard sales as visited to see them here."
-							: statusFilter !== 'active'
-								? 'No yard sales found with the selected status filter.'
-								: 'No yard sales are currently active right now. Try changing the status filter to see upcoming, ended, or other yard sales.'}
+								: statusFilter !== 'active'
+									? 'No yard sales found with the selected status filter.'
+									: 'No yard sales are currently active right now. Try changing the status filter to see upcoming, ended, or other yard sales.'}
 					</p>
 				</div>
 			{:else}
