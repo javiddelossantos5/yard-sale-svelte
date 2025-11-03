@@ -41,7 +41,8 @@
 		faHeart,
 		faUser,
 		faArrowRightFromBracket,
-		faChevronLeft
+		faChevronLeft,
+		faChevronRight
 	} from '@fortawesome/free-solid-svg-icons';
 	import { getPaymentMethodIcon } from '$lib/paymentUtils';
 	import { logout } from '$lib/auth';
@@ -86,6 +87,12 @@
 	let showEditModal = $state(false);
 	let showFeaturedImageModal = $state(false);
 	let mobileMenuOpen = $state(false);
+
+	// Image carousel state
+	let currentImageIndex = $state(0);
+	let touchStartX = $state(0);
+	let touchEndX = $state(0);
+	let showAllImages = $state(false);
 
 	// Calculate isOwner reactively
 	let isOwner = $derived(yardSale && currentUserId ? yardSale.owner_id === currentUserId : false);
@@ -429,6 +436,77 @@
 			// Keep the modal open so user can try again or cancel
 		}
 	}
+
+	// Image carousel functions
+	function getDisplayPhotos() {
+		if (!yardSale || !yardSale.photos || yardSale.photos.length === 0) return [];
+
+		const photos = yardSale.photos;
+		const featuredImage = yardSale.featured_image;
+		if (featuredImage && photos.includes(featuredImage)) {
+			// Featured image first, then rest
+			return [featuredImage, ...photos.filter((p) => p !== featuredImage)];
+		}
+		return photos;
+	}
+
+	function nextImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			currentImageIndex = (currentImageIndex + 1) % photos.length;
+		}
+	}
+
+	function previousImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			currentImageIndex = currentImageIndex === 0 ? photos.length - 1 : currentImageIndex - 1;
+		}
+	}
+
+	function goToImage(index: number) {
+		const photos = getDisplayPhotos();
+		if (index >= 0 && index < photos.length) {
+			currentImageIndex = index;
+		}
+	}
+
+	// Touch/swipe handlers
+	function handleTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+	}
+
+	function handleTouchMove(e: TouchEvent) {
+		touchEndX = e.touches[0].clientX;
+	}
+
+	function handleTouchEnd() {
+		if (!touchStartX || !touchEndX) return;
+
+		const distance = touchStartX - touchEndX;
+		const minSwipeDistance = 50;
+
+		if (Math.abs(distance) > minSwipeDistance) {
+			if (distance > 0) {
+				// Swipe left - next image
+				nextImage();
+			} else {
+				// Swipe right - previous image
+				previousImage();
+			}
+		}
+
+		// Reset
+		touchStartX = 0;
+		touchEndX = 0;
+	}
+
+	// Reset carousel when yard sale changes
+	$effect(() => {
+		if (yardSale) {
+			currentImageIndex = 0;
+		}
+	});
 </script>
 
 <svelte:head>
@@ -874,58 +952,108 @@
 							<!-- Image Gallery -->
 							{#if yardSale.photos && yardSale.photos.length > 0}
 								<div class="mb-6 w-full">
-									{#if yardSale.photos.length === 1}
+									{#if getDisplayPhotos().length === 1}
+										{@const displayPhotos = getDisplayPhotos()}
 										<!-- Single Image -->
 										<div class="overflow-hidden rounded-2xl">
 											<img
-												src={getAuthenticatedImageUrl(
-													yardSale.featured_image || yardSale.photos[0]
-												)}
+												src={getAuthenticatedImageUrl(displayPhotos[0])}
 												alt={yardSale.title}
 												class="h-64 w-full object-cover sm:h-80"
 												loading="lazy"
 											/>
 										</div>
 									{:else}
-										<!-- Multiple Images Grid -->
-										{#if yardSale && yardSale.featured_image && yardSale.photos}
-											{@const photos = yardSale.photos}
-											{@const featuredImage = yardSale.featured_image}
-											{@const displayPhotos = [
-												featuredImage,
-												...photos.filter((p) => p !== featuredImage)
-											].slice(0, 4)}
-											<div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
-												{#each displayPhotos as photo, index}
-													<div class="overflow-hidden rounded-2xl">
-														<img
-															src={getAuthenticatedImageUrl(photo)}
-															alt="{yardSale.title} - Image {index + 1}"
-															class="h-32 w-full object-cover sm:h-40"
-															loading="lazy"
-														/>
+										{@const displayPhotos = getDisplayPhotos()}
+										<!-- Mobile: Carousel, Desktop: Grid -->
+										<!-- Mobile Carousel (hidden on desktop) -->
+										<div class="relative block sm:hidden">
+											<!-- Image Container -->
+											<div
+												class="relative overflow-hidden rounded-2xl"
+												ontouchstart={handleTouchStart}
+												ontouchmove={handleTouchMove}
+												ontouchend={handleTouchEnd}
+											>
+												<div
+													class="flex transition-transform duration-300 ease-in-out"
+													style="transform: translateX(-{currentImageIndex * 100}%)"
+												>
+													{#each displayPhotos as photo}
+														<div class="min-w-full">
+															<img
+																src={getAuthenticatedImageUrl(photo)}
+																alt="{yardSale.title} - Image {displayPhotos.indexOf(photo) + 1}"
+																class="h-64 w-full object-cover"
+																loading="lazy"
+															/>
+														</div>
+													{/each}
+												</div>
+
+												<!-- Navigation Buttons -->
+												{#if displayPhotos.length > 1}
+													<!-- Previous Button -->
+													<button
+														onclick={previousImage}
+														class="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+														aria-label="Previous image"
+													>
+														<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
+													</button>
+
+													<!-- Next Button -->
+													<button
+														onclick={nextImage}
+														class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+														aria-label="Next image"
+													>
+														<FontAwesomeIcon icon={faChevronRight} class="h-5 w-5" />
+													</button>
+
+													<!-- Image Indicators (Dots) -->
+													<div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+														{#each displayPhotos as _, index}
+															<button
+																onclick={() => goToImage(index)}
+																class="h-2 rounded-full transition-all {currentImageIndex === index
+																	? 'w-6 bg-white'
+																	: 'w-2 bg-white/50 hover:bg-white/75'}"
+																aria-label="Go to image {index + 1}"
+															></button>
+														{/each}
 													</div>
-												{/each}
-											</div>
-										{:else}
-											{@const displayPhotos = yardSale.photos.slice(0, 4)}
-											<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-												{#each displayPhotos as photo, index}
-													<div class="overflow-hidden rounded-2xl">
-														<img
-															src={getAuthenticatedImageUrl(photo)}
-															alt="{yardSale.title} - Image {index + 1}"
-															class="h-32 w-full object-cover sm:h-40"
-															loading="lazy"
-														/>
+
+													<!-- Image Counter -->
+													<div
+														class="absolute top-3 right-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white dark:bg-white/20"
+													>
+														{currentImageIndex + 1} / {displayPhotos.length}
 													</div>
-												{/each}
+												{/if}
 											</div>
-										{/if}
-										{#if yardSale.photos.length > 4}
-											<p class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
-												+{yardSale.photos.length - 4} more images
-											</p>
+										</div>
+
+										<!-- Desktop Grid (hidden on mobile) -->
+										<div class="hidden sm:grid sm:grid-cols-2 sm:gap-3">
+											{#each showAllImages ? displayPhotos : displayPhotos.slice(0, 4) as photo, index}
+												<div class="overflow-hidden rounded-2xl">
+													<img
+														src={getAuthenticatedImageUrl(photo)}
+														alt="{yardSale.title} - Image {index + 1}"
+														class="h-32 w-full object-cover sm:h-40"
+														loading="lazy"
+													/>
+												</div>
+											{/each}
+										</div>
+										{#if displayPhotos.length > 4}
+											<button
+												onclick={() => (showAllImages = !showAllImages)}
+												class="mt-2 hidden text-center text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 active:scale-95 sm:block dark:text-blue-400 dark:hover:text-blue-300"
+											>
+												{showAllImages ? 'Show Less' : `+${displayPhotos.length - 4} more images`}
+											</button>
 										{/if}
 									{/if}
 								</div>
