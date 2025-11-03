@@ -14,6 +14,7 @@
 		username: '',
 		email: '',
 		password: '',
+		password_confirm: '',
 		full_name: '',
 		location: {
 			city: '',
@@ -121,12 +122,19 @@
 			!registerData.username.trim() ||
 			!registerData.email.trim() ||
 			!registerData.password.trim() ||
+			!registerData.password_confirm.trim() ||
 			!registerData.full_name.trim() ||
 			!registerData.location.city.trim() ||
 			!registerData.location.state.trim() ||
 			!registerData.location.zip.trim()
 		) {
 			error = 'Please fill in all required fields';
+			return;
+		}
+
+		// Password confirmation validation
+		if (registerData.password !== registerData.password_confirm) {
+			error = 'Passwords do not match';
 			return;
 		}
 
@@ -151,7 +159,12 @@
 				success = null;
 			}, 3000);
 		} catch (err) {
-			error = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+			// Handle 422 validation errors (e.g., password mismatch)
+			if (err instanceof Error && (err as any).status === 422) {
+				error = err.message || 'Validation error. Please check your input.';
+			} else {
+				error = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+			}
 		} finally {
 			loading = false;
 		}
@@ -168,6 +181,7 @@
 			username: '',
 			email: '',
 			password: '',
+			password_confirm: '',
 			full_name: '',
 			location: {
 				city: '',
@@ -415,6 +429,34 @@
 								placeholder="Enter your password"
 								disabled={loading}
 							/>
+						</div>
+					</div>
+
+					<!-- Confirm Password Field -->
+					<div>
+						<label
+							for="reg-password-confirm"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+						>
+							Confirm Password *
+						</label>
+						<div>
+							<input
+								id="reg-password-confirm"
+								name="password_confirm"
+								type="password"
+								autocomplete="new-password"
+								required
+								bind:value={registerData.password_confirm}
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 {registerData.password && registerData.password_confirm && registerData.password !== registerData.password_confirm ? 'ring-red-500 focus:ring-red-500' : ''}"
+								placeholder="Re-enter your password"
+								disabled={loading}
+							/>
+							{#if registerData.password && registerData.password_confirm && registerData.password !== registerData.password_confirm}
+								<p class="mt-1 text-sm text-red-600 dark:text-red-400">
+									Passwords do not match
+								</p>
+							{/if}
 						</div>
 					</div>
 

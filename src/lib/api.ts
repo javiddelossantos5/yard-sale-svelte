@@ -503,6 +503,7 @@ export interface RegisterRequest {
 	username: string;
 	email: string;
 	password: string;
+	password_confirm: string;
 	full_name: string;
 	location: {
 		city: string;
@@ -527,7 +528,18 @@ export async function register(userData: RegisterRequest): Promise<RegisterRespo
 	});
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
-		throw new Error(errorData.detail || 'Registration failed');
+		// For 422 validation errors, extract the error message(s)
+		if (response.status === 422 && errorData.detail) {
+			const errorMessage = Array.isArray(errorData.detail)
+				? errorData.detail.map((d: any) => d.msg || JSON.stringify(d)).join(', ')
+				: typeof errorData.detail === 'string'
+					? errorData.detail
+					: JSON.stringify(errorData.detail);
+			const error = new Error(errorMessage);
+			(error as any).status = 422;
+			throw error;
+		}
+		throw new Error(errorData.detail || errorData.message || 'Registration failed');
 	}
 	return response.json();
 }
