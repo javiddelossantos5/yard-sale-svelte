@@ -178,13 +178,8 @@
 	}
 
 	function handleViewMessages() {
-		showMessagesList = true;
-		loadMessages(); // Load messages when opening the list
-		loadNotificationCounts(); // Load notification counts to sync unread counts
-	}
-
-	function handleCloseMessagesList() {
-		showMessagesList = false;
+		// Navigate to unified messages inbox
+		goto('/messages');
 	}
 
 	async function handleMessageClick(message: Message) {

@@ -31,7 +31,8 @@
 		faMessage,
 		faPaperPlane,
 		faUser,
-		faTrash
+		faTrash,
+		faStar
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
@@ -296,6 +297,22 @@
 							{item.name}
 						</h1>
 						<p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
+
+						<!-- Seller Information -->
+						<div class="mt-3">
+							<button
+								onclick={() => goto(`/profile/${item.owner_id}`)}
+								class="flex items-center rounded-full bg-gray-100/60 px-3 py-2 text-sm text-gray-700 transition-all duration-300 hover:bg-blue-100/60 hover:text-blue-700 dark:bg-gray-700/60 dark:text-gray-200 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
+							>
+								<div
+									class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600"
+								>
+									<FontAwesomeIcon icon={faUser} class="h-3 w-3 text-white" />
+								</div>
+								<span class="font-semibold">by {item.owner_username}</span>
+							</button>
+						</div>
+
 						{#if item.created_at}
 							<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 								Posted {getDaysAgo(item.created_at)}

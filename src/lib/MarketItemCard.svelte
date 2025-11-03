@@ -4,7 +4,16 @@
 	import { getAuthenticatedImageUrl } from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
-	import { faCommentDots, faEnvelope, faHandshake, faMoneyBillWave, faPhone, faTag } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faCommentDots,
+		faEnvelope,
+		faHandshake,
+		faMoneyBillWave,
+		faPhone,
+		faTag,
+		faUser,
+		faStar
+	} from '@fortawesome/free-solid-svg-icons';
 
 	let { item, hideStatusBadge = false }: { item: MarketItem; hideStatusBadge?: boolean } = $props();
 
@@ -21,7 +30,7 @@
 			const now = new Date();
 			const diffTime = Math.abs(now.getTime() - date.getTime());
 			const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-			
+
 			if (diffDays === 0) return 'today';
 			if (diffDays === 1) return '1 day ago';
 			return `${diffDays} days ago`;
@@ -93,7 +102,8 @@
 			<!-- Status Badge -->
 			{#if !hideStatusBadge}
 				<div
-					class="rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md {item.status === 'sold'
+					class="rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md {item.status ===
+					'sold'
 						? 'bg-red-600/90 text-white'
 						: item.status === 'hidden'
 							? 'bg-gray-600/90 text-white'
@@ -119,7 +129,9 @@
 	<!-- Content Section -->
 	<div class="p-4">
 		<!-- Title and Description -->
-		<h3 class="mb-1.5 line-clamp-1 text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+		<h3
+			class="mb-1.5 line-clamp-1 text-lg font-semibold tracking-tight text-gray-900 dark:text-white"
+		>
 			{item.name}
 		</h3>
 		{#if item.description}
@@ -127,6 +139,24 @@
 				{item.description}
 			</p>
 		{/if}
+
+		<!-- Seller Information -->
+		<div class="mb-2">
+			<button
+				onclick={(e) => {
+					e.stopPropagation();
+					goto(`/profile/${item.owner_id}`);
+				}}
+				class="flex items-center rounded-full bg-gray-100/60 px-2.5 py-1.5 text-xs text-gray-700 transition-all duration-300 hover:bg-blue-100/60 hover:text-blue-700 dark:bg-gray-700/60 dark:text-gray-200 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
+			>
+				<div
+					class="mr-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600"
+				>
+					<FontAwesomeIcon icon={faUser} class="h-2.5 w-2.5 text-white" />
+				</div>
+				<span class="font-semibold">by {item.owner_username}</span>
+			</button>
+		</div>
 
 		<!-- Posted Date -->
 		{#if item.created_at}
@@ -161,7 +191,9 @@
 		<!-- Savings Info (if price reduced) -->
 		{#if item.price_reduced && item.price_reduction_amount && item.price_reduction_percentage}
 			<p class="mb-3 text-xs font-medium text-red-600 dark:text-red-400">
-				Save ${formatPrice(item.price_reduction_amount)} ({item.price_reduction_percentage.toFixed(0)}% off)
+				Save ${formatPrice(item.price_reduction_amount)} ({item.price_reduction_percentage.toFixed(
+					0
+				)}% off)
 			</p>
 		{/if}
 
