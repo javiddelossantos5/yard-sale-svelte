@@ -25,11 +25,15 @@
 		faBars,
 		faStore,
 		faUser,
-		faArrowRightFromBracket
+		faArrowRightFromBracket,
+		faFilter,
+		faChevronDown,
+		faChevronUp
 	} from '@fortawesome/free-solid-svg-icons';
 	import { unreadMessageCount } from '$lib/notifications';
 
 	let mobileMenuOpen = $state(false);
+	let filtersExpanded = $state(false);
 
 	let yardSales = $state<YardSale[]>([]);
 	let loading = $state(true);
@@ -37,6 +41,7 @@
 	let searchTerm = $state('');
 	let selectedCity = $state('');
 	let selectedDate = $state('');
+	let selectedCategory = $state('');
 	let statusFilter = $state('active');
 	let zipCodeSearch = $state('');
 	let currentUser = $state<CurrentUser | null>(null);
@@ -48,6 +53,26 @@
 
 	// Get unique cities for filters
 	let cities = $state<string[]>([]);
+
+	// Available categories
+	const categories = [
+		'Furniture',
+		'Electronics',
+		'Clothing',
+		'Books',
+		'Toys',
+		'Kitchen Items',
+		'Tools',
+		'Sports Equipment',
+		'Art & Decor',
+		'Garden Items',
+		'Antiques',
+		'Collectibles',
+		'Jewelry',
+		'Home Improvement',
+		'Automotive',
+		'Other'
+	];
 
 	// Create yard sale modal state
 	let showCreateModal = $state(false);
@@ -159,6 +184,7 @@
 	function clearFilters() {
 		selectedCity = '';
 		selectedDate = '';
+		selectedCategory = '';
 		zipCodeSearch = '';
 		searchTerm = '';
 		statusFilter = 'active';
@@ -222,6 +248,10 @@
 				// Date filter - show yard sales that are active on the selected date
 				const matchesDate = !selectedDate || isYardSaleActiveOnDate(sale, selectedDate);
 
+				// Category filter - check if any of the yard sale's categories match the selected category
+				const matchesCategory =
+					!selectedCategory || sale.categories.some((cat) => cat === selectedCategory);
+
 				// Status filter: filter by selected status option
 				const status = getYardSaleStatus(sale);
 				let matchesStatus = false;
@@ -252,7 +282,14 @@
 						matchesStatus = status === 'active' && !isYardSaleVisited(sale.id, sale);
 				}
 
-				return matchesSearch && matchesCity && matchesZipCode && matchesDate && matchesStatus;
+				return (
+					matchesSearch &&
+					matchesCity &&
+					matchesZipCode &&
+					matchesDate &&
+					matchesCategory &&
+					matchesStatus
+				);
 			})
 			.sort((a, b) => {
 				// Access visitedStateTracker to make this derived state reactive to visited changes
@@ -503,116 +540,165 @@
 	<!-- Search and Filters -->
 	<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 		<div
-			class="mb-6 rounded-lg bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+			class="mb-6 rounded-xl bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:bg-gray-800/80 dark:ring-1 dark:ring-gray-700"
 		>
-			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
-				<!-- Search -->
-				<div class="md:col-span-2">
-					<label
-						for="search"
-						class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+			<!-- Search Bar - Always Visible -->
+			<div class="mb-4">
+				<div class="flex items-center gap-3">
+					<div class="flex-1">
+						<input
+							id="search"
+							type="text"
+							bind:value={searchTerm}
+							placeholder="Search yard sales..."
+							class="w-full rounded-xl border-0 bg-gray-50 px-4 py-2.5 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+						/>
+					</div>
+					<button
+						onclick={() => (filtersExpanded = !filtersExpanded)}
+						class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 {selectedCity ||
+						zipCodeSearch ||
+						selectedDate ||
+						selectedCategory ||
+						statusFilter !== 'active'
+							? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
+							: ''}"
 					>
-						Search
-					</label>
-					<input
-						id="search"
-						type="text"
-						bind:value={searchTerm}
-						placeholder="Search by title, description, city, or category..."
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-400 dark:focus:ring-blue-400"
-					/>
-				</div>
-
-				<!-- Zip Code Filter -->
-				<div>
-					<label
-						for="zipCode"
-						class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-					>
-						Zip Code
-					</label>
-					<input
-						type="text"
-						id="zipCode"
-						bind:value={zipCodeSearch}
-						oninput={handleZipCodeChange}
-						placeholder="Enter zip code..."
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
-					/>
-				</div>
-
-				<!-- City Filter -->
-				<div>
-					<label for="city" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-						City
-					</label>
-					<select
-						id="city"
-						bind:value={selectedCity}
-						onchange={handleCityChange}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
-					>
-						<option value="">All Cities</option>
-						{#each cities as city}
-							<option value={city}>{city}</option>
-						{/each}
-					</select>
-				</div>
-
-				<!-- Date Filter -->
-				<div>
-					<label for="date" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-						Date
-					</label>
-					<input
-						id="date"
-						type="date"
-						bind:value={selectedDate}
-						onchange={handleDateChange}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
-					/>
-				</div>
-
-				<!-- Status Filter -->
-				<div>
-					<label
-						for="status"
-						class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-					>
-						Status
-					</label>
-					<select
-						id="status"
-						bind:value={statusFilter}
-						class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400 dark:focus:ring-blue-400"
-					>
-						<option value="active">Active Now</option>
-						<option value="upcoming">Upcoming</option>
-						<option value="ended">Ended</option>
-						<option value="on_break">On Break</option>
-						<option value="visited">Already Visited</option>
-						<option value="all">All Statuses</option>
-					</select>
+						<FontAwesomeIcon icon={faFilter} class="h-4 w-4" />
+						<span class="hidden sm:inline">Filters</span>
+						<FontAwesomeIcon icon={filtersExpanded ? faChevronUp : faChevronDown} class="h-3 w-3" />
+					</button>
 				</div>
 			</div>
 
-			<!-- Clear Filters -->
-			{#if selectedCity || zipCodeSearch || selectedDate || statusFilter !== 'active'}
-				<div class="mt-4">
-					<button
-						onclick={clearFilters}
-						class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm leading-4 font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-					>
-						<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M6 18L18 6M6 6l12 12"
-							></path>
-						</svg>
-						Clear Filters
-					</button>
+			<!-- Filter Options - Collapsible -->
+			{#if filtersExpanded}
+				<div class="border-t border-gray-200 pt-4 dark:border-gray-700">
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+						<!-- Zip Code Filter -->
+						<div>
+							<label
+								for="zipCode"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Zip Code
+							</label>
+							<input
+								type="text"
+								id="zipCode"
+								bind:value={zipCodeSearch}
+								oninput={handleZipCodeChange}
+								placeholder="Zip code..."
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							/>
+						</div>
+
+						<!-- City Filter -->
+						<div>
+							<label
+								for="city"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								City
+							</label>
+							<select
+								id="city"
+								bind:value={selectedCity}
+								onchange={handleCityChange}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="">All Cities</option>
+								{#each cities as city}
+									<option value={city}>{city}</option>
+								{/each}
+							</select>
+						</div>
+
+						<!-- Date Filter -->
+						<div>
+							<label
+								for="date"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Date
+							</label>
+							<input
+								id="date"
+								type="date"
+								bind:value={selectedDate}
+								onchange={handleDateChange}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							/>
+						</div>
+
+						<!-- Category Filter -->
+						<div>
+							<label
+								for="category"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Category
+							</label>
+							<select
+								id="category"
+								bind:value={selectedCategory}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="">All Categories</option>
+								{#each categories as category}
+									<option value={category}>{category}</option>
+								{/each}
+							</select>
+						</div>
+
+						<!-- Status Filter -->
+						<div>
+							<label
+								for="status"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Status
+							</label>
+							<select
+								id="status"
+								bind:value={statusFilter}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="active">Active Now</option>
+								<option value="upcoming">Upcoming</option>
+								<option value="ended">Ended</option>
+								<option value="on_break">On Break</option>
+								<option value="visited">Already Visited</option>
+								<option value="all">All Statuses</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Active Filters Indicator and Clear Button -->
+					{#if selectedCity || zipCodeSearch || selectedDate || selectedCategory || statusFilter !== 'active'}
+						<div
+							class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700"
+						>
+							<div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+								<FontAwesomeIcon icon={faFilter} class="h-3 w-3" />
+								<span>Filters applied</span>
+							</div>
+							<button
+								onclick={clearFilters}
+								class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+							>
+								<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M6 18L18 6M6 6l12 12"
+									></path>
+								</svg>
+								Clear All
+							</button>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>
