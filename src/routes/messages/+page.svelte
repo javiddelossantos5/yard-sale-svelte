@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import {
 		getYardSaleConversations,
 		getMarketItemConversations,
@@ -35,7 +36,23 @@
 	let yardSaleUnreadCount = $state(0);
 	let marketItemUnreadCount = $state(0);
 	let currentUser = $state<CurrentUser | null>(null);
-	let activeTab = $state<'all' | 'yard-sales' | 'market'>('all');
+	
+	// Initialize activeTab from URL query parameter
+	let activeTab = $state<'all' | 'yard-sales' | 'market'>(() => {
+		const tabParam = $page.url.searchParams.get('tab');
+		if (tabParam === 'yard-sales' || tabParam === 'market' || tabParam === 'all') {
+			return tabParam;
+		}
+		return 'all';
+	});
+
+	// React to URL changes
+	$effect(() => {
+		const tabParam = $page.url.searchParams.get('tab');
+		if (tabParam === 'yard-sales' || tabParam === 'market' || tabParam === 'all') {
+			activeTab = tabParam;
+		}
+	});
 
 	async function load() {
 		loading = true;
@@ -354,7 +371,10 @@
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 			<div class="flex gap-2">
 				<button
-					onclick={() => (activeTab = 'all')}
+					onclick={() => {
+						activeTab = 'all';
+						goto('/messages?tab=all', { replaceState: true, noScroll: true });
+					}}
 					class="border-b-2 px-4 py-3 text-sm font-semibold transition-colors {activeTab === 'all'
 						? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
 						: 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'}"
@@ -362,7 +382,10 @@
 					All ({yardSaleConversations.length + marketItemConversations.length})
 				</button>
 				<button
-					onclick={() => (activeTab = 'yard-sales')}
+					onclick={() => {
+						activeTab = 'yard-sales';
+						goto('/messages?tab=yard-sales', { replaceState: true, noScroll: true });
+					}}
 					class="relative border-b-2 px-4 py-3 text-sm font-semibold transition-colors {activeTab ===
 					'yard-sales'
 						? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
@@ -378,7 +401,10 @@
 					{/if}
 				</button>
 				<button
-					onclick={() => (activeTab = 'market')}
+					onclick={() => {
+						activeTab = 'market';
+						goto('/messages?tab=market', { replaceState: true, noScroll: true });
+					}}
 					class="relative border-b-2 px-4 py-3 text-sm font-semibold transition-colors {activeTab ===
 					'market'
 						? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
