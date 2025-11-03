@@ -12,12 +12,12 @@
 		type CurrentUser
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faChevronLeft, faPaperPlane, faUser } from '@fortawesome/free-solid-svg-icons';
+	import { faChevronLeft, faPaperPlane, faUser, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 	const conversationId = $derived($page.params.id);
 
 	let messages = $state<Message[]>([]);
-	let conversation = $state<{ yard_sale_title?: string } | null>(null);
+	let conversation = $state<{ yard_sale_title?: string; yard_sale_id?: string } | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let newMessage = $state('');
@@ -38,10 +38,13 @@
 			messages = msgs;
 			currentUser = user;
 			
-			// Find the conversation to get yard sale title
+			// Find the conversation to get yard sale title and ID
 			const conv = convs.find((c) => c.id === conversationId);
 			if (conv) {
-				conversation = { yard_sale_title: conv.yard_sale_title };
+				conversation = {
+					yard_sale_title: conv.yard_sale_title,
+					yard_sale_id: conv.yard_sale_id
+				};
 			}
 
 			// Mark unread messages as read
@@ -121,18 +124,35 @@
 <div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
 	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80">
-		<div class="flex items-center gap-3 px-4 py-4">
-			<button
-				onclick={() => goto('/yard-sale/messages')}
-				class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-				aria-label="Back to messages"
-			>
-				<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
-			</button>
-			<div>
-				<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-					{conversation?.yard_sale_title || 'Conversation'}
-				</h1>
+		<div class="mx-auto max-w-4xl px-4 py-4">
+			<div class="flex items-center gap-3">
+				<button
+					onclick={() => goto('/yard-sale/messages')}
+					class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+					aria-label="Back to messages"
+				>
+					<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
+				</button>
+				<div class="flex-1">
+				{#if conversation?.yard_sale_id}
+					<button
+						onclick={() => goto(`/yard-sale/${conversation.yard_sale_id}`)}
+						class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+					>
+						<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+							{conversation.yard_sale_title || 'Conversation'}
+						</h1>
+						<FontAwesomeIcon
+							icon={faArrowRight}
+							class="h-3 w-3 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
+						/>
+					</button>
+				{:else}
+					<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+						{conversation?.yard_sale_title || 'Conversation'}
+					</h1>
+				{/if}
+				</div>
 			</div>
 		</div>
 	</div>

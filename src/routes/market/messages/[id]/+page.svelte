@@ -12,12 +12,17 @@
 		type CurrentUser
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faChevronLeft, faPaperPlane, faUser } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faChevronLeft,
+		faPaperPlane,
+		faUser,
+		faArrowRight
+	} from '@fortawesome/free-solid-svg-icons';
 
 	const conversationId = $derived($page.params.id);
 
 	let messages = $state<MarketItemMessage[]>([]);
-	let conversation = $state<{ item_name?: string } | null>(null);
+	let conversation = $state<{ item_name?: string; item_id?: string } | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let newMessage = $state('');
@@ -37,17 +42,18 @@
 			]);
 			messages = msgs;
 			currentUser = user;
-			
-			// Find the conversation to get item name
+
+			// Find the conversation to get item name and ID
 			const conv = convs.find((c) => c.id === conversationId);
 			if (conv) {
-				conversation = { item_name: conv.item_name };
+				conversation = {
+					item_name: conv.item_name,
+					item_id: conv.item_id
+				};
 			}
 
 			// Mark unread messages as read
-			const unreadMessages = msgs.filter(
-				(m) => !m.is_read && m.recipient_id === user?.id
-			);
+			const unreadMessages = msgs.filter((m) => !m.is_read && m.recipient_id === user?.id);
 			for (const msg of unreadMessages) {
 				try {
 					await markMarketItemMessageRead(msg.id);
@@ -72,7 +78,10 @@
 		sending = true;
 		error = null;
 		try {
-			const sentMessage = await sendMarketItemConversationMessage(conversationId, newMessage.trim());
+			const sentMessage = await sendMarketItemConversationMessage(
+				conversationId,
+				newMessage.trim()
+			);
 			messages = [...messages, sentMessage];
 			newMessage = '';
 			// Scroll to bottom
@@ -118,21 +127,45 @@
 	const isMyMessage = (message: MarketItemMessage) =>
 		currentUser && message.sender_id === currentUser.id;
 </script>
+
 <div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80">
-		<div class="flex items-center gap-3 px-4 py-4">
-			<button
-				onclick={() => goto('/market/messages')}
-				class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-				aria-label="Back to messages"
-			>
-				<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
-			</button>
-			<div>
-				<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-					{conversation?.item_name || 'Conversation'}
-				</h1>
+	<div
+		class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
+	>
+		<div class="mx-auto max-w-4xl px-4 py-4">
+			<div class="flex items-center gap-3">
+				<button
+					onclick={() => goto('/market/messages')}
+					class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+					aria-label="Back to messages"
+				>
+					<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
+				</button>
+				<div class="flex-1">
+					{#if conversation?.item_id}
+						<button
+							onclick={() => {
+								if (conversation?.item_id) {
+									goto(`/market/${conversation.item_id}`);
+								}
+							}}
+							class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+						>
+							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+								{conversation.item_name || 'Conversation'}
+							</h1>
+							<FontAwesomeIcon
+								icon={faArrowRight}
+								class="h-3 w-3 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
+							/>
+						</button>
+					{:else}
+						<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+							{conversation?.item_name || 'Conversation'}
+						</h1>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -143,7 +176,9 @@
 				<p class="text-sm text-gray-500 dark:text-gray-400">Loading messages...</p>
 			</div>
 		{:else if error}
-			<div class="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+			<div
+				class="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+			>
 				{error}
 			</div>
 		{:else if messages.length === 0}
@@ -153,13 +188,11 @@
 		{:else}
 			<div class="mx-auto max-w-3xl space-y-4">
 				{#each messages as message}
-					<div
-						class="flex gap-3 {isMyMessage(message)
-							? 'flex-row-reverse'
-							: 'flex-row'}"
-					>
+					<div class="flex gap-3 {isMyMessage(message) ? 'flex-row-reverse' : 'flex-row'}">
 						<div
-							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {isMyMessage(message)
+							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {isMyMessage(
+								message
+							)
 								? 'bg-blue-600 text-white'
 								: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}"
 						>
@@ -189,10 +222,14 @@
 	</div>
 
 	<!-- Message Input -->
-	<div class="border-t border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80">
+	<div
+		class="border-t border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
+	>
 		<div class="mx-auto max-w-3xl px-4 py-4">
 			{#if error}
-				<div class="mb-3 rounded-lg bg-red-50 p-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400">
+				<div
+					class="mb-3 rounded-lg bg-red-50 p-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400"
+				>
 					{error}
 				</div>
 			{/if}
@@ -221,4 +258,3 @@
 		</div>
 	</div>
 </div>
-

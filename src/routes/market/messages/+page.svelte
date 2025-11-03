@@ -9,7 +9,12 @@
 		type CurrentUser
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faChevronLeft, faEnvelope, faMessage } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faChevronLeft,
+		faEnvelope,
+		faMessage,
+		faArrowRight
+	} from '@fortawesome/free-solid-svg-icons';
 
 	let conversations = $state<MarketItemConversation[]>([]);
 	let loading = $state(true);
@@ -138,9 +143,17 @@
 		{:else}
 			<div class="space-y-2">
 				{#each conversations as conv}
-					<button
+					<div
 						onclick={() => goto(`/market/messages/${conv.id}`)}
-						class="group w-full rounded-xl bg-white p-4 text-left shadow-sm ring-1 ring-gray-200 transition hover:shadow-md dark:bg-gray-800 dark:ring-gray-700"
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								goto(`/market/messages/${conv.id}`);
+							}
+						}}
+						role="button"
+						tabindex="0"
+						class="group w-full cursor-pointer rounded-xl bg-white p-4 text-left shadow-sm ring-1 ring-gray-200 transition hover:shadow-md dark:bg-gray-800 dark:ring-gray-700"
 					>
 						<div class="flex items-start gap-3">
 							<div
@@ -151,9 +164,34 @@
 							<div class="min-w-0 flex-1">
 								<div class="flex items-start justify-between gap-2">
 									<div class="min-w-0 flex-1">
-										<p class="truncate font-semibold text-gray-900 dark:text-white">
-											{conv.item_name || 'Unknown Item'}
-										</p>
+										<span
+											onclick={(e) => {
+												e.stopPropagation();
+												if (conv.item_id) {
+													goto(`/market/${conv.item_id}`);
+												}
+											}}
+											onkeydown={(e) => {
+												if (e.key === 'Enter' || e.key === ' ') {
+													e.preventDefault();
+													e.stopPropagation();
+													if (conv.item_id) {
+														goto(`/market/${conv.item_id}`);
+													}
+												}
+											}}
+											class="title-link inline-flex cursor-pointer items-center gap-2 truncate font-semibold text-gray-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
+											role="button"
+											tabindex="0"
+										>
+											<span class="truncate">{conv.item_name || 'Unknown Item'}</span>
+											{#if conv.item_id}
+												<FontAwesomeIcon
+													icon={faArrowRight}
+													class="title-link-icon h-3 w-3 shrink-0 text-gray-400 transition dark:text-gray-500"
+												/>
+											{/if}
+										</span>
 										<p class="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
 											with {getOtherParticipant(conv)}
 										</p>
@@ -181,9 +219,19 @@
 								{/if}
 							</div>
 						</div>
-					</button>
+					</div>
 				{/each}
 			</div>
 		{/if}
 	</div>
 </div>
+
+<style>
+	:global(.title-link:hover .title-link-icon) {
+		color: rgb(37 99 235); /* blue-600 */
+	}
+
+	:global(.dark .title-link:hover .title-link-icon) {
+		color: rgb(96 165 250); /* blue-400 */
+	}
+</style>
