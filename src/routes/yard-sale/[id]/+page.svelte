@@ -17,6 +17,7 @@
 	import MessageModal from '$lib/MessageModal.svelte';
 	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
+	import FeaturedImageModal from '$lib/FeaturedImageModal.svelte';
 	import { getAccessToken } from '$lib/auth';
 	import {
 		getYardSaleStatus,
@@ -28,6 +29,7 @@
 	import { isYardSaleVisited, toggleYardSaleVisited } from '$lib/visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
+	import { faStar } from '@fortawesome/free-solid-svg-icons';
 	import { getPaymentMethodIcon } from '$lib/paymentUtils';
 
 	let yardSale = $state<YardSale | null>(null);
@@ -64,6 +66,7 @@
 
 	// Edit modal state
 	let showEditModal = $state(false);
+	let showFeaturedImageModal = $state(false);
 	let isOwner = $state(false);
 
 	// Debug: Watch for changes in isOwner
@@ -327,6 +330,21 @@
 
 	async function handleEditSuccess() {
 		// Reload yard sale data after successful edit
+		await loadYardSale();
+	}
+
+	function handleSetFeaturedImage() {
+		requireAuth(() => {
+			showFeaturedImageModal = true;
+		});
+	}
+
+	function handleCloseFeaturedImageModal() {
+		showFeaturedImageModal = false;
+	}
+
+	async function handleFeaturedImageSuccess() {
+		showFeaturedImageModal = false;
 		await loadYardSale();
 	}
 
@@ -660,6 +678,15 @@
 										</svg>
 										Edit
 									</button>
+									{#if yardSale.photos && yardSale.photos.length > 0}
+										<button
+											onclick={handleSetFeaturedImage}
+											class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+										>
+											<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4" />
+											Set Featured Image
+										</button>
+									{/if}
 									<button
 										onclick={handleDeleteYardSale}
 										class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-red-200 bg-white px-6 py-3 text-sm font-medium text-red-700 transition-all hover:bg-red-50 active:scale-95 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
@@ -1248,6 +1275,16 @@
 			otherUsername={isOwner ? 'You' : yardSale.owner_username}
 			currentUserId={(currentUserId || '') as any}
 			onClose={handleCloseMessageModal}
+		/>
+	{/if}
+
+	<!-- Featured Image Modal -->
+	{#if yardSale && showFeaturedImageModal}
+		<FeaturedImageModal
+			isOpen={showFeaturedImageModal}
+			yardSaleId={yardSale.id}
+			onClose={handleCloseFeaturedImageModal}
+			onSuccess={handleFeaturedImageSuccess}
 		/>
 	{/if}
 

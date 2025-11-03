@@ -623,6 +623,114 @@ export async function deleteYardSale(id: string): Promise<void> {
 	}
 }
 
+// Featured Image Interfaces
+export interface SetFeaturedImageRequest {
+	image_url?: string;
+	image_key?: string;
+	photo_index?: number;
+}
+
+export interface FeaturedImageResponse {
+	message: string;
+	featured_image: string;
+}
+
+export interface YardSaleImagesResponse {
+	featured_image: string | null;
+	photos: string[];
+	uploaded_images: string[];
+	all_images: string[];
+}
+
+// Get available images for a yard sale
+export async function getYardSaleImages(yardSaleId: string): Promise<YardSaleImagesResponse> {
+	const token = localStorage.getItem('access_token');
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/images`, {
+		headers: token
+			? {
+					Authorization: `Bearer ${token}`
+				}
+			: {}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch yard sale images');
+	}
+
+	return response.json();
+}
+
+// Set featured image for a yard sale
+export async function setYardSaleFeaturedImage(
+	yardSaleId: string,
+	request: SetFeaturedImageRequest
+): Promise<FeaturedImageResponse> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	console.log('Calling API:', `/api/yard-sales/${yardSaleId}/featured-image`, request);
+
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/featured-image`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(request)
+	});
+
+	console.log('Response status:', response.status);
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		const errorText = await response.text();
+		console.error('Error response:', errorText);
+		let error;
+		try {
+			error = JSON.parse(errorText);
+		} catch {
+			error = { detail: errorText || 'Failed to set featured image' };
+		}
+		throw new Error(error.detail || error.message || 'Failed to set featured image');
+	}
+
+	return response.json();
+}
+
+// Remove featured image from a yard sale
+export async function removeYardSaleFeaturedImage(yardSaleId: string): Promise<void> {
+	const token = localStorage.getItem('access_token');
+	const response = await fetch(`/api/yard-sales/${yardSaleId}/featured-image`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error('Failed to remove featured image');
+	}
+}
+
 export interface CurrentUser {
 	id: string;
 	username: string;
