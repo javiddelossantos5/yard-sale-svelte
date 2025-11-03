@@ -1188,22 +1188,44 @@ export interface MarketItemCreate {
 	contact_email?: string | null;
 }
 
+// Paginated response interface
+export interface MarketItemsResponse {
+	items: MarketItem[];
+	total: number;
+	limit: number;
+	offset: number;
+	has_more: boolean;
+}
+
 // Listing/search
 export async function getMarketItems(
 	params: {
-		name?: string;
+		search?: string;
 		category?: string;
 		min_price?: number;
 		max_price?: number;
-		status?: 'active' | 'sold' | 'hidden';
+		status?: 'active' | 'sold' | 'hidden' | 'all';
+		accepts_best_offer?: boolean;
+		price_reduced?: boolean;
+		limit?: number;
+		offset?: number;
+		sort_by?: 'price' | 'created_at' | 'price_reduction_percentage' | 'name';
+		sort_order?: 'asc' | 'desc';
 	} = {}
-): Promise<MarketItem[]> {
+): Promise<MarketItemsResponse> {
 	const query = new URLSearchParams();
-	if (params.name) query.set('name', params.name);
+	if (params.search) query.set('search', params.search);
 	if (params.category) query.set('category', params.category);
 	if (params.min_price != null) query.set('min_price', String(params.min_price));
 	if (params.max_price != null) query.set('max_price', String(params.max_price));
 	if (params.status) query.set('status', params.status);
+	if (params.accepts_best_offer !== undefined)
+		query.set('accepts_best_offer', String(params.accepts_best_offer));
+	if (params.price_reduced !== undefined) query.set('price_reduced', String(params.price_reduced));
+	if (params.limit != null) query.set('limit', String(params.limit));
+	if (params.offset != null) query.set('offset', String(params.offset));
+	if (params.sort_by) query.set('sort_by', params.sort_by);
+	if (params.sort_order) query.set('sort_order', params.sort_order);
 	const token = localStorage.getItem('access_token');
 	const res = await fetch(`/api/market-items${query.toString() ? `?${query}` : ''}`, {
 		headers: token ? { Authorization: `Bearer ${token}` } : undefined
@@ -1352,14 +1374,31 @@ export async function unwatchMarketItem(itemId: string): Promise<void> {
 }
 
 export async function getWatchedItems(params?: {
-	status?: 'active' | 'sold' | 'hidden';
+	search?: string;
+	category?: string;
+	min_price?: number;
+	max_price?: number;
+	status?: 'active' | 'sold' | 'hidden' | 'all';
+	accepts_best_offer?: boolean;
+	price_reduced?: boolean;
 	limit?: number;
 	offset?: number;
-}): Promise<MarketItem[]> {
+	sort_by?: 'price' | 'created_at' | 'price_reduction_percentage' | 'name';
+	sort_order?: 'asc' | 'desc';
+}): Promise<MarketItemsResponse | MarketItem[]> {
 	const query = new URLSearchParams();
+	if (params?.search) query.set('search', params.search);
+	if (params?.category) query.set('category', params.category);
+	if (params?.min_price != null) query.set('min_price', String(params.min_price));
+	if (params?.max_price != null) query.set('max_price', String(params.max_price));
 	if (params?.status) query.set('status', params.status);
+	if (params?.accepts_best_offer !== undefined)
+		query.set('accepts_best_offer', String(params.accepts_best_offer));
+	if (params?.price_reduced !== undefined) query.set('price_reduced', String(params.price_reduced));
 	if (params?.limit != null) query.set('limit', String(params.limit));
 	if (params?.offset != null) query.set('offset', String(params.offset));
+	if (params?.sort_by) query.set('sort_by', params.sort_by);
+	if (params?.sort_order) query.set('sort_order', params.sort_order);
 
 	const url = `/api/user/watched-items${query.toString() ? `?${query}` : ''}`;
 	const res = await fetch(url, {
@@ -1371,7 +1410,20 @@ export async function getWatchedItems(params?: {
 		throw new Error('Token expired');
 	}
 	if (!res.ok) throw new Error('Failed to fetch watched items');
-	return res.json();
+	const data = await res.json();
+
+	// Handle both paginated response and array response for backward compatibility
+	if (data && typeof data === 'object' && 'items' in data) {
+		return data as MarketItemsResponse;
+	}
+	// Fallback: wrap array response in paginated format
+	return {
+		items: data as MarketItem[],
+		total: (data as MarketItem[]).length,
+		limit: params?.limit || (data as MarketItem[]).length,
+		offset: params?.offset || 0,
+		has_more: false
+	};
 }
 
 // Messaging

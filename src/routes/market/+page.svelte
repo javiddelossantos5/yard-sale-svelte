@@ -11,21 +11,56 @@
 		faMessage,
 		faBars,
 		faUser,
-		faArrowRightFromBracket
+		faArrowRightFromBracket,
+		faFilter,
+		faChevronDown,
+		faChevronUp
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
 	import { getMarketItemUnreadCount } from '$lib/api';
 
 	let mobileMenuOpen = $state(false);
+	let filtersExpanded = $state(false);
 
 	let items: MarketItem[] = $state([]);
+	let totalItems = $state(0);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
 	let isCreateOpen = $state(false);
 	let statusFilter = $state<'active' | 'sold' | 'hidden' | 'all'>('active');
 	let messageUnreadCount = $state(0);
+
+	// Filter states
+	let searchTerm = $state('');
+	let selectedCategory = $state('');
+	let minPrice = $state('');
+	let maxPrice = $state('');
+	let acceptsBestOfferFilter = $state(false);
+	let priceReducedFilter = $state(false);
+	let sortBy = $state<'price' | 'created_at' | 'price_reduction_percentage' | 'name'>('created_at');
+	let sortOrder = $state<'asc' | 'desc'>('desc');
+
+	// Available categories (same as yard sales)
+	const categories = [
+		'Furniture',
+		'Electronics',
+		'Clothing',
+		'Books',
+		'Toys',
+		'Kitchen Items',
+		'Tools',
+		'Sports Equipment',
+		'Art & Decor',
+		'Garden Items',
+		'Antiques',
+		'Collectibles',
+		'Jewelry',
+		'Home Improvement',
+		'Automotive',
+		'Other'
+	];
 
 	async function load() {
 		loading = true;
@@ -34,12 +69,71 @@
 			getCurrentUser()
 				.then((u) => (currentUser = u))
 				.catch(() => (currentUser = null));
-			const params: { status?: 'active' | 'sold' | 'hidden' } = {};
-			if (statusFilter !== 'all') {
+
+			// Build params for API call
+			const params: {
+				search?: string;
+				category?: string;
+				min_price?: number;
+				max_price?: number;
+				status?: 'active' | 'sold' | 'hidden' | 'all';
+				accepts_best_offer?: boolean;
+				price_reduced?: boolean;
+				sort_by?: 'price' | 'created_at' | 'price_reduction_percentage' | 'name';
+				sort_order?: 'asc' | 'desc';
+			} = {};
+
+			// Status filter
+			if (statusFilter) {
 				params.status = statusFilter;
 			}
-			items = await getMarketItems(params);
-			
+
+			// Search term (now searches both name and description on backend)
+			if (searchTerm && typeof searchTerm === 'string' && searchTerm.trim()) {
+				params.search = searchTerm.trim();
+			}
+
+			// Category filter
+			if (selectedCategory) {
+				params.category = selectedCategory;
+			}
+
+			// Price filters - convert to string first to handle number inputs
+			const minPriceStr = String(minPrice || '').trim();
+			if (minPriceStr) {
+				const min = parseFloat(minPriceStr);
+				if (!isNaN(min) && min >= 0) {
+					params.min_price = min;
+				}
+			}
+
+			const maxPriceStr = String(maxPrice || '').trim();
+			if (maxPriceStr) {
+				const max = parseFloat(maxPriceStr);
+				if (!isNaN(max) && max >= 0) {
+					params.max_price = max;
+				}
+			}
+
+			// Accepts Best Offer filter (now supported alongside other filters by backend)
+			if (acceptsBestOfferFilter) {
+				params.accepts_best_offer = true;
+			}
+
+			// Price Reduced filter
+			if (priceReducedFilter) {
+				params.price_reduced = true;
+			}
+
+			// Sorting
+			params.sort_by = sortBy;
+			params.sort_order = sortOrder;
+
+			// Fetch items with new paginated API
+			const response = await getMarketItems(params);
+			items = response.items;
+			totalItems = response.total;
+
 			// Load unread message count
 			try {
 				const unread = await getMarketItemUnreadCount();
@@ -57,8 +151,29 @@
 	// Load on mount and when filter changes
 	$effect(() => {
 		statusFilter; // Track this dependency
+		searchTerm; // Track search term
+		selectedCategory; // Track category
+		minPrice; // Track min price
+		maxPrice; // Track max price
+		acceptsBestOfferFilter; // Track best offer filter
+		priceReducedFilter; // Track price reduced filter
+		sortBy; // Track sort by
+		sortOrder; // Track sort order
 		load();
 	});
+
+	function clearFilters() {
+		searchTerm = '';
+		selectedCategory = '';
+		minPrice = '';
+		maxPrice = '';
+		acceptsBestOfferFilter = false;
+		priceReducedFilter = false;
+		statusFilter = 'active';
+		sortBy = 'created_at';
+		sortOrder = 'desc';
+		// load() will be triggered by $effect when these values change
+	}
 
 	function goToProfile() {
 		if (currentUser) goto(`/profile/${currentUser.id}`);
@@ -67,10 +182,6 @@
 	function handleLogout() {
 		logout();
 		goto('/login');
-	}
-
-	function isFilterActive(filter: 'all' | 'active' | 'sold' | 'hidden'): boolean {
-		return statusFilter === filter;
 	}
 </script>
 
@@ -93,7 +204,8 @@
 						<div>
 							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">Marketplace</h1>
 							<p class="text-xs text-gray-500 dark:text-gray-400">
-								{items.length} {items.length === 1 ? 'item' : 'items'}
+								{items.length}
+								{items.length === 1 ? 'item' : 'items'}
 							</p>
 						</div>
 					</div>
@@ -131,7 +243,10 @@
 								}}
 								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
 							>
-								<FontAwesomeIcon icon={faHome} class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" />
+								<FontAwesomeIcon
+									icon={faHome}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
 								Home
 							</button>
 							{#if currentUser}
@@ -221,7 +336,8 @@
 									Discover individual items posted by the community
 								</p>
 								<span class="text-xs text-gray-500 dark:text-gray-500">
-									• {items.length} {items.length === 1 ? 'item' : 'items'}
+									• {items.length}
+									{items.length === 1 ? 'item' : 'items'}
 								</span>
 							</div>
 						</div>
@@ -299,40 +415,227 @@
 	</header>
 
 	<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-		<!-- Status Filter -->
-		<div class="mb-6 flex flex-wrap items-center gap-2">
-			<button
-				onclick={() => (statusFilter = 'active')}
-				class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 {isFilterActive('active')
-					? 'bg-green-600 text-white shadow-md ring-2 ring-green-500/50'
-					: 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-600'}"
-			>
-				Available
-			</button>
-			<button
-				onclick={() => (statusFilter = 'sold')}
-				class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 {isFilterActive('sold')
-					? 'bg-red-600 text-white shadow-md ring-2 ring-red-500/50'
-					: 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-600'}"
-			>
-				Sold
-			</button>
-			<button
-				onclick={() => (statusFilter = 'hidden')}
-				class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 {isFilterActive('hidden')
-					? 'bg-gray-600 text-white shadow-md ring-2 ring-gray-500/50'
-					: 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-600'}"
-			>
-				Hidden
-			</button>
-			<button
-				onclick={() => (statusFilter = 'all')}
-				class="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 {isFilterActive('all')
-					? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-500/50'
-					: 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-gray-600'}"
-			>
-				All Items
-			</button>
+		<!-- Search and Filters -->
+		<div
+			class="mb-6 rounded-xl bg-white/80 p-4 shadow-sm backdrop-blur-sm dark:bg-gray-800/80 dark:ring-1 dark:ring-gray-700"
+		>
+			<!-- Search Bar - Always Visible -->
+			<div class="mb-4">
+				<div class="flex items-center gap-3">
+					<div class="flex-1">
+						<input
+							id="search"
+							type="text"
+							bind:value={searchTerm}
+							placeholder="Search items..."
+							class="w-full rounded-xl border-0 bg-gray-50 px-4 py-2.5 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+						/>
+					</div>
+					<button
+						onclick={() => (filtersExpanded = !filtersExpanded)}
+						class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 {searchTerm ||
+						selectedCategory ||
+						minPrice ||
+						maxPrice ||
+						acceptsBestOfferFilter ||
+						priceReducedFilter ||
+						statusFilter !== 'active' ||
+						sortBy !== 'created_at' ||
+						sortOrder !== 'desc'
+							? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
+							: ''}"
+					>
+						<FontAwesomeIcon icon={faFilter} class="h-4 w-4" />
+						<span class="hidden sm:inline">Filters</span>
+						<FontAwesomeIcon icon={filtersExpanded ? faChevronUp : faChevronDown} class="h-3 w-3" />
+					</button>
+				</div>
+			</div>
+
+			<!-- Filter Options - Collapsible -->
+			{#if filtersExpanded}
+				<div class="border-t border-gray-200 pt-4 dark:border-gray-700">
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-7">
+						<!-- Category Filter -->
+						<div>
+							<label
+								for="category"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Category
+							</label>
+							<select
+								id="category"
+								bind:value={selectedCategory}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="">All Categories</option>
+								{#each categories as category}
+									<option value={category}>{category}</option>
+								{/each}
+							</select>
+						</div>
+
+						<!-- Min Price Filter -->
+						<div>
+							<label
+								for="minPrice"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Min Price
+							</label>
+							<input
+								type="number"
+								id="minPrice"
+								bind:value={minPrice}
+								min="0"
+								step="0.01"
+								placeholder="$0.00"
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							/>
+						</div>
+
+						<!-- Max Price Filter -->
+						<div>
+							<label
+								for="maxPrice"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Max Price
+							</label>
+							<input
+								type="number"
+								id="maxPrice"
+								bind:value={maxPrice}
+								min="0"
+								step="0.01"
+								placeholder="$9999"
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							/>
+						</div>
+
+						<!-- Accepts Best Offer Filter -->
+						<div class="flex items-end">
+							<label
+								for="bestOffer"
+								class="flex w-full cursor-pointer items-center rounded-lg border-0 bg-gray-50 px-3 py-2 shadow-sm transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 hover:bg-gray-100 dark:bg-gray-700 dark:focus-within:bg-gray-600 dark:hover:bg-gray-600"
+							>
+								<input
+									type="checkbox"
+									id="bestOffer"
+									bind:checked={acceptsBestOfferFilter}
+									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+								/>
+								<span class="ml-2 text-xs font-semibold text-gray-600 dark:text-gray-400">
+									Accepts Best Offer
+								</span>
+							</label>
+						</div>
+
+						<!-- Price Reduced Filter -->
+						<div class="flex items-end">
+							<label
+								for="priceReduced"
+								class="flex w-full cursor-pointer items-center rounded-lg border-0 bg-gray-50 px-3 py-2 shadow-sm transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 hover:bg-gray-100 dark:bg-gray-700 dark:focus-within:bg-gray-600 dark:hover:bg-gray-600"
+							>
+								<input
+									type="checkbox"
+									id="priceReduced"
+									bind:checked={priceReducedFilter}
+									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+								/>
+								<span class="ml-2 text-xs font-semibold text-gray-600 dark:text-gray-400">
+									Price Reduced
+								</span>
+							</label>
+						</div>
+
+						<!-- Status Filter -->
+						<div>
+							<label
+								for="status"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Status
+							</label>
+							<select
+								id="status"
+								bind:value={statusFilter}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="active">Available</option>
+								<option value="sold">Sold</option>
+								<option value="hidden">Hidden</option>
+								<option value="all">All Items</option>
+							</select>
+						</div>
+
+						<!-- Sort By Filter -->
+						<div>
+							<label
+								for="sortBy"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Sort By
+							</label>
+							<select
+								id="sortBy"
+								bind:value={sortBy}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="created_at">Newest First</option>
+								<option value="price">Price</option>
+								<option value="price_reduction_percentage">Biggest Discount</option>
+								<option value="name">Name (A-Z)</option>
+							</select>
+						</div>
+
+						<!-- Sort Order Filter -->
+						<div>
+							<label
+								for="sortOrder"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Order
+							</label>
+							<select
+								id="sortOrder"
+								bind:value={sortOrder}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="desc">Descending</option>
+								<option value="asc">Ascending</option>
+							</select>
+						</div>
+					</div>
+
+					<!-- Active Filters Indicator and Clear Button -->
+					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || statusFilter !== 'active' || sortBy !== 'created_at' || sortOrder !== 'desc'}
+						<div
+							class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700"
+						>
+							<div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+								<FontAwesomeIcon icon={faFilter} class="h-3 w-3" />
+								<span>Filters applied</span>
+							</div>
+							<button
+								onclick={clearFilters}
+								class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+							>
+								<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M6 18L18 6M6 6l12 12"
+									></path>
+								</svg>
+								Clear All
+							</button>
+						</div>
+					{/if}
+				</div>
+			{/if}
 		</div>
 
 		{#if loading}
@@ -358,11 +661,9 @@
 				{#each items as item}
 					<MarketItemCard
 						{item}
-						hideStatusBadge={
-							(statusFilter === 'active' && item.status === 'active') ||
+						hideStatusBadge={(statusFilter === 'active' && item.status === 'active') ||
 							(statusFilter === 'sold' && item.status === 'sold') ||
-							(statusFilter === 'hidden' && item.status === 'hidden')
-						}
+							(statusFilter === 'hidden' && item.status === 'hidden')}
 					/>
 				{/each}
 			</div>
