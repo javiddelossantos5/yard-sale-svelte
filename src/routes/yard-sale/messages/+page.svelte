@@ -31,7 +31,18 @@
 				getYardSaleUnreadCount(),
 				getCurrentUser()
 			]);
-			conversations = convs;
+			// Sort conversations: unread messages first, then by updated_at descending
+			conversations = [...convs].sort((a, b) => {
+				const aUnread = a.unread_count || 0;
+				const bUnread = b.unread_count || 0;
+				// If one has unread and the other doesn't, prioritize unread
+				if (aUnread > 0 && bUnread === 0) return -1;
+				if (aUnread === 0 && bUnread > 0) return 1;
+				// If both have unread or both don't, sort by updated_at descending
+				const aDate = new Date(a.updated_at || a.created_at || 0).getTime();
+				const bDate = new Date(b.updated_at || b.created_at || 0).getTime();
+				return bDate - aDate;
+			});
 			unreadCount = unread.unread_count;
 			currentUser = user;
 		} catch (e) {

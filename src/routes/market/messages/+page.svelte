@@ -26,7 +26,18 @@
 				getMarketItemUnreadCount(),
 				getCurrentUser()
 			]);
-			conversations = convs;
+			// Sort conversations: unread messages first, then by updated_at descending
+			conversations = [...convs].sort((a, b) => {
+				const aUnread = a.unread_count || 0;
+				const bUnread = b.unread_count || 0;
+				// If one has unread and the other doesn't, prioritize unread
+				if (aUnread > 0 && bUnread === 0) return -1;
+				if (aUnread === 0 && bUnread > 0) return 1;
+				// If both have unread or both don't, sort by updated_at descending
+				const aDate = new Date(a.updated_at || a.created_at || 0).getTime();
+				const bDate = new Date(b.updated_at || b.created_at || 0).getTime();
+				return bDate - aDate;
+			});
 			unreadCount = unread.unread_count;
 			currentUser = user;
 		} catch (e) {
@@ -66,7 +77,7 @@
 
 	function getOtherParticipant(conv: MarketItemConversation): string {
 		if (!currentUser) return 'Unknown';
-		
+
 		// Return the username of the other participant
 		if (conv.participant1_id === currentUser.id) {
 			return conv.participant2_username || 'Unknown';
@@ -77,7 +88,9 @@
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80">
+	<div
+		class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
+	>
 		<div class="mx-auto max-w-4xl px-4 py-4">
 			<div class="flex items-center justify-between">
 				<div class="flex items-center gap-3">
@@ -90,9 +103,7 @@
 					</button>
 					<h1 class="text-xl font-semibold text-gray-900 dark:text-white">Messages</h1>
 					{#if unreadCount > 0}
-						<span
-							class="rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white"
-						>
+						<span class="rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
 							{unreadCount}
 						</span>
 					{/if}
@@ -108,7 +119,9 @@
 				<p class="text-sm text-gray-500 dark:text-gray-400">Loading conversations...</p>
 			</div>
 		{:else if error}
-			<div class="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+			<div
+				class="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+			>
 				{error}
 			</div>
 		{:else if conversations.length === 0}
@@ -155,7 +168,8 @@
 								</div>
 								{#if conv.last_message}
 									<p
-										class="mt-2 line-clamp-2 text-sm text-gray-600 dark:text-gray-400 {conv.last_message.is_read
+										class="mt-2 line-clamp-2 text-sm text-gray-600 dark:text-gray-400 {conv
+											.last_message.is_read
 											? ''
 											: 'font-medium text-gray-900 dark:text-white'}"
 									>
@@ -173,4 +187,3 @@
 		{/if}
 	</div>
 </div>
-
