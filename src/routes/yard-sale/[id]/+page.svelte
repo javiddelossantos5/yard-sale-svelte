@@ -563,7 +563,7 @@
 											<!-- Single Image -->
 											<div class="overflow-hidden rounded-2xl">
 												<img
-													src={getAuthenticatedImageUrl(yardSale.photos[0])}
+													src={getAuthenticatedImageUrl(yardSale.featured_image || yardSale.photos[0])}
 													alt={yardSale.title}
 													class="h-64 w-full object-cover sm:h-80"
 													loading="lazy"
@@ -571,8 +571,11 @@
 											</div>
 										{:else}
 											<!-- Multiple Images Grid -->
+											{@const displayPhotos = yardSale.featured_image 
+												? [yardSale.featured_image, ...yardSale.photos.filter(p => p !== yardSale.featured_image)].slice(0, 4)
+												: yardSale.photos.slice(0, 4)}
 											<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-												{#each yardSale.photos.slice(0, 4) as photo, index}
+												{#each displayPhotos as photo, index}
 													<div class="overflow-hidden rounded-2xl">
 														<img
 															src={getAuthenticatedImageUrl(photo)}

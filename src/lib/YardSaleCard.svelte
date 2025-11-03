@@ -115,10 +115,11 @@
 		</h3>
 
 		<!-- Featured Image -->
-		{#if yardSale.photos && yardSale.photos.length > 0}
+		{#if yardSale.featured_image || (yardSale.photos && yardSale.photos.length > 0)}
+			{@const displayImage = yardSale.featured_image || yardSale.photos[0]}
 			<div class="mb-4">
 				<img
-					src={getAuthenticatedImageUrl(yardSale.photos[0])}
+					src={getAuthenticatedImageUrl(displayImage)}
 					alt={yardSale.title}
 					class="h-48 w-full rounded-2xl object-cover shadow-lg"
 					loading="lazy"

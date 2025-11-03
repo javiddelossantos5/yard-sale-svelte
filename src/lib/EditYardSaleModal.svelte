@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createYardSale, updateYardSale, type YardSaleCreate, type YardSale } from './api';
+	import { createYardSale, updateYardSale, getAuthenticatedImageUrl, type YardSaleCreate, type YardSale } from './api';
 	import ImageUpload from './ImageUpload.svelte';
 
 	let {
@@ -795,11 +795,21 @@
 														? 'border-blue-600 ring-2 ring-blue-500 ring-offset-2'
 														: 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'}"
 												>
-													<img
-														src={photo}
-														alt="Photo {index + 1}"
-														class="aspect-square w-full object-cover"
-													/>
+													{#if photo}
+														<img
+															src={getAuthenticatedImageUrl(photo)}
+															alt="Photo {index + 1}"
+															class="aspect-square w-full object-cover"
+															onerror={(e) => {
+																console.error('Failed to load image:', photo);
+																(e.target as HTMLImageElement).style.display = 'none';
+															}}
+														/>
+													{:else}
+														<div class="flex aspect-square w-full items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+															<span class="text-xs">Photo {index + 1}</span>
+														</div>
+													{/if}
 													{#if isFeatured}
 														<div
 															class="absolute top-2 right-2 rounded-full bg-blue-600 p-1.5 text-white shadow-lg"
