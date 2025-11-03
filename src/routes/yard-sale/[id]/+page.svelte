@@ -452,7 +452,7 @@
 									{@const status = getYardSaleStatus(yardSale)}
 									{@const timeRemaining = getTimeRemainingMessage(yardSale)}
 
-									<div class="mb-6">
+									<div class="mb-6 flex-shrink-0">
 										{#if status === 'expired'}
 											<div
 												class="inline-flex items-center rounded-full bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 dark:bg-red-900/10 dark:text-red-300"
@@ -534,141 +534,6 @@
 										{/if}
 									</div>
 								{/if}
-
-								<!-- Title -->
-								<h1
-									class="mb-4 text-3xl leading-tight font-bold break-words text-gray-900 sm:text-4xl dark:text-white"
-								>
-									{yardSale.title}
-								</h1>
-
-								<!-- Image Gallery -->
-								{#if yardSale.photos && yardSale.photos.length > 0}
-									<div class="mb-6 w-full">
-										{#if yardSale.photos.length === 1}
-											<!-- Single Image -->
-											<div class="overflow-hidden rounded-2xl">
-												<img
-													src={getAuthenticatedImageUrl(
-														yardSale.featured_image || yardSale.photos[0]
-													)}
-													alt={yardSale.title}
-													class="h-64 w-full object-cover sm:h-80"
-													loading="lazy"
-												/>
-											</div>
-										{:else}
-											<!-- Multiple Images Grid -->
-											{#if yardSale && yardSale.featured_image && yardSale.photos}
-												{@const photos = yardSale.photos}
-												{@const featuredImage = yardSale.featured_image}
-												{@const displayPhotos = [
-													featuredImage,
-													...photos.filter((p) => p !== featuredImage)
-												].slice(0, 4)}
-												<div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
-													{#each displayPhotos as photo, index}
-														<div class="overflow-hidden rounded-2xl">
-															<img
-																src={getAuthenticatedImageUrl(photo)}
-																alt="{yardSale.title} - Image {index + 1}"
-																class="h-32 w-full object-cover sm:h-40"
-																loading="lazy"
-															/>
-														</div>
-													{/each}
-												</div>
-											{:else}
-												{@const displayPhotos = yardSale.photos.slice(0, 4)}
-												<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-													{#each displayPhotos as photo, index}
-														<div class="overflow-hidden rounded-2xl">
-															<img
-																src={getAuthenticatedImageUrl(photo)}
-																alt="{yardSale.title} - Image {index + 1}"
-																class="h-32 w-full object-cover sm:h-40"
-																loading="lazy"
-															/>
-														</div>
-													{/each}
-												</div>
-											{/if}
-											{#if yardSale.photos.length > 4}
-												<p class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
-													+{yardSale.photos.length - 4} more images
-												</p>
-											{/if}
-										{/if}
-									</div>
-								{/if}
-
-								<!-- Owner Information -->
-								<div class="mb-6">
-									<button
-										onclick={() => yardSale && goto(`/profile/${yardSale.owner_id}`)}
-										class="group flex items-center rounded-2xl bg-gray-100/60 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100/60 active:scale-95 dark:bg-gray-700/60 dark:hover:bg-blue-900/30"
-									>
-										<div
-											class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600"
-										>
-											<FontAwesomeIcon icon="user" class="h-4 w-4 text-white" />
-										</div>
-										<div class="flex-1 text-left">
-											<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-												Posted by {yardSale.owner_username}
-											</div>
-											{#if yardSale.owner_average_rating && typeof yardSale.owner_average_rating === 'number'}
-												<div class="flex items-center">
-													<FontAwesomeIcon icon="star" class="mr-1 h-3 w-3 text-yellow-500" />
-													<span class="text-xs font-medium text-gray-600 dark:text-gray-300">
-														{yardSale.owner_average_rating.toFixed(1)} rating
-													</span>
-												</div>
-											{/if}
-										</div>
-										<FontAwesomeIcon
-											icon="arrow-right"
-											class="ml-2 h-4 w-4 text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
-										/>
-									</button>
-								</div>
-
-								<!-- Location -->
-								<div class="flex items-center text-gray-600 dark:text-gray-300">
-									<svg
-										class="mr-3 h-5 w-5 text-gray-400"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-										/>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-										/>
-									</svg>
-									<button
-										onclick={(e) => {
-											e.stopPropagation();
-											if (yardSale) {
-												const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
-												openDirections(fullAddress);
-											}
-										}}
-										class="text-left text-lg font-medium text-blue-600 hover:text-blue-700 hover:underline focus:underline focus:outline-none dark:text-blue-400 dark:hover:text-blue-300"
-										title={`Click to open in ${getPlatformName()}`}
-									>
-										{yardSale.address}, {yardSale.city}, {yardSale.state}
-										{yardSale.zip_code}|
-									</button>
-								</div>
 							</div>
 
 							<!-- Owner Actions -->
@@ -678,7 +543,7 @@
 								>
 									<button
 										onclick={handleEditYardSale}
-										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-6 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 									>
 										<svg
 											class="mr-2 h-4 w-4 shrink-0"
@@ -698,7 +563,7 @@
 									{#if yardSale.photos && yardSale.photos.length > 0}
 										<button
 											onclick={handleSetFeaturedImage}
-											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-6 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 										>
 											<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4 shrink-0" />
 											<span class="hidden sm:inline">Set Featured Image</span>
@@ -707,7 +572,7 @@
 									{/if}
 									<button
 										onclick={handleDeleteYardSale}
-										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 transition-all hover:bg-red-50 active:scale-95 sm:flex-none sm:px-6 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
 									>
 										<svg
 											class="mr-2 h-4 w-4 shrink-0"
@@ -727,8 +592,151 @@
 								</div>
 							{/if}
 						</div>
+
+						<!-- Title and Content Section - Full Width (Outside Flex Container) -->
+						<div class="w-full">
+							<!-- Title -->
+							<h1
+								class="mb-4 text-3xl leading-tight font-bold break-words text-gray-900 sm:text-4xl dark:text-white"
+							>
+								{yardSale.title}
+							</h1>
+
+							<!-- Image Gallery -->
+							{#if yardSale.photos && yardSale.photos.length > 0}
+								<div class="mb-6 w-full">
+									{#if yardSale.photos.length === 1}
+										<!-- Single Image -->
+										<div class="overflow-hidden rounded-2xl">
+											<img
+												src={getAuthenticatedImageUrl(
+													yardSale.featured_image || yardSale.photos[0]
+												)}
+												alt={yardSale.title}
+												class="h-64 w-full object-cover sm:h-80"
+												loading="lazy"
+											/>
+										</div>
+									{:else}
+										<!-- Multiple Images Grid -->
+										{#if yardSale && yardSale.featured_image && yardSale.photos}
+											{@const photos = yardSale.photos}
+											{@const featuredImage = yardSale.featured_image}
+											{@const displayPhotos = [
+												featuredImage,
+												...photos.filter((p) => p !== featuredImage)
+											].slice(0, 4)}
+											<div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+												{#each displayPhotos as photo, index}
+													<div class="overflow-hidden rounded-2xl">
+														<img
+															src={getAuthenticatedImageUrl(photo)}
+															alt="{yardSale.title} - Image {index + 1}"
+															class="h-32 w-full object-cover sm:h-40"
+															loading="lazy"
+														/>
+													</div>
+												{/each}
+											</div>
+										{:else}
+											{@const displayPhotos = yardSale.photos.slice(0, 4)}
+											<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+												{#each displayPhotos as photo, index}
+													<div class="overflow-hidden rounded-2xl">
+														<img
+															src={getAuthenticatedImageUrl(photo)}
+															alt="{yardSale.title} - Image {index + 1}"
+															class="h-32 w-full object-cover sm:h-40"
+															loading="lazy"
+														/>
+													</div>
+												{/each}
+											</div>
+										{/if}
+										{#if yardSale.photos.length > 4}
+											<p class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+												+{yardSale.photos.length - 4} more images
+											</p>
+										{/if}
+									{/if}
+								</div>
+							{/if}
+
+							<!-- Owner Information -->
+							<div class="mb-6">
+								<button
+									onclick={() => yardSale && goto(`/profile/${yardSale.owner_id}`)}
+									class="group flex items-center rounded-2xl bg-gray-100/60 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100/60 active:scale-95 dark:bg-gray-700/60 dark:hover:bg-blue-900/30"
+								>
+									<div
+										class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600"
+									>
+										<FontAwesomeIcon icon="user" class="h-4 w-4 text-white" />
+									</div>
+									<div class="flex-1 text-left">
+										<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+											Posted by {yardSale.owner_username}
+										</div>
+										{#if yardSale.owner_average_rating && typeof yardSale.owner_average_rating === 'number'}
+											<div class="flex items-center">
+												<FontAwesomeIcon icon="star" class="mr-1 h-3 w-3 text-yellow-500" />
+												<span class="text-xs font-medium text-gray-600 dark:text-gray-300">
+													{yardSale.owner_average_rating.toFixed(1)} rating
+												</span>
+											</div>
+										{/if}
+									</div>
+									<FontAwesomeIcon
+										icon="arrow-right"
+										class="ml-2 h-4 w-4 text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
+									/>
+								</button>
+							</div>
+
+							<!-- Location -->
+							<div class="flex items-center text-gray-600 dark:text-gray-300">
+								<svg
+									class="mr-3 h-5 w-5 text-gray-400"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+									/>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+									/>
+								</svg>
+								<button
+									onclick={(e) => {
+										e.stopPropagation();
+										if (yardSale) {
+											const fullAddress = `${yardSale.address}, ${yardSale.city}, ${yardSale.state} ${yardSale.zip_code}`;
+											openDirections(fullAddress);
+										}
+									}}
+									class="text-left text-lg font-medium text-blue-600 hover:text-blue-700 hover:underline focus:underline focus:outline-none dark:text-blue-400 dark:hover:text-blue-300"
+									title={`Click to open in ${getPlatformName()}`}
+								>
+									{yardSale.address}, {yardSale.city}, {yardSale.state}
+									{yardSale.zip_code}
+								</button>
+							</div>
+							<!-- Location closes above -->
+						</div>
+						<!-- Title and Content Section closes above -->
 					</div>
+					<!-- Padding div closes above -->
 				</div>
+				<!-- Hero Section closes above, still inside max-w-7xl -->
+
 				<!-- Main Content Grid -->
 				<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12">
 					<!-- Left Column - Main Info -->
@@ -1117,9 +1125,12 @@
 							</div>
 						</div>
 					</div>
+					<!-- Right Column closes above -->
+					<!-- Left Column already closed above -->
 				</div>
+				<!-- Main Content Grid closes above -->
 
-				<!-- Comments Section -->
+				<!-- Comments Section (still inside max-w-7xl) -->
 				<div
 					class="overflow-hidden rounded-2xl bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 				>
@@ -1282,10 +1293,14 @@
 							</div>
 						{/if}
 					</div>
+					<!-- Comments List container closes above -->
 				</div>
+				<!-- Comments Section closes above -->
 			</div>
+			<!-- max-w-7xl closes above -->
 		{/if}
 	</div>
+	<!-- max-w-4xl closes above -->
 
 	<!-- Message Modal -->
 	{#if yardSale}
