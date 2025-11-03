@@ -16,11 +16,20 @@
 		faChevronLeft,
 		faPaperPlane,
 		faUser,
-		faArrowRight
+		faArrowRight,
+		faBars,
+		faHome,
+		faStore,
+		faHeart,
+		faMessage,
+		faArrowRightFromBracket
 	} from '@fortawesome/free-solid-svg-icons';
+	import { logout } from '$lib/auth';
+	import { unreadMessageCount } from '$lib/notifications';
 
 	const conversationId = $derived($page.params.id);
 
+	let mobileMenuOpen = $state(false);
 	let messages = $state<MarketItemMessage[]>([]);
 	let conversation = $state<{ item_name?: string; item_id?: string } | null>(null);
 	let loading = $state(true);
@@ -126,51 +135,261 @@
 
 	const isMyMessage = (message: MarketItemMessage) =>
 		currentUser && message.sender_id === currentUser.id;
+
+	function goToProfile() {
+		if (currentUser) goto(`/profile/${currentUser.id}`);
+	}
+
+	function handleLogout() {
+		logout();
+		goto('/login');
+	}
 </script>
 
 <div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<div
-		class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
+	<header
+		class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-900/80"
 	>
-		<div class="mx-auto max-w-4xl px-4 py-4">
-			<div class="flex items-center gap-3">
-				<button
-					onclick={() => goto('/market/messages')}
-					class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-					aria-label="Back to messages"
-				>
-					<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
-				</button>
-				<div class="flex-1">
-					{#if conversation?.item_id}
+		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+			<!-- Mobile Layout -->
+			<div class="block sm:hidden">
+				<div class="flex h-16 items-center justify-between">
+					<div class="flex min-w-0 flex-1 items-center space-x-3">
 						<button
-							onclick={() => {
-								if (conversation?.item_id) {
-									goto(`/market/${conversation.item_id}`);
-								}
-							}}
-							class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+							onclick={() => goto('/market/messages')}
+							class="shrink-0 rounded-full p-1.5 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+							aria-label="Back to messages"
 						>
-							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-								{conversation.item_name || 'Conversation'}
-							</h1>
-							<FontAwesomeIcon
-								icon={faArrowRight}
-								class="h-3 w-3 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
-							/>
+							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
-					{:else}
-						<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-							{conversation?.item_name || 'Conversation'}
-						</h1>
-					{/if}
+						<img
+							src="/icon2.png"
+							alt="Yard Sale Finder Logo"
+							class="h-8 w-8 shrink-0 rounded-lg object-cover"
+						/>
+						<div class="min-w-0 flex-1">
+							{#if conversation?.item_id}
+								<button
+									onclick={() => {
+										if (conversation?.item_id) {
+											goto(`/market/${conversation.item_id}`);
+										}
+									}}
+									class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+								>
+									<h1 class="truncate text-lg font-semibold text-gray-900 dark:text-white">
+										{conversation.item_name || 'Conversation'}
+									</h1>
+									<FontAwesomeIcon
+										icon={faArrowRight}
+										class="h-3 w-3 shrink-0 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
+									/>
+								</button>
+							{:else}
+								<h1 class="truncate text-lg font-semibold text-gray-900 dark:text-white">
+									{conversation?.item_name || 'Conversation'}
+								</h1>
+							{/if}
+						</div>
+					</div>
+					<button
+						onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+						class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
+						aria-label="Menu"
+					>
+						<FontAwesomeIcon icon={faBars} class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+					</button>
+				</div>
+				{#if mobileMenuOpen}
+					<div class="border-t border-gray-200 pt-4 pb-4 dark:border-gray-800">
+						<div class="space-y-1">
+							<button
+								onclick={() => {
+									goto('/');
+									mobileMenuOpen = false;
+								}}
+								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+							>
+								<FontAwesomeIcon
+									icon={faHome}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
+								Home
+							</button>
+							<button
+								onclick={() => {
+									goto('/market');
+									mobileMenuOpen = false;
+								}}
+								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+							>
+								<FontAwesomeIcon
+									icon={faStore}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
+								Marketplace
+							</button>
+							{#if currentUser}
+								<button
+									onclick={() => {
+										goto('/market/watched');
+										mobileMenuOpen = false;
+									}}
+									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+								>
+									<FontAwesomeIcon
+										icon={faHeart}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
+									Watched Items
+								</button>
+								<button
+									onclick={() => {
+										goto('/market/messages');
+										mobileMenuOpen = false;
+									}}
+									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+								>
+									<FontAwesomeIcon
+										icon={faMessage}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
+									Messages
+								</button>
+								<button
+									onclick={() => {
+										goToProfile();
+										mobileMenuOpen = false;
+									}}
+									class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+								>
+									<FontAwesomeIcon
+										icon={faUser}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
+									My Profile
+									{#if $unreadMessageCount > 0}
+										<span
+											class="ml-auto rounded-full bg-red-500 px-2.5 py-0.5 text-sm font-semibold text-white"
+										>
+											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
+										</span>
+									{/if}
+								</button>
+							{/if}
+							<button
+								onclick={() => {
+									handleLogout();
+									mobileMenuOpen = false;
+								}}
+								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+							>
+								<FontAwesomeIcon icon={faArrowRightFromBracket} class="mr-3 h-5 w-5" />
+								Logout
+							</button>
+						</div>
+					</div>
+				{/if}
+			</div>
+			<!-- Desktop Layout -->
+			<div class="hidden sm:block">
+				<div class="flex h-20 items-center justify-between">
+					<div class="flex min-w-0 flex-1 items-center space-x-4">
+						<button
+							onclick={() => goto('/market/messages')}
+							class="shrink-0 rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+							aria-label="Back to messages"
+						>
+							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
+						</button>
+						<img
+							src="/icon2.png"
+							alt="Yard Sale Finder Logo"
+							class="h-12 w-12 shrink-0 rounded-xl object-cover shadow-sm"
+						/>
+						<div class="min-w-0 flex-1">
+							{#if conversation?.item_id}
+								<button
+									onclick={() => {
+										if (conversation?.item_id) {
+											goto(`/market/${conversation.item_id}`);
+										}
+									}}
+									class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+								>
+									<h1 class="truncate text-2xl font-bold text-gray-900 dark:text-white">
+										{conversation.item_name || 'Conversation'}
+									</h1>
+									<FontAwesomeIcon
+										icon={faArrowRight}
+										class="h-4 w-4 shrink-0 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
+									/>
+								</button>
+							{:else}
+								<h1 class="truncate text-2xl font-bold text-gray-900 dark:text-white">
+									{conversation?.item_name || 'Conversation'}
+								</h1>
+							{/if}
+						</div>
+					</div>
+					<div class="flex shrink-0 items-center gap-3">
+						<div class="flex items-center gap-2">
+							<button
+								onclick={() => goto('/')}
+								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+							>
+								<FontAwesomeIcon icon={faHome} class="mr-2 h-4 w-4" />
+								Home
+							</button>
+							<button
+								onclick={() => goto('/market')}
+								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+							>
+								<FontAwesomeIcon icon={faStore} class="mr-2 h-4 w-4" />
+								Marketplace
+							</button>
+							{#if currentUser}
+								<button
+									onclick={() => goto('/market/watched')}
+									class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+								>
+									<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
+									Watched
+								</button>
+								<button
+									onclick={goToProfile}
+									class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
+									aria-label="My Profile"
+								>
+									<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-700 dark:text-gray-200" />
+									{#if $unreadMessageCount > 0}
+										<span
+											class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-semibold text-white dark:border-gray-900"
+										>
+											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
+										</span>
+									{/if}
+								</button>
+							{/if}
+							<button
+								onclick={handleLogout}
+								class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+								aria-label="Logout"
+							>
+								<FontAwesomeIcon icon={faArrowRightFromBracket} class="h-5 w-5" />
+							</button>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	</header>
 	<!-- Messages -->
-	<div class="flex-1 overflow-y-auto px-4 py-6" id="messages-container">
+	<div
+		class="mx-auto max-w-7xl flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8"
+		id="messages-container"
+	>
 		{#if loading}
 			<div class="flex h-full items-center justify-center">
 				<p class="text-sm text-gray-500 dark:text-gray-400">Loading messages...</p>
@@ -225,7 +444,7 @@
 	<div
 		class="border-t border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
 	>
-		<div class="mx-auto max-w-3xl px-4 py-4">
+		<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
 			{#if error}
 				<div
 					class="mb-3 rounded-lg bg-red-50 p-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400"
