@@ -41,6 +41,9 @@
 	let priceReducedFilter = $state(false);
 	let sortBy = $state<'price' | 'created_at' | 'price_reduction_percentage' | 'name'>('created_at');
 	let sortOrder = $state<'asc' | 'desc'>('desc');
+	let sortByDisplay = $state<
+		'created_at' | 'price_asc' | 'price_desc' | 'price_reduction_percentage' | 'name'
+	>('created_at');
 
 	// Available categories (same as yard sales)
 	const categories = [
@@ -126,8 +129,17 @@
 			}
 
 			// Sorting
-			params.sort_by = sortBy;
-			params.sort_order = sortOrder;
+			// Handle sort_by and sort_order based on sortByDisplay
+			if (sortByDisplay === 'price_asc') {
+				params.sort_by = 'price';
+				params.sort_order = 'asc';
+			} else if (sortByDisplay === 'price_desc') {
+				params.sort_by = 'price';
+				params.sort_order = 'desc';
+			} else {
+				params.sort_by = sortByDisplay;
+				params.sort_order = sortOrder;
+			}
 
 			// Fetch items with new paginated API
 			const response = await getMarketItems(params);
@@ -157,7 +169,7 @@
 		maxPrice; // Track max price
 		acceptsBestOfferFilter; // Track best offer filter
 		priceReducedFilter; // Track price reduced filter
-		sortBy; // Track sort by
+		sortByDisplay; // Track sort by display
 		sortOrder; // Track sort order
 		load();
 	});
@@ -170,7 +182,7 @@
 		acceptsBestOfferFilter = false;
 		priceReducedFilter = false;
 		statusFilter = 'active';
-		sortBy = 'created_at';
+		sortByDisplay = 'created_at';
 		sortOrder = 'desc';
 		// load() will be triggered by $effect when these values change
 	}
@@ -440,7 +452,7 @@
 						acceptsBestOfferFilter ||
 						priceReducedFilter ||
 						statusFilter !== 'active' ||
-						sortBy !== 'created_at' ||
+						sortByDisplay !== 'created_at' ||
 						sortOrder !== 'desc'
 							? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
 							: ''}"
@@ -455,174 +467,197 @@
 			<!-- Filter Options - Collapsible -->
 			{#if filtersExpanded}
 				<div class="border-t border-gray-200 pt-4 dark:border-gray-700">
-					<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-7">
-						<!-- Category Filter -->
-						<div>
-							<label
-								for="category"
-								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
-							>
-								Category
-							</label>
-							<select
-								id="category"
-								bind:value={selectedCategory}
-								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
-							>
-								<option value="">All Categories</option>
-								{#each categories as category}
-									<option value={category}>{category}</option>
-								{/each}
-							</select>
+					<div class="space-y-4">
+						<!-- Row 1: Category and Status -->
+						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+							<!-- Category Filter -->
+							<div>
+								<label
+									for="category"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Category
+								</label>
+								<select
+									id="category"
+									bind:value={selectedCategory}
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								>
+									<option value="">All Categories</option>
+									{#each categories as category}
+										<option value={category}>{category}</option>
+									{/each}
+								</select>
+							</div>
+
+							<!-- Status Filter -->
+							<div>
+								<label
+									for="status"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Status
+								</label>
+								<select
+									id="status"
+									bind:value={statusFilter}
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								>
+									<option value="active">Available</option>
+									<option value="sold">Sold</option>
+									<option value="hidden">Hidden</option>
+									<option value="all">All Items</option>
+								</select>
+							</div>
 						</div>
 
-						<!-- Min Price Filter -->
-						<div>
-							<label
-								for="minPrice"
-								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
-							>
-								Min Price
-							</label>
-							<input
-								type="number"
-								id="minPrice"
-								bind:value={minPrice}
-								min="0"
-								step="0.01"
-								placeholder="$0.00"
-								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:bg-gray-600 dark:focus:ring-blue-400"
-							/>
+						<!-- Row 2: Price Range -->
+						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+							<!-- Min Price Filter -->
+							<div>
+								<label
+									for="minPrice"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Min Price
+								</label>
+								<div class="relative">
+									<span
+										class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+									>
+										$
+									</span>
+									<input
+										type="number"
+										id="minPrice"
+										bind:value={minPrice}
+										min="0"
+										step="0.01"
+										placeholder="0.00"
+										class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pr-4 pl-7 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-400"
+									/>
+								</div>
+							</div>
+
+							<!-- Max Price Filter -->
+							<div>
+								<label
+									for="maxPrice"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Max Price
+								</label>
+								<div class="relative">
+									<span
+										class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-gray-500 dark:text-gray-400"
+									>
+										$
+									</span>
+									<input
+										type="number"
+										id="maxPrice"
+										bind:value={maxPrice}
+										min="0"
+										step="0.01"
+										placeholder="9999.00"
+										class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pr-4 pl-7 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-400"
+									/>
+								</div>
+							</div>
 						</div>
 
-						<!-- Max Price Filter -->
-						<div>
-							<label
-								for="maxPrice"
-								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
-							>
-								Max Price
-							</label>
-							<input
-								type="number"
-								id="maxPrice"
-								bind:value={maxPrice}
-								min="0"
-								step="0.01"
-								placeholder="$9999"
-								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:bg-gray-600 dark:focus:ring-blue-400"
-							/>
-						</div>
-
-						<!-- Accepts Best Offer Filter -->
-						<div class="flex items-end">
+						<!-- Row 3: Checkboxes -->
+						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+							<!-- Accepts Best Offer Filter -->
 							<label
 								for="bestOffer"
-								class="flex w-full cursor-pointer items-center rounded-lg border-0 bg-gray-50 px-3 py-2 shadow-sm transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 hover:bg-gray-100 dark:bg-gray-700 dark:focus-within:bg-gray-600 dark:hover:bg-gray-600"
+								class="flex cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:focus-within:border-blue-500 dark:hover:bg-gray-600"
 							>
 								<input
 									type="checkbox"
 									id="bestOffer"
 									bind:checked={acceptsBestOfferFilter}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+									class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
 								/>
-								<span class="ml-2 text-xs font-semibold text-gray-600 dark:text-gray-400">
+								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
 									Accepts Best Offer
 								</span>
 							</label>
-						</div>
 
-						<!-- Price Reduced Filter -->
-						<div class="flex items-end">
+							<!-- Price Reduced Filter -->
 							<label
 								for="priceReduced"
-								class="flex w-full cursor-pointer items-center rounded-lg border-0 bg-gray-50 px-3 py-2 shadow-sm transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-blue-500 hover:bg-gray-100 dark:bg-gray-700 dark:focus-within:bg-gray-600 dark:hover:bg-gray-600"
+								class="flex cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:focus-within:border-blue-500 dark:hover:bg-gray-600"
 							>
 								<input
 									type="checkbox"
 									id="priceReduced"
 									bind:checked={priceReducedFilter}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+									class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
 								/>
-								<span class="ml-2 text-xs font-semibold text-gray-600 dark:text-gray-400">
+								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
 									Price Reduced
 								</span>
 							</label>
 						</div>
 
-						<!-- Status Filter -->
-						<div>
-							<label
-								for="status"
-								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
-							>
-								Status
-							</label>
-							<select
-								id="status"
-								bind:value={statusFilter}
-								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
-							>
-								<option value="active">Available</option>
-								<option value="sold">Sold</option>
-								<option value="hidden">Hidden</option>
-								<option value="all">All Items</option>
-							</select>
-						</div>
+						<!-- Row 4: Sort Options -->
+						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+							<!-- Sort By Filter -->
+							<div>
+								<label
+									for="sortBy"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Sort By
+								</label>
+								<select
+									id="sortBy"
+									bind:value={sortByDisplay}
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								>
+									<option value="created_at">Newest First</option>
+									<option value="price_asc">Price: Low to High</option>
+									<option value="price_desc">Price: High to Low</option>
+									<option value="price_reduction_percentage">Best Deals</option>
+									<option value="name">Name: A-Z</option>
+								</select>
+							</div>
 
-						<!-- Sort By Filter -->
-						<div>
-							<label
-								for="sortBy"
-								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
-							>
-								Sort By
-							</label>
-							<select
-								id="sortBy"
-								bind:value={sortBy}
-								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
-							>
-								<option value="created_at">Newest First</option>
-								<option value="price">Price</option>
-								<option value="price_reduction_percentage">Biggest Discount</option>
-								<option value="name">Name (A-Z)</option>
-							</select>
-						</div>
-
-						<!-- Sort Order Filter -->
-						<div>
-							<label
-								for="sortOrder"
-								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
-							>
-								Order
-							</label>
-							<select
-								id="sortOrder"
-								bind:value={sortOrder}
-								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
-							>
-								<option value="desc">Descending</option>
-								<option value="asc">Ascending</option>
-							</select>
+							<!-- Sort Order Filter -->
+							<div>
+								<label
+									for="sortOrder"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Sort Order
+								</label>
+								<select
+									id="sortOrder"
+									bind:value={sortOrder}
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								>
+									<option value="desc">Descending</option>
+									<option value="asc">Ascending</option>
+								</select>
+							</div>
 						</div>
 					</div>
 
 					<!-- Active Filters Indicator and Clear Button -->
-					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || statusFilter !== 'active' || sortBy !== 'created_at' || sortOrder !== 'desc'}
+					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || statusFilter !== 'active' || sortByDisplay !== 'created_at' || sortOrder !== 'desc'}
 						<div
-							class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700"
+							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
 						>
-							<div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-								<FontAwesomeIcon icon={faFilter} class="h-3 w-3" />
+							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+								<FontAwesomeIcon icon={faFilter} class="h-4 w-4" />
 								<span>Filters applied</span>
 							</div>
 							<button
 								onclick={clearFilters}
-								class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+								class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
 							>
-								<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -630,7 +665,7 @@
 										d="M6 18L18 6M6 6l12 12"
 									></path>
 								</svg>
-								Clear All
+								Clear All Filters
 							</button>
 						</div>
 					{/if}
