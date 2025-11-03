@@ -67,12 +67,9 @@
 	// Edit modal state
 	let showEditModal = $state(false);
 	let showFeaturedImageModal = $state(false);
-	let isOwner = $state(false);
 
-	// Debug: Watch for changes in isOwner
-	$effect(() => {
-		// Track isOwner changes
-	});
+	// Calculate isOwner reactively
+	let isOwner = $derived(yardSale && currentUserId ? yardSale.owner_id === currentUserId : false);
 
 	// Delete confirmation modal state
 	let showDeleteModal = $state(false);
@@ -127,9 +124,6 @@
 		try {
 			yardSale = await getYardSaleById(yardSaleId);
 
-			// Check if current user is the owner
-			isOwner = yardSale?.owner_id === currentUserId;
-
 			// Initialize visited state
 			if (yardSale) {
 				isVisited = isYardSaleVisited(yardSale.id, yardSale);
@@ -160,15 +154,7 @@
 		}
 	}
 
-	// Update ownership when current user changes
-	$effect(() => {
-		if (yardSale && currentUserId !== null) {
-			const newIsOwner = yardSale.owner_id === currentUserId;
-			isOwner = newIsOwner;
-		}
-	});
-
-	// Ownership calculation is now handled by the reactive effect above
+	// Ownership is now calculated reactively using $derived above
 
 	async function loadComments() {
 		comments = await getComments(yardSaleId);
@@ -438,7 +424,7 @@
 
 		<!-- Yard Sale Details -->
 		{#if yardSale && !loading}
-			<div class="mx-auto max-w-4xl space-y-6 sm:space-y-8">
+			<div class="mx-auto max-w-7xl space-y-6 sm:space-y-8">
 				<!-- Hero Section -->
 				<div
 					class="relative overflow-hidden rounded-3xl bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
@@ -446,9 +432,9 @@
 					<div class="px-4 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
 						<!-- Header with Actions -->
 						<div
-							class="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between"
+							class="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
 						>
-							<div class="flex-1">
+							<div class="min-w-0 flex-1">
 								<!-- Visited Indicator -->
 								{#if isVisited}
 									<div class="mb-4">
@@ -551,19 +537,21 @@
 
 								<!-- Title -->
 								<h1
-									class="mb-4 text-3xl leading-tight font-bold text-gray-900 sm:text-4xl dark:text-white"
+									class="mb-4 text-3xl leading-tight font-bold break-words text-gray-900 sm:text-4xl dark:text-white"
 								>
 									{yardSale.title}
 								</h1>
 
 								<!-- Image Gallery -->
 								{#if yardSale.photos && yardSale.photos.length > 0}
-									<div class="mb-6">
+									<div class="mb-6 w-full">
 										{#if yardSale.photos.length === 1}
 											<!-- Single Image -->
 											<div class="overflow-hidden rounded-2xl">
 												<img
-													src={getAuthenticatedImageUrl(yardSale.featured_image || yardSale.photos[0])}
+													src={getAuthenticatedImageUrl(
+														yardSale.featured_image || yardSale.photos[0]
+													)}
 													alt={yardSale.title}
 													class="h-64 w-full object-cover sm:h-80"
 													loading="lazy"
@@ -571,21 +559,40 @@
 											</div>
 										{:else}
 											<!-- Multiple Images Grid -->
-											{@const displayPhotos = yardSale.featured_image 
-												? [yardSale.featured_image, ...yardSale.photos.filter(p => p !== yardSale.featured_image)].slice(0, 4)
-												: yardSale.photos.slice(0, 4)}
-											<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-												{#each displayPhotos as photo, index}
-													<div class="overflow-hidden rounded-2xl">
-														<img
-															src={getAuthenticatedImageUrl(photo)}
-															alt="{yardSale.title} - Image {index + 1}"
-															class="h-32 w-full object-cover sm:h-40"
-															loading="lazy"
-														/>
-													</div>
-												{/each}
-											</div>
+											{#if yardSale && yardSale.featured_image && yardSale.photos}
+												{@const photos = yardSale.photos}
+												{@const featuredImage = yardSale.featured_image}
+												{@const displayPhotos = [
+													featuredImage,
+													...photos.filter((p) => p !== featuredImage)
+												].slice(0, 4)}
+												<div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+													{#each displayPhotos as photo, index}
+														<div class="overflow-hidden rounded-2xl">
+															<img
+																src={getAuthenticatedImageUrl(photo)}
+																alt="{yardSale.title} - Image {index + 1}"
+																class="h-32 w-full object-cover sm:h-40"
+																loading="lazy"
+															/>
+														</div>
+													{/each}
+												</div>
+											{:else}
+												{@const displayPhotos = yardSale.photos.slice(0, 4)}
+												<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+													{#each displayPhotos as photo, index}
+														<div class="overflow-hidden rounded-2xl">
+															<img
+																src={getAuthenticatedImageUrl(photo)}
+																alt="{yardSale.title} - Image {index + 1}"
+																class="h-32 w-full object-cover sm:h-40"
+																loading="lazy"
+															/>
+														</div>
+													{/each}
+												</div>
+											{/if}
 											{#if yardSale.photos.length > 4}
 												<p class="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
 													+{yardSale.photos.length - 4} more images
@@ -659,19 +666,26 @@
 										title={`Click to open in ${getPlatformName()}`}
 									>
 										{yardSale.address}, {yardSale.city}, {yardSale.state}
-										{yardSale.zip_code}
+										{yardSale.zip_code}|
 									</button>
 								</div>
 							</div>
 
 							<!-- Owner Actions -->
 							{#if isOwner}
-								<div class="ml-6 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+								<div
+									class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
+								>
 									<button
 										onclick={handleEditYardSale}
-										class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-6 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 									>
-										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<svg
+											class="mr-2 h-4 w-4 shrink-0"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
 											<path
 												stroke-linecap="round"
 												stroke-linejoin="round"
@@ -679,22 +693,28 @@
 												d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
 											/>
 										</svg>
-										Edit
+										<span>Edit</span>
 									</button>
 									{#if yardSale.photos && yardSale.photos.length > 0}
 										<button
 											onclick={handleSetFeaturedImage}
-											class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-6 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 										>
-											<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4" />
-											Set Featured Image
+											<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4 shrink-0" />
+											<span class="hidden sm:inline">Set Featured Image</span>
+											<span class="sm:hidden">Featured</span>
 										</button>
 									{/if}
 									<button
 										onclick={handleDeleteYardSale}
-										class="inline-flex min-h-[44px] items-center justify-center rounded-full border border-red-200 bg-white px-6 py-3 text-sm font-medium text-red-700 transition-all hover:bg-red-50 active:scale-95 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 transition-all hover:bg-red-50 active:scale-95 sm:flex-none sm:px-6 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
 									>
-										<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<svg
+											class="mr-2 h-4 w-4 shrink-0"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
 											<path
 												stroke-linecap="round"
 												stroke-linejoin="round"
@@ -702,18 +722,17 @@
 												d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
 											/>
 										</svg>
-										Delete
+										<span>Delete</span>
 									</button>
 								</div>
 							{/if}
 						</div>
 					</div>
 				</div>
-
 				<!-- Main Content Grid -->
-				<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
+				<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12">
 					<!-- Left Column - Main Info -->
-					<div class="space-y-6 sm:space-y-8 lg:col-span-2">
+					<div class="space-y-6 sm:space-y-8 lg:col-span-8">
 						<!-- Date and Time Card -->
 						<div
 							class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
@@ -889,7 +908,7 @@
 					</div>
 
 					<!-- Right Column - Sidebar -->
-					<div class="space-y-6">
+					<div class="space-y-6 lg:col-span-4">
 						<!-- Price Range Card -->
 						{#if yardSale.price_range}
 							<div
