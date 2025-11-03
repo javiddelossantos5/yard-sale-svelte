@@ -94,6 +94,10 @@
 	let touchEndX = $state(0);
 	let showAllImages = $state(false);
 
+	// Full-screen image viewer state
+	let imageViewerOpen = $state(false);
+	let viewerImageIndex = $state(0);
+
 	// Calculate isOwner reactively
 	let isOwner = $derived(yardSale && currentUserId ? yardSale.owner_id === currentUserId : false);
 
@@ -506,6 +510,59 @@
 		if (yardSale) {
 			currentImageIndex = 0;
 		}
+	});
+
+	// Full-screen image viewer functions
+	function openImageViewer(index: number) {
+		viewerImageIndex = index;
+		imageViewerOpen = true;
+	}
+
+	function closeImageViewer() {
+		imageViewerOpen = false;
+	}
+
+	function nextViewerImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			viewerImageIndex = (viewerImageIndex + 1) % photos.length;
+		}
+	}
+
+	function previousViewerImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			viewerImageIndex = viewerImageIndex === 0 ? photos.length - 1 : viewerImageIndex - 1;
+		}
+	}
+
+	// Keyboard navigation for image viewer
+	function handleKeyDown(e: KeyboardEvent) {
+		if (!imageViewerOpen) return;
+
+		if (e.key === 'ArrowLeft') {
+			previousViewerImage();
+		} else if (e.key === 'ArrowRight') {
+			nextViewerImage();
+		} else if (e.key === 'Escape') {
+			closeImageViewer();
+		}
+	}
+
+	// Add keyboard listener when viewer is open
+	$effect(() => {
+		if (imageViewerOpen) {
+			window.addEventListener('keydown', handleKeyDown);
+			// Prevent body scroll when modal is open
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			document.body.style.overflow = '';
+		};
 	});
 </script>
 
@@ -955,14 +1012,17 @@
 									{#if getDisplayPhotos().length === 1}
 										{@const displayPhotos = getDisplayPhotos()}
 										<!-- Single Image -->
-										<div class="overflow-hidden rounded-2xl">
+										<button
+											onclick={() => openImageViewer(0)}
+											class="w-full overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
+										>
 											<img
 												src={getAuthenticatedImageUrl(displayPhotos[0])}
 												alt={yardSale.title}
 												class="h-64 w-full object-cover sm:h-80"
 												loading="lazy"
 											/>
-										</div>
+										</button>
 									{:else}
 										{@const displayPhotos = getDisplayPhotos()}
 										<!-- Mobile: Carousel, Desktop: Grid -->
@@ -979,15 +1039,18 @@
 													class="flex transition-transform duration-300 ease-in-out"
 													style="transform: translateX(-{currentImageIndex * 100}%)"
 												>
-													{#each displayPhotos as photo}
-														<div class="min-w-full">
+													{#each displayPhotos as photo, index}
+														<button
+															onclick={() => openImageViewer(index)}
+															class="min-w-full transition-transform active:scale-[0.98]"
+														>
 															<img
 																src={getAuthenticatedImageUrl(photo)}
-																alt="{yardSale.title} - Image {displayPhotos.indexOf(photo) + 1}"
+																alt="{yardSale.title} - Image {index + 1}"
 																class="h-64 w-full object-cover"
 																loading="lazy"
 															/>
-														</div>
+														</button>
 													{/each}
 												</div>
 
@@ -1037,14 +1100,17 @@
 										<!-- Desktop Grid (hidden on mobile) -->
 										<div class="hidden sm:grid sm:grid-cols-2 sm:gap-3">
 											{#each showAllImages ? displayPhotos : displayPhotos.slice(0, 4) as photo, index}
-												<div class="overflow-hidden rounded-2xl">
+												<button
+													onclick={() => openImageViewer(index)}
+													class="overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
+												>
 													<img
 														src={getAuthenticatedImageUrl(photo)}
 														alt="{yardSale.title} - Image {index + 1}"
 														class="h-32 w-full object-cover sm:h-40"
 														loading="lazy"
 													/>
-												</div>
+												</button>
 											{/each}
 										</div>
 										{#if displayPhotos.length > 4}
@@ -1755,4 +1821,92 @@
 		onClose={handleCloseDeleteModal}
 		onConfirm={handleConfirmDelete}
 	/>
+
+	<!-- Full-Screen Image Viewer -->
+	{#if imageViewerOpen && yardSale}
+		{@const displayPhotos = getDisplayPhotos()}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
+			onclick={closeImageViewer}
+			role="dialog"
+			aria-modal="true"
+			aria-label="Image viewer"
+		>
+			<!-- Close Button -->
+			<button
+				onclick={closeImageViewer}
+				class="absolute top-4 right-4 z-10 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-800/50 dark:hover:bg-gray-800/70"
+				aria-label="Close viewer"
+			>
+				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/>
+				</svg>
+			</button>
+
+			<!-- Image Container -->
+			<div class="relative max-h-full max-w-full" onclick={(e) => e.stopPropagation()}>
+				<img
+					src={getAuthenticatedImageUrl(displayPhotos[viewerImageIndex])}
+					alt="{yardSale.title} - Image {viewerImageIndex + 1}"
+					class="max-h-screen max-w-screen object-contain"
+					loading="lazy"
+				/>
+
+				<!-- Navigation Buttons -->
+				{#if displayPhotos.length > 1}
+					<!-- Previous Button -->
+					<button
+						onclick={(e) => {
+							e.stopPropagation();
+							previousViewerImage();
+						}}
+						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-800/50 dark:hover:bg-gray-800/70"
+						aria-label="Previous image"
+					>
+						<FontAwesomeIcon icon={faChevronLeft} class="h-6 w-6" />
+					</button>
+
+					<!-- Next Button -->
+					<button
+						onclick={(e) => {
+							e.stopPropagation();
+							nextViewerImage();
+						}}
+						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-800/50 dark:hover:bg-gray-800/70"
+						aria-label="Next image"
+					>
+						<FontAwesomeIcon icon={faChevronRight} class="h-6 w-6" />
+					</button>
+
+					<!-- Image Counter -->
+					<div
+						class="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-4 py-2 text-sm font-medium text-white dark:bg-white/20"
+					>
+						{viewerImageIndex + 1} / {displayPhotos.length}
+					</div>
+
+					<!-- Image Indicators (Dots) -->
+					<div class="absolute bottom-16 left-1/2 flex -translate-x-1/2 gap-2">
+						{#each displayPhotos as _, index}
+							<button
+								onclick={(e) => {
+									e.stopPropagation();
+									viewerImageIndex = index;
+								}}
+								class="h-2 rounded-full transition-all {viewerImageIndex === index
+									? 'w-6 bg-white'
+									: 'w-2 bg-white/50 hover:bg-white/75'}"
+								aria-label="Go to image {index + 1}"
+							></button>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
 </div>
