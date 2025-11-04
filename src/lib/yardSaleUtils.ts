@@ -211,6 +211,40 @@ export function isYardSaleActiveOnDate(yardSale: YardSale, targetDate: string): 
 }
 
 /**
+ * Get hours remaining until yard sale ends (for today only)
+ */
+function getHoursRemaining(yardSale: YardSale): number | null {
+	const now = new Date();
+	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+
+	const endDateStr = yardSale.end_date || '';
+	const endTimeStr = yardSale.end_time || '';
+
+	if (!endDateStr || !endTimeStr) return null;
+
+	// Create end date/time in Mountain Time
+	const endDate = new Date(endDateStr + 'T00:00:00');
+	const [hours, minutes] = endTimeStr.split(':').map(Number);
+	endDate.setHours(hours, minutes, 0, 0);
+
+	// Check if it ends today
+	const todayMountain = new Date(nowMountain);
+	todayMountain.setHours(0, 0, 0, 0);
+	const endDateOnly = new Date(endDate);
+	endDateOnly.setHours(0, 0, 0, 0);
+
+	if (endDateOnly.getTime() !== todayMountain.getTime()) {
+		return null; // Not ending today
+	}
+
+	// Calculate hours remaining
+	const diffTime = endDate.getTime() - nowMountain.getTime();
+	const hoursRemaining = Math.floor(diffTime / (1000 * 60 * 60));
+
+	return hoursRemaining >= 0 ? hoursRemaining : null;
+}
+
+/**
  * Get a formatted time remaining message
  */
 export function getTimeRemainingMessage(yardSale: YardSale): string {
@@ -228,6 +262,33 @@ export function getTimeRemainingMessage(yardSale: YardSale): string {
 			}
 		case 'active':
 			if (days === 0) {
+				// Check hours remaining
+				const hoursRemaining = getHoursRemaining(yardSale);
+				if (hoursRemaining !== null && hoursRemaining >= 0) {
+					if (hoursRemaining === 0) {
+						// Less than 1 hour, calculate minutes
+						const now = new Date();
+						const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+						const endDateStr = yardSale.end_date || '';
+						const endTimeStr = yardSale.end_time || '';
+						if (endDateStr && endTimeStr) {
+							const endDate = new Date(endDateStr + 'T00:00:00');
+							const [hours, minutes] = endTimeStr.split(':').map(Number);
+							endDate.setHours(hours, minutes, 0, 0);
+							const diffTime = endDate.getTime() - nowMountain.getTime();
+							const minutesRemaining = Math.floor(diffTime / (1000 * 60));
+							if (minutesRemaining > 0) {
+								return `${minutesRemaining} min left`;
+							} else {
+								return 'Ending soon';
+							}
+						}
+					} else if (hoursRemaining === 1) {
+						return '1 hour left';
+					} else {
+						return `${hoursRemaining} hours left`;
+					}
+				}
 				return 'Ends today!';
 			} else if (days === 1) {
 				return 'Ends tomorrow';
