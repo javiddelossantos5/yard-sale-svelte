@@ -8,6 +8,7 @@
 		deleteMarketItemComment,
 		watchMarketItem,
 		unwatchMarketItem,
+		updateMarketItem,
 		getAuthenticatedImageUrl,
 		getCurrentUser,
 		getMarketItemConversations,
@@ -38,11 +39,13 @@
 		faHome,
 		faStore,
 		faArrowRightFromBracket,
-		faArrowRight
+		faArrowRight,
+		faCheckCircle
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
 	import MarketItemFeaturedImageModal from '$lib/MarketItemFeaturedImageModal.svelte';
+	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
 
@@ -60,6 +63,8 @@
 	let existingConversation = $state<MarketItemConversation | null>(null);
 	let checkingConversation = $state(false);
 	let submittingComment = $state(false);
+	let markingAsSold = $state(false);
+	let showMarkAsSoldModal = $state(false);
 
 	// Image carousel state
 	let currentImageIndex = $state(0);
@@ -251,6 +256,30 @@
 
 	async function handleEditSuccess() {
 		await load(); // Reload the item after editing
+	}
+
+	function openMarkAsSoldModal() {
+		showMarkAsSoldModal = true;
+	}
+
+	function closeMarkAsSoldModal() {
+		showMarkAsSoldModal = false;
+	}
+
+	async function markAsSold() {
+		if (!item || markingAsSold) return;
+
+		markingAsSold = true;
+		error = null;
+		showMarkAsSoldModal = false;
+		try {
+			await updateMarketItem(item.id, { status: 'sold' });
+			await load(); // Reload the item to show updated status
+		} catch (e: any) {
+			error = e?.message || 'Failed to mark item as sold';
+		} finally {
+			markingAsSold = false;
+		}
 	}
 
 	function handleSetFeaturedImage() {
@@ -703,6 +732,16 @@
 									<div
 										class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
 									>
+										{#if item.status !== 'sold'}
+											<button
+												onclick={openMarkAsSoldModal}
+												disabled={markingAsSold}
+												class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+											>
+												<FontAwesomeIcon icon={faCheckCircle} class="mr-2 h-4 w-4 shrink-0" />
+												<span>{markingAsSold ? 'Marking...' : 'Mark as Sold'}</span>
+											</button>
+										{/if}
 										<button
 											onclick={() => (isEditOpen = true)}
 											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
@@ -1346,6 +1385,22 @@
 			itemName={item.name}
 			onClose={() => (isMessageOpen = false)}
 			onSuccess={handleMessageSuccess}
+		/>
+	{/if}
+
+	<!-- Mark as Sold Confirmation Modal -->
+	{#if item}
+		<ConfirmationModal
+			isOpen={showMarkAsSoldModal}
+			onClose={closeMarkAsSoldModal}
+			onConfirm={markAsSold}
+			title="Mark Item as Sold"
+			message={`Are you sure you want to mark {itemName} as sold? This action can be undone by editing the item and changing its status back to "Active".`}
+			confirmText="Mark as Sold"
+			cancelText="Cancel"
+			type="danger"
+			loading={markingAsSold}
+			itemName={item.name}
 		/>
 	{/if}
 
