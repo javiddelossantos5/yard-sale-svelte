@@ -21,6 +21,7 @@
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
 	import {
 		faChevronLeft,
+		faChevronRight,
 		faEnvelope,
 		faHandshake,
 		faHeart,
@@ -40,6 +41,7 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
+	import MarketItemFeaturedImageModal from '$lib/MarketItemFeaturedImageModal.svelte';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
 
@@ -53,9 +55,20 @@
 	let currentUser = $state<CurrentUser | null>(null);
 	let isEditOpen = $state(false);
 	let isMessageOpen = $state(false);
+	let showFeaturedImageModal = $state(false);
 	let existingConversation = $state<MarketItemConversation | null>(null);
 	let checkingConversation = $state(false);
 	let submittingComment = $state(false);
+
+	// Image carousel state
+	let currentImageIndex = $state(0);
+	let touchStartX = $state(0);
+	let touchEndX = $state(0);
+	let showAllImages = $state(false);
+
+	// Full-screen image viewer state
+	let imageViewerOpen = $state(false);
+	let viewerImageIndex = $state(0);
 
 	function formatDateTime(iso: string): string {
 		try {
@@ -238,6 +251,145 @@
 	async function handleEditSuccess() {
 		await load(); // Reload the item after editing
 	}
+
+	function handleSetFeaturedImage() {
+		if (currentUser && item && currentUser.id === item.owner_id) {
+			showFeaturedImageModal = true;
+		}
+	}
+
+	function handleCloseFeaturedImageModal() {
+		showFeaturedImageModal = false;
+	}
+
+	async function handleFeaturedImageSuccess() {
+		showFeaturedImageModal = false;
+		await load(); // Reload the item after setting featured image
+	}
+
+	// Image carousel functions
+	function getDisplayPhotos() {
+		if (!item || !item.photos || item.photos.length === 0) return [];
+
+		const photos = item.photos;
+		const featuredImage = item.featured_image;
+		if (featuredImage && photos.includes(featuredImage)) {
+			// Featured image first, then rest
+			return [featuredImage, ...photos.filter((p) => p !== featuredImage)];
+		}
+		return photos;
+	}
+
+	function nextImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			currentImageIndex = (currentImageIndex + 1) % photos.length;
+		}
+	}
+
+	function previousImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			currentImageIndex = currentImageIndex === 0 ? photos.length - 1 : currentImageIndex - 1;
+		}
+	}
+
+	function goToImage(index: number) {
+		const photos = getDisplayPhotos();
+		if (index >= 0 && index < photos.length) {
+			currentImageIndex = index;
+		}
+	}
+
+	// Touch/swipe handlers
+	function handleTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+	}
+
+	function handleTouchMove(e: TouchEvent) {
+		touchEndX = e.touches[0].clientX;
+	}
+
+	function handleTouchEnd() {
+		if (!touchStartX || !touchEndX) return;
+
+		const distance = touchStartX - touchEndX;
+		const minSwipeDistance = 50;
+
+		if (Math.abs(distance) > minSwipeDistance) {
+			if (distance > 0) {
+				// Swipe left - next image
+				nextImage();
+			} else {
+				// Swipe right - previous image
+				previousImage();
+			}
+		}
+
+		// Reset
+		touchStartX = 0;
+		touchEndX = 0;
+	}
+
+	// Reset carousel when item changes
+	$effect(() => {
+		if (item) {
+			currentImageIndex = 0;
+		}
+	});
+
+	// Full-screen image viewer functions
+	function openImageViewer(index: number) {
+		viewerImageIndex = index;
+		imageViewerOpen = true;
+	}
+
+	function closeImageViewer() {
+		imageViewerOpen = false;
+	}
+
+	function nextViewerImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			viewerImageIndex = (viewerImageIndex + 1) % photos.length;
+		}
+	}
+
+	function previousViewerImage() {
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			viewerImageIndex = viewerImageIndex === 0 ? photos.length - 1 : viewerImageIndex - 1;
+		}
+	}
+
+	// Keyboard navigation for image viewer
+	function handleKeyDown(e: KeyboardEvent) {
+		if (!imageViewerOpen) return;
+
+		if (e.key === 'ArrowLeft') {
+			previousViewerImage();
+		} else if (e.key === 'ArrowRight') {
+			nextViewerImage();
+		} else if (e.key === 'Escape') {
+			closeImageViewer();
+		}
+	}
+
+	// Add keyboard listener when viewer is open
+	$effect(() => {
+		if (imageViewerOpen) {
+			window.addEventListener('keydown', handleKeyDown);
+			// Prevent body scroll when modal is open
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			document.body.style.overflow = '';
+		};
+	});
 
 	const isOwner = $derived(currentUser && item && currentUser.id === item.owner_id);
 
@@ -491,27 +643,128 @@
 		</header>
 
 		<div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-			<div
-				class="overflow-hidden rounded-3xl shadow-[0_1px_0_rgba(255,255,255,0.6),0_30px_60px_rgba(0,0,0,0.08)] ring-1 ring-black/5 dark:shadow-black/30"
-			>
-				<div class="relative">
-					{#if item.featured_image}
-						<img
-							src={getAuthenticatedImageUrl(item.featured_image)}
-							alt={item.name}
-							class="aspect-[16/10] w-full object-cover"
-							loading="lazy"
-						/>
+			<!-- Image Gallery -->
+			{#if item.photos && item.photos.length > 0}
+				<div class="mb-6 w-full">
+					{#if getDisplayPhotos().length === 1}
+						{@const displayPhotos = getDisplayPhotos()}
+						<!-- Single Image -->
+						<button
+							onclick={() => openImageViewer(0)}
+							class="w-full overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
+						>
+							<img
+								src={getAuthenticatedImageUrl(displayPhotos[0])}
+								alt={item.name}
+								class="h-64 w-full object-cover sm:h-80"
+								loading="lazy"
+							/>
+						</button>
 					{:else}
-						<div
-							class="aspect-[16/10] w-full bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600"
-						></div>
+						{@const displayPhotos = getDisplayPhotos()}
+						<!-- Mobile: Carousel, Desktop: Grid -->
+						<!-- Mobile Carousel (hidden on desktop) -->
+						<div class="relative block sm:hidden">
+							<!-- Image Container -->
+							<div
+								class="relative overflow-hidden rounded-2xl"
+								ontouchstart={handleTouchStart}
+								ontouchmove={handleTouchMove}
+								ontouchend={handleTouchEnd}
+							>
+								<div
+									class="flex transition-transform duration-300 ease-in-out"
+									style="transform: translateX(-{currentImageIndex * 100}%)"
+								>
+									{#each displayPhotos as photo, index}
+										<button
+											onclick={() => openImageViewer(index)}
+											class="min-w-full transition-transform active:scale-[0.98]"
+										>
+											<img
+												src={getAuthenticatedImageUrl(photo)}
+												alt="{item.name} - Image {index + 1}"
+												class="h-64 w-full object-cover"
+												loading="lazy"
+											/>
+										</button>
+									{/each}
+								</div>
+
+								<!-- Navigation Buttons -->
+								{#if displayPhotos.length > 1}
+									<!-- Previous Button -->
+									<button
+										onclick={previousImage}
+										class="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+										aria-label="Previous image"
+									>
+										<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
+									</button>
+
+									<!-- Next Button -->
+									<button
+										onclick={nextImage}
+										class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+										aria-label="Next image"
+									>
+										<FontAwesomeIcon icon={faChevronRight} class="h-5 w-5" />
+									</button>
+
+									<!-- Image Indicators (Dots) -->
+									<div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+										{#each displayPhotos as _, index}
+											<button
+												onclick={() => goToImage(index)}
+												class="h-2 rounded-full transition-all {currentImageIndex === index
+													? 'w-6 bg-white'
+													: 'w-2 bg-white/50 hover:bg-white/75'}"
+												aria-label="Go to image {index + 1}"
+											></button>
+										{/each}
+									</div>
+
+									<!-- Image Counter -->
+									<div
+										class="absolute top-3 right-3 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white dark:bg-white/20"
+									>
+										{currentImageIndex + 1} / {displayPhotos.length}
+									</div>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Desktop Grid (hidden on mobile) -->
+						<div class="hidden sm:grid sm:grid-cols-2 sm:gap-3">
+							{#each showAllImages ? displayPhotos : displayPhotos.slice(0, 4) as photo, index}
+								<button
+									onclick={() => openImageViewer(index)}
+									class="overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
+								>
+									<img
+										src={getAuthenticatedImageUrl(photo)}
+										alt="{item.name} - Image {index + 1}"
+										class="h-32 w-full object-cover sm:h-40"
+										loading="lazy"
+									/>
+								</button>
+							{/each}
+						</div>
+						{#if displayPhotos.length > 4}
+							<button
+								onclick={() => (showAllImages = !showAllImages)}
+								class="mt-2 hidden text-center text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 active:scale-95 sm:block dark:text-blue-400 dark:hover:text-blue-300"
+							>
+								{showAllImages ? 'Show Less' : `+${displayPhotos.length - 4} more images`}
+							</button>
+						{/if}
 					{/if}
-					<div
-						class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0"
-					></div>
 				</div>
-			</div>
+			{:else}
+				<div
+					class="mb-6 h-64 w-full rounded-2xl bg-linear-to-br from-gray-100 to-gray-200 sm:h-80 dark:from-gray-700 dark:to-gray-600"
+				></div>
+			{/if}
 		</div>
 
 		<!-- Separate info section (not attached to the image) -->
@@ -597,6 +850,17 @@
 									<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4" />
 									Edit
 								</button>
+								{#if item.photos && item.photos.length > 0}
+									<button
+										onclick={handleSetFeaturedImage}
+										class="inline-flex items-center rounded-xl bg-purple-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-purple-700 active:scale-95"
+										aria-label="Set featured image"
+									>
+										<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4" />
+										<span class="hidden sm:inline">Set Featured Image</span>
+										<span class="sm:hidden">Featured</span>
+									</button>
+								{/if}
 							{/if}
 							{#if !isOwner}
 								{#if existingConversation}
@@ -874,6 +1138,16 @@
 		/>
 	{/if}
 
+	<!-- Featured Image Modal -->
+	{#if item && showFeaturedImageModal}
+		<MarketItemFeaturedImageModal
+			isOpen={showFeaturedImageModal}
+			itemId={item.id}
+			onClose={handleCloseFeaturedImageModal}
+			onSuccess={handleFeaturedImageSuccess}
+		/>
+	{/if}
+
 	<!-- Message Modal -->
 	{#if item}
 		<MarketItemMessageModal
@@ -883,5 +1157,96 @@
 			onClose={() => (isMessageOpen = false)}
 			onSuccess={handleMessageSuccess}
 		/>
+	{/if}
+
+	<!-- Full-Screen Image Viewer Modal -->
+	{#if imageViewerOpen && item}
+		{@const displayPhotos = getDisplayPhotos()}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+			onclick={closeImageViewer}
+			onkeydown={(e) => {
+				if (e.key === 'Escape') closeImageViewer();
+			}}
+			role="dialog"
+			aria-modal="true"
+			aria-label="Image viewer"
+			tabindex="-1"
+		>
+			<!-- Close Button -->
+			<button
+				onclick={closeImageViewer}
+				class="absolute top-4 right-4 z-10 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-800/50 dark:hover:bg-gray-800/70"
+				aria-label="Close viewer"
+			>
+				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/>
+				</svg>
+			</button>
+
+			<!-- Image Container -->
+			<div class="relative max-h-full max-w-full" onclick={(e) => e.stopPropagation()}>
+				<img
+					src={getAuthenticatedImageUrl(displayPhotos[viewerImageIndex])}
+					alt="{item.name} - Image {viewerImageIndex + 1}"
+					class="max-h-full max-w-full object-contain"
+				/>
+
+				<!-- Navigation Buttons -->
+				{#if displayPhotos.length > 1}
+					<!-- Previous Button -->
+					<button
+						onclick={(e) => {
+							e.stopPropagation();
+							previousViewerImage();
+						}}
+						class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-800/50 dark:hover:bg-gray-800/70"
+						aria-label="Previous image"
+					>
+						<FontAwesomeIcon icon={faChevronLeft} class="h-6 w-6" />
+					</button>
+
+					<!-- Next Button -->
+					<button
+						onclick={(e) => {
+							e.stopPropagation();
+							nextViewerImage();
+						}}
+						class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20 active:scale-95 dark:bg-gray-800/50 dark:hover:bg-gray-800/70"
+						aria-label="Next image"
+					>
+						<FontAwesomeIcon icon={faChevronRight} class="h-6 w-6" />
+					</button>
+
+					<!-- Image Counter -->
+					<div
+						class="absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-4 py-2 text-sm font-medium text-white dark:bg-white/20"
+					>
+						{viewerImageIndex + 1} / {displayPhotos.length}
+					</div>
+
+					<!-- Dot Indicators -->
+					<div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+						{#each displayPhotos as _, index}
+							<button
+								onclick={(e) => {
+									e.stopPropagation();
+									viewerImageIndex = index;
+								}}
+								class="h-2 rounded-full transition-all {viewerImageIndex === index
+									? 'w-6 bg-white'
+									: 'w-2 bg-white/50 hover:bg-white/75'}"
+								aria-label="Go to image {index + 1}"
+							></button>
+						{/each}
+					</div>
+				{/if}
+			</div>
+		</div>
 	{/if}
 </div>

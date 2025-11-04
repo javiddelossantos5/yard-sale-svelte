@@ -1426,6 +1426,86 @@ export async function getWatchedItems(params?: {
 	};
 }
 
+// Market Item Featured Image Interfaces
+export interface MarketItemImagesResponse {
+	item_id: string;
+	featured_image: string | null;
+	photos: string[];
+	uploaded_images: Array<
+		string | { key: string; url: string; size: number; last_modified: string; filename: string }
+	>;
+	all_images: string[];
+}
+
+// Set featured image for a market item
+export async function setMarketItemFeaturedImage(
+	itemId: string,
+	request: SetFeaturedImageRequest
+): Promise<FeaturedImageResponse> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/market-items/${itemId}/featured-image`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(request)
+	});
+
+	if (!response.ok) {
+		const error = await response.json().catch(() => ({}));
+		const errorText = await response.text().catch(() => '');
+		throw new Error(error.detail || error.message || 'Failed to set featured image');
+	}
+
+	return response.json();
+}
+
+// Remove featured image from a market item
+export async function removeMarketItemFeaturedImage(itemId: string): Promise<void> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/market-items/${itemId}/featured-image`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (!response.ok) {
+		const error = await response.json().catch(() => ({}));
+		throw new Error(error.detail || error.message || 'Failed to remove featured image');
+	}
+}
+
+// Get all available images for a market item
+export async function getMarketItemImages(itemId: string): Promise<MarketItemImagesResponse> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/market-items/${itemId}/images`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (!response.ok) {
+		const error = await response.json().catch(() => ({}));
+		throw new Error(error.detail || error.message || 'Failed to fetch images');
+	}
+
+	return response.json();
+}
+
 // Messaging
 export interface MarketItemMessage {
 	id: string;

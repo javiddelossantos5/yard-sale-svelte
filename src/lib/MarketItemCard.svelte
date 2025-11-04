@@ -12,10 +12,45 @@
 		faPhone,
 		faTag,
 		faUser,
-		faStar
+		faStar,
+		faChevronLeft,
+		faChevronRight
 	} from '@fortawesome/free-solid-svg-icons';
 
 	let { item, hideStatusBadge = false }: { item: MarketItem; hideStatusBadge?: boolean } = $props();
+
+	// Image carousel state for card
+	let cardImageIndex = $state(0);
+
+	function getDisplayPhotos() {
+		if (!item.photos || item.photos.length === 0) return [];
+
+		const photos = item.photos;
+		const featuredImage = item.featured_image;
+		if (featuredImage && photos.includes(featuredImage)) {
+			// Featured image first, then rest
+			return [featuredImage, ...photos.filter((p) => p !== featuredImage)];
+		}
+		return photos;
+	}
+
+	function nextCardImage(e: Event) {
+		e.preventDefault();
+		e.stopPropagation();
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			cardImageIndex = (cardImageIndex + 1) % photos.length;
+		}
+	}
+
+	function previousCardImage(e: Event) {
+		e.preventDefault();
+		e.stopPropagation();
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			cardImageIndex = cardImageIndex === 0 ? photos.length - 1 : cardImageIndex - 1;
+		}
+	}
 
 	function formatPrice(price: number): string {
 		return new Intl.NumberFormat('en-US', {
@@ -76,13 +111,49 @@
 >
 	<!-- Image Section -->
 	<div class="relative overflow-hidden">
-		{#if item.featured_image}
+		{#if item.featured_image || (item.photos && item.photos.length > 0)}
+			{@const displayPhotos = getDisplayPhotos()}
+			{@const hasMultipleImages = displayPhotos.length > 1}
 			<img
-				src={getAuthenticatedImageUrl(item.featured_image)}
+				src={getAuthenticatedImageUrl(displayPhotos[cardImageIndex])}
 				alt={item.name}
 				loading="lazy"
 				class="aspect-[16/10] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
 			/>
+
+			<!-- Navigation Buttons (only show if multiple images) -->
+			{#if hasMultipleImages}
+				<!-- Previous Button -->
+				<button
+					onclick={previousCardImage}
+					onmousedown={(e) => e.stopPropagation()}
+					ontouchstart={(e) => e.stopPropagation()}
+					class="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+					aria-label="Previous image"
+				>
+					<FontAwesomeIcon icon={faChevronLeft} class="h-4 w-4" />
+				</button>
+
+				<!-- Next Button -->
+				<button
+					onclick={nextCardImage}
+					onmousedown={(e) => e.stopPropagation()}
+					ontouchstart={(e) => e.stopPropagation()}
+					class="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+					aria-label="Next image"
+				>
+					<FontAwesomeIcon icon={faChevronRight} class="h-4 w-4" />
+				</button>
+
+				<!-- Image Counter -->
+				<div
+					class="absolute top-2 right-2 z-10 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white dark:bg-white/20"
+					onclick={(e) => e.stopPropagation()}
+					onmousedown={(e) => e.stopPropagation()}
+				>
+					{cardImageIndex + 1} / {displayPhotos.length}
+				</div>
+			{/if}
 		{:else}
 			<div
 				class="aspect-[16/10] w-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600"
@@ -112,17 +183,6 @@
 					{item.status === 'sold' ? 'Sold' : item.status === 'hidden' ? 'Hidden' : 'Available'}
 				</div>
 			{/if}
-		</div>
-
-		<!-- Hover overlay CTA -->
-		<div
-			class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-		>
-			<div
-				class="rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-gray-900 shadow-lg backdrop-blur"
-			>
-				View Details
-			</div>
 		</div>
 	</div>
 

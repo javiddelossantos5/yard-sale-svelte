@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { createMarketItem, type MarketItemCreate } from './api';
+	import { createMarketItem, type MarketItemCreate, getAuthenticatedImageUrl } from './api';
 	import ImageUpload from './ImageUpload.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 	let { isOpen, onClose, onSuccess } = $props<{
 		isOpen: boolean;
@@ -240,9 +242,55 @@
 									maxImages={10}
 									onImagesChange={(images) => {
 										formData.photos = images;
-										formData.featured_image = images[0] || '';
+										// Keep current featured_image if it's still in the list, otherwise use first image
+										if (!formData.featured_image || !images.includes(formData.featured_image)) {
+											formData.featured_image = images[0] || '';
+										}
 									}}
 								/>
+								{#if formData.photos && formData.photos.length > 0}
+									<div class="mt-4">
+										<p class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+											Select Featured Image
+										</p>
+										<p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
+											Select which photo should be featured on your item card
+										</p>
+										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+											{#each formData.photos as photo, index}
+												{#if photo}
+													{@const isFeatured = formData.featured_image === photo}
+													<button
+														type="button"
+														onclick={() => {
+															formData.featured_image = isFeatured ? '' : photo;
+														}}
+														class="group relative overflow-hidden rounded-xl border-2 transition-all {isFeatured
+															? 'border-blue-600 ring-2 ring-blue-500 ring-offset-2'
+															: 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'}"
+													>
+														<img
+															src={getAuthenticatedImageUrl(photo)}
+															alt="Photo {index + 1}"
+															class="aspect-square w-full object-cover"
+															onerror={(e) => {
+																console.error('Failed to load image:', photo);
+																(e.target as HTMLImageElement).style.display = 'none';
+															}}
+														/>
+														{#if isFeatured}
+															<div
+																class="absolute top-2 right-2 rounded-full bg-blue-600 p-1.5 text-white shadow-lg"
+															>
+																<FontAwesomeIcon icon={faStar} class="h-3 w-3" />
+															</div>
+														{/if}
+													</button>
+												{/if}
+											{/each}
+										</div>
+									</div>
+								{/if}
 							</div>
 
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
