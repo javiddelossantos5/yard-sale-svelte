@@ -14,14 +14,22 @@
 	let { children } = $props();
 
 	onMount(() => {
+		// setupAuthFetch() is now called at module load time in auth.ts
+		// but call it here too to ensure it's set up (idempotent)
 		setupAuthFetch();
 
 		// Check authentication on every page load
 		checkAuth();
 
-		// Load notification counts if user is logged in
-		if (isLoggedIn()) {
-			loadNotificationCounts();
+		// Load notification counts if user is logged in and not on login page
+		// Use setTimeout to avoid interfering with initial page load
+		const currentPath = $page.url.pathname;
+		if (isLoggedIn() && currentPath !== '/login') {
+			setTimeout(() => {
+				loadNotificationCounts().catch(() => {
+					// Silently handle errors - token expiration will be handled by setupAuthFetch
+				});
+			}, 100);
 		}
 	});
 
@@ -33,9 +41,14 @@
 	function checkAuth() {
 		const currentPath = $page.url.pathname;
 		const isLoginPage = currentPath === '/login';
+		const isPublicPath =
+			currentPath === '/' ||
+			currentPath.startsWith('/market') ||
+			currentPath.startsWith('/yard-sale') ||
+			currentPath.startsWith('/login');
 
-		// If not logged in and not on login page, redirect to login
-		if (!isLoggedIn() && !isLoginPage) {
+		// Allow public pages without forcing login
+		if (!isLoggedIn() && !isPublicPath) {
 			goto('/login');
 		}
 

@@ -71,6 +71,11 @@
 			marketItemUnreadCount = marketUnread.unread_count;
 			currentUser = user;
 		} catch (e) {
+			// Don't show error for token expiration - handleTokenExpiration() will redirect
+			if (e instanceof Error && e.message === 'Token expired') {
+				// Silently handle - redirect will happen via handleTokenExpiration()
+				return;
+			}
 			error = e instanceof Error ? e.message : 'Failed to load conversations';
 		} finally {
 			loading = false;

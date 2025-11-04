@@ -10,6 +10,12 @@ type LoginResponse = {
 
 const ACCESS_TOKEN_KEY = 'access_token';
 let fetchWrapped = false;
+let isHandlingTokenExpiration = false;
+
+// Initialize auth fetch wrapper immediately if in browser
+if (typeof window !== 'undefined') {
+	setupAuthFetch();
+}
 
 export function getAccessToken(): string | null {
 	if (typeof localStorage === 'undefined') return null;
@@ -23,20 +29,35 @@ export function setAccessToken(token: string): void {
 
 export function setupAuthFetch(): void {
 	if (typeof window === 'undefined' || fetchWrapped) return;
+
 	const originalFetch = window.fetch.bind(window);
 	window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
 		try {
 			const url = typeof input === 'string' ? input : input.toString();
 			if (url.startsWith('/api')) {
+				// Don't handle token expiration for login/register endpoints
+				if (url.includes('/api/login') || url.includes('/api/register')) {
+					return originalFetch(input, init);
+				}
+
 				const token = getAccessToken();
 				if (token) {
 					const headers = new Headers(init?.headers || {});
-					if (!headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`);
+					if (!headers.has('Authorization')) {
+						headers.set('Authorization', `Bearer ${token}`);
+					}
 					const response = await originalFetch(input, { ...init, headers });
 
-					// Check for token expiration (401 Unauthorized or 403 Forbidden)
-					if (isTokenExpired(response)) {
-						handleTokenExpiration();
+					// Only handle token expiration for /api/me endpoint (the definitive auth check)
+					// Other endpoints handle their own errors and don't necessarily mean token is expired
+					if (isTokenExpired(response) && url.includes('/api/me') && !isHandlingTokenExpiration) {
+						const currentPath = window.location.pathname;
+						if (currentPath !== '/login') {
+							handleTokenExpiration();
+						} else {
+							// Clear the expired token if we're on login page
+							logout();
+						}
 					}
 
 					return response;
@@ -87,14 +108,35 @@ export function logout(): void {
 }
 
 export function handleTokenExpiration(): void {
-	// Clear session and redirect to login
+	// Prevent multiple simultaneous calls
+	if (isHandlingTokenExpiration) {
+		return;
+	}
 
+	isHandlingTokenExpiration = true;
+
+	// Clear session and redirect to login
 	// Clear the expired token
 	logout();
 
-	// Redirect to login page
+	// Redirect to login page only if we're not already there
 	if (typeof window !== 'undefined') {
-		window.location.href = '/login';
+		const currentPath = window.location.pathname;
+		if (currentPath !== '/login') {
+			// Use setTimeout to allow current execution to complete
+			setTimeout(() => {
+				window.location.href = '/login';
+				// Reset flag after redirect
+				setTimeout(() => {
+					isHandlingTokenExpiration = false;
+				}, 1000);
+			}, 0);
+		} else {
+			// Reset flag if we're already on login page
+			isHandlingTokenExpiration = false;
+		}
+	} else {
+		isHandlingTokenExpiration = false;
 	}
 }
 

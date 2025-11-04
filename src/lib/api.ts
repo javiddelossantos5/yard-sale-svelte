@@ -837,10 +837,19 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 			return await getUserProfile(userId);
 		} else {
 			// If we can't get user ID from token, try the /me endpoint
-			const response = await fetch('/api/me');
+			const token = localStorage.getItem('access_token');
+			const response = await fetch('/api/me', {
+				headers: token
+				? {
+						Authorization: `Bearer ${token}`
+					}
+				: {}
+			});
 
-			// Handle token expiration - don't redirect here, let calling code handle it
+			// Handle token expiration
 			if (response.status === 401 || response.status === 403) {
+				const { handleTokenExpiration } = await import('./auth');
+				handleTokenExpiration();
 				throw new Error('Token expired');
 			}
 
@@ -864,6 +873,14 @@ export async function getUserProfile(userId: string): Promise<CurrentUser> {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
 	});
+
+	// Handle token expiration
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
 	if (!response.ok) {
 		if (response.status === 404) {
 			throw new Error('User profile endpoint not implemented on backend');
