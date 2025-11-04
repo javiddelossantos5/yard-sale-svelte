@@ -6,6 +6,7 @@
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
+	import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 	import { getPaymentMethodIcon } from './paymentUtils';
 	import { getCurrentUser, type CurrentUser, getAuthenticatedImageUrl } from './api';
 
@@ -49,6 +50,37 @@
 
 	// Visited state
 	let isVisited = $state(isYardSaleVisited(yardSale.id, yardSale));
+
+	// Image carousel state for card
+	let cardImageIndex = $state(0);
+
+	function getDisplayPhotos() {
+		if (!yardSale.photos || yardSale.photos.length === 0) return [];
+
+		const photos = yardSale.photos;
+		const featuredImage = yardSale.featured_image;
+		if (featuredImage && photos.includes(featuredImage)) {
+			// Featured image first, then rest
+			return [featuredImage, ...photos.filter((p) => p !== featuredImage)];
+		}
+		return photos;
+	}
+
+	function nextCardImage(e: Event) {
+		e.stopPropagation();
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			cardImageIndex = (cardImageIndex + 1) % photos.length;
+		}
+	}
+
+	function previousCardImage(e: Event) {
+		e.stopPropagation();
+		const photos = getDisplayPhotos();
+		if (photos.length > 0) {
+			cardImageIndex = cardImageIndex === 0 ? photos.length - 1 : cardImageIndex - 1;
+		}
+	}
 
 	function formatDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -116,14 +148,43 @@
 
 		<!-- Featured Image -->
 		{#if yardSale.featured_image || (yardSale.photos && yardSale.photos.length > 0)}
-			{@const displayImage = yardSale.featured_image || yardSale.photos[0]}
-			<div class="mb-4">
+			{@const displayPhotos = getDisplayPhotos()}
+			{@const hasMultipleImages = displayPhotos.length > 1}
+			<div class="relative mb-4">
 				<img
-					src={getAuthenticatedImageUrl(displayImage)}
+					src={getAuthenticatedImageUrl(displayPhotos[cardImageIndex])}
 					alt={yardSale.title}
 					class="h-48 w-full rounded-2xl object-cover shadow-lg"
 					loading="lazy"
 				/>
+
+				<!-- Navigation Buttons (only show if multiple images) -->
+				{#if hasMultipleImages}
+					<!-- Previous Button -->
+					<button
+						onclick={previousCardImage}
+						class="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+						aria-label="Previous image"
+					>
+						<FontAwesomeIcon icon={faChevronLeft} class="h-4 w-4" />
+					</button>
+
+					<!-- Next Button -->
+					<button
+						onclick={nextCardImage}
+						class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+						aria-label="Next image"
+					>
+						<FontAwesomeIcon icon={faChevronRight} class="h-4 w-4" />
+					</button>
+
+					<!-- Image Counter -->
+					<div
+						class="absolute top-2 right-2 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white dark:bg-white/20"
+					>
+						{cardImageIndex + 1} / {displayPhotos.length}
+					</div>
+				{/if}
 			</div>
 		{/if}
 
