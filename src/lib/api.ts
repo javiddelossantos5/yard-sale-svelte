@@ -1185,6 +1185,8 @@ export interface MarketItem {
 	accepts_best_offer?: boolean;
 	contact_phone?: string | null;
 	contact_email?: string | null;
+	condition?: string | null;
+	quantity?: number | null;
 }
 
 export interface MarketItemCreate {
@@ -1203,6 +1205,8 @@ export interface MarketItemCreate {
 	accepts_best_offer?: boolean;
 	contact_phone?: string | null;
 	contact_email?: string | null;
+	condition?: string | null;
+	quantity?: number | null;
 }
 
 // Paginated response interface

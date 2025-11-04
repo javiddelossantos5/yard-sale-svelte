@@ -24,7 +24,9 @@
 		facebook_url: '',
 		accepts_best_offer: false,
 		contact_phone: '',
-		contact_email: ''
+		contact_email: '',
+		condition: '',
+		quantity: null
 	});
 
 	let loading = $state(false);
@@ -47,6 +49,15 @@
 		'Home Improvement',
 		'Automotive',
 		'Other'
+	];
+
+	const conditions = [
+		'New',
+		'Like New',
+		'Used',
+		'Good',
+		'Fair',
+		'Poor'
 	];
 
 	function normalizeUrl(url: string): string {
@@ -101,7 +112,9 @@
 			facebook_url: '',
 			accepts_best_offer: false,
 			contact_phone: '',
-			contact_email: ''
+			contact_email: '',
+			condition: '',
+			quantity: null
 		};
 	}
 </script>
@@ -231,6 +244,42 @@
 										<option value={category}>{category}</option>
 									{/each}
 								</select>
+							</div>
+
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+								<div>
+									<label
+										for="condition"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>Condition <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<select
+										id="condition"
+										bind:value={formData.condition}
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									>
+										<option value="">Select Condition</option>
+										{#each conditions as condition}
+											<option value={condition}>{condition}</option>
+										{/each}
+									</select>
+								</div>
+								<div>
+									<label
+										for="quantity"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>Quantity <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<input
+										id="quantity"
+										type="number"
+										min="1"
+										step="1"
+										bind:value={formData.quantity}
+										placeholder="Number of items"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
 							</div>
 
 							<div>

@@ -921,6 +921,37 @@
 							</div>
 						{/if}
 
+						<!-- Condition and Quantity Card -->
+						{#if item.condition || (item.quantity !== null && item.quantity !== undefined)}
+							<div
+								class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+									Item Details
+								</h2>
+								<div class="flex flex-wrap gap-3">
+									{#if item.condition}
+										<span
+											class="inline-flex items-center gap-2 rounded-xl border border-gray-200/50 bg-blue-50/60 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md dark:border-gray-700/50 dark:bg-blue-900/20 dark:text-gray-200 dark:hover:bg-blue-900/30"
+										>
+											<FontAwesomeIcon icon={faTag} class="h-4 w-4" />
+											<span class="font-semibold">Condition:</span>
+											<span>{item.condition}</span>
+										</span>
+									{/if}
+									{#if item.quantity !== null && item.quantity !== undefined}
+										<span
+											class="inline-flex items-center gap-2 rounded-xl border border-gray-200/50 bg-purple-50/60 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-purple-50 hover:shadow-md dark:border-gray-700/50 dark:bg-purple-900/20 dark:text-gray-200 dark:hover:bg-purple-900/30"
+										>
+											<span class="font-semibold">Quantity:</span>
+											<span>{item.quantity} {item.quantity === 1 ? 'item' : 'items'} available</span
+											>
+										</span>
+									{/if}
+								</div>
+							</div>
+						{/if}
+
 						<!-- Contact Information Card -->
 						{#if item.contact_phone || item.contact_email}
 							<div

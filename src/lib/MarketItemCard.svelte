@@ -271,6 +271,27 @@
 			</p>
 		{/if}
 
+		<!-- Condition and Quantity -->
+		<div class="mb-3 flex flex-wrap items-center gap-2">
+			{#if item.condition}
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800/50"
+					title="Item condition"
+				>
+					<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
+					{item.condition}
+				</span>
+			{/if}
+			{#if item.quantity !== null && item.quantity !== undefined}
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 ring-1 ring-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-800/50"
+					title="Available quantity"
+				>
+					{item.quantity} {item.quantity === 1 ? 'item' : 'items'} available
+				</span>
+			{/if}
+		</div>
+
 		<!-- Badges Row -->
 		<div class="flex flex-wrap items-center gap-2">
 			{#if item.accepts_best_offer}
