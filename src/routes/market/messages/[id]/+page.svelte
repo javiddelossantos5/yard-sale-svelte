@@ -28,6 +28,7 @@
 	import { unreadMessageCount } from '$lib/notifications';
 
 	const conversationId = $derived($page.params.id);
+	const backUrl = $derived('/messages?tab=market');
 
 	let mobileMenuOpen = $state(false);
 	let messages = $state<MarketItemMessage[]>([]);
@@ -157,7 +158,7 @@
 				<div class="flex h-16 items-center justify-between">
 					<div class="flex min-w-0 flex-1 items-center space-x-3">
 						<button
-							onclick={() => goto('/market/messages')}
+							onclick={() => goto(backUrl)}
 							class="shrink-0 rounded-full p-1.5 transition hover:bg-gray-100 dark:hover:bg-gray-700"
 							aria-label="Back to messages"
 						>
@@ -297,7 +298,7 @@
 				<div class="flex h-20 items-center justify-between">
 					<div class="flex min-w-0 flex-1 items-center space-x-4">
 						<button
-							onclick={() => goto('/market/messages')}
+							onclick={() => goto(backUrl)}
 							class="shrink-0 rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
 							aria-label="Back to messages"
 						>
@@ -387,7 +388,7 @@
 	</header>
 	<!-- Messages -->
 	<div
-		class="mx-auto max-w-7xl flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8"
+		class="mx-auto w-full flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8"
 		id="messages-container"
 	>
 		{#if loading}
@@ -405,29 +406,29 @@
 				<p class="text-sm text-gray-500 dark:text-gray-400">No messages yet</p>
 			</div>
 		{:else}
-			<div class="mx-auto max-w-3xl space-y-4">
+			<div class="mx-auto max-w-4xl space-y-6">
 				{#each messages as message}
-					<div class="flex gap-3 {isMyMessage(message) ? 'flex-row-reverse' : 'flex-row'}">
+					<div class="flex gap-4 {isMyMessage(message) ? 'flex-row-reverse' : 'flex-row'}">
 						<div
-							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {isMyMessage(
+							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {isMyMessage(
 								message
 							)
 								? 'bg-blue-600 text-white'
 								: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}"
 						>
-							<FontAwesomeIcon icon={faUser} class="h-4 w-4" />
+							<FontAwesomeIcon icon={faUser} class="h-5 w-5" />
 						</div>
 						<div
-							class="max-w-[75%] rounded-2xl px-4 py-2 {isMyMessage(message)
+							class="max-w-[85%] rounded-2xl px-5 py-3 shadow-sm {isMyMessage(message)
 								? 'bg-blue-600 text-white'
-								: 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700'}"
+								: 'bg-white text-gray-900 ring-1 ring-gray-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700'}"
 						>
-							<p class="text-sm font-medium">
+							<p class="text-sm font-semibold">
 								{message.sender_username || 'Unknown'}
 							</p>
-							<p class="mt-1 text-sm">{message.content}</p>
+							<p class="mt-1.5 text-[15px] leading-relaxed">{message.content}</p>
 							<p
-								class="mt-1 text-xs {isMyMessage(message)
+								class="mt-2 text-xs {isMyMessage(message)
 									? 'text-blue-100'
 									: 'text-gray-500 dark:text-gray-400'}"
 							>
@@ -444,7 +445,7 @@
 	<div
 		class="border-t border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
 	>
-		<div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+		<div class="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
 			{#if error}
 				<div
 					class="mb-3 rounded-lg bg-red-50 p-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400"

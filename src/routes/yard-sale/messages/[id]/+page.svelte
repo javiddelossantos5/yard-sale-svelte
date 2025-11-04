@@ -12,9 +12,15 @@
 		type CurrentUser
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faChevronLeft, faPaperPlane, faUser, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faChevronLeft,
+		faPaperPlane,
+		faUser,
+		faArrowRight
+	} from '@fortawesome/free-solid-svg-icons';
 
 	const conversationId = $derived($page.params.id);
+	const backUrl = $derived('/messages?tab=yard-sales');
 
 	let messages = $state<Message[]>([]);
 	let conversation = $state<{ yard_sale_title?: string; yard_sale_id?: string } | null>(null);
@@ -37,7 +43,7 @@
 			]);
 			messages = msgs;
 			currentUser = user;
-			
+
 			// Find the conversation to get yard sale title and ID
 			const conv = convs.find((c) => c.id === conversationId);
 			if (conv) {
@@ -48,9 +54,7 @@
 			}
 
 			// Mark unread messages as read
-			const unreadMessages = msgs.filter(
-				(m) => !m.is_read && m.recipient_id === user?.id
-			);
+			const unreadMessages = msgs.filter((m) => !m.is_read && m.recipient_id === user?.id);
 			for (const msg of unreadMessages) {
 				try {
 					await markYardSaleMessageRead(msg.id);
@@ -118,40 +122,42 @@
 		}
 	}
 
-	const isMyMessage = (message: Message) =>
-		currentUser && message.sender_id === currentUser.id;
+	const isMyMessage = (message: Message) => currentUser && message.sender_id === currentUser.id;
 </script>
+
 <div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
-	<div class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80">
+	<div
+		class="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
+	>
 		<div class="mx-auto max-w-4xl px-4 py-4">
 			<div class="flex items-center gap-3">
 				<button
-					onclick={() => goto('/yard-sale/messages')}
+					onclick={() => goto(backUrl)}
 					class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
 					aria-label="Back to messages"
 				>
 					<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 				</button>
 				<div class="flex-1">
-				{#if conversation?.yard_sale_id}
-					<button
-						onclick={() => goto(`/yard-sale/${conversation.yard_sale_id}`)}
-						class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
-					>
+					{#if conversation?.yard_sale_id}
+						<button
+							onclick={() => conversation && goto(`/yard-sale/${conversation.yard_sale_id}`)}
+							class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+						>
+							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+								{conversation.yard_sale_title || 'Conversation'}
+							</h1>
+							<FontAwesomeIcon
+								icon={faArrowRight}
+								class="h-3 w-3 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
+							/>
+						</button>
+					{:else}
 						<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-							{conversation.yard_sale_title || 'Conversation'}
+							{conversation?.yard_sale_title || 'Conversation'}
 						</h1>
-						<FontAwesomeIcon
-							icon={faArrowRight}
-							class="h-3 w-3 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
-						/>
-					</button>
-				{:else}
-					<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-						{conversation?.yard_sale_title || 'Conversation'}
-					</h1>
-				{/if}
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -163,7 +169,9 @@
 				<p class="text-sm text-gray-500 dark:text-gray-400">Loading messages...</p>
 			</div>
 		{:else if error}
-			<div class="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+			<div
+				class="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400"
+			>
 				{error}
 			</div>
 		{:else if messages.length === 0}
@@ -171,31 +179,29 @@
 				<p class="text-sm text-gray-500 dark:text-gray-400">No messages yet</p>
 			</div>
 		{:else}
-			<div class="mx-auto max-w-3xl space-y-4">
+			<div class="mx-auto max-w-4xl space-y-6">
 				{#each messages as message}
-					<div
-						class="flex gap-3 {isMyMessage(message)
-							? 'flex-row-reverse'
-							: 'flex-row'}"
-					>
+					<div class="flex gap-4 {isMyMessage(message) ? 'flex-row-reverse' : 'flex-row'}">
 						<div
-							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {isMyMessage(message)
+							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {isMyMessage(
+								message
+							)
 								? 'bg-blue-600 text-white'
 								: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}"
 						>
-							<FontAwesomeIcon icon={faUser} class="h-4 w-4" />
+							<FontAwesomeIcon icon={faUser} class="h-5 w-5" />
 						</div>
 						<div
-							class="max-w-[75%] rounded-2xl px-4 py-2 {isMyMessage(message)
+							class="max-w-[85%] rounded-2xl px-5 py-3 shadow-sm {isMyMessage(message)
 								? 'bg-blue-600 text-white'
-								: 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700'}"
+								: 'bg-white text-gray-900 ring-1 ring-gray-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700'}"
 						>
-							<p class="text-sm font-medium">
+							<p class="text-sm font-semibold">
 								{message.sender_username || 'Unknown'}
 							</p>
-							<p class="mt-1 text-sm">{message.content}</p>
+							<p class="mt-1.5 text-[15px] leading-relaxed">{message.content}</p>
 							<p
-								class="mt-1 text-xs {isMyMessage(message)
+								class="mt-2 text-xs {isMyMessage(message)
 									? 'text-blue-100'
 									: 'text-gray-500 dark:text-gray-400'}"
 							>
@@ -209,10 +215,14 @@
 	</div>
 
 	<!-- Message Input -->
-	<div class="border-t border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80">
-		<div class="mx-auto max-w-3xl px-4 py-4">
+	<div
+		class="border-t border-gray-200 bg-white/80 backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800/80"
+	>
+		<div class="mx-auto max-w-4xl px-4 py-4">
 			{#if error}
-				<div class="mb-3 rounded-lg bg-red-50 p-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400">
+				<div
+					class="mb-3 rounded-lg bg-red-50 p-2 text-xs text-red-600 dark:bg-red-900/20 dark:text-red-400"
+				>
 					{error}
 				</div>
 			{/if}
@@ -241,4 +251,3 @@
 		</div>
 	</div>
 </div>
-
