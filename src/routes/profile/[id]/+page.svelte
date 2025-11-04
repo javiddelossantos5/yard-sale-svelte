@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import {
@@ -83,18 +82,24 @@
 		});
 	}
 
-	onMount(async () => {
-		if (!userId || userId.trim() === '') {
+	// React to userId changes (when navigating between profiles)
+	$effect(async () => {
+		const currentUserId = userId;
+		
+		if (!currentUserId || currentUserId.trim() === '') {
 			error = 'Invalid user ID';
 			loading = false;
 			return;
 		}
 
+		loading = true;
+		error = null;
+
 		try {
 			// Load data with individual error handling
 			await loadCurrentUser();
-			await loadProfileUser();
-			await loadRatings();
+			await loadProfileUser(currentUserId);
+			await loadRatings(currentUserId);
 		} catch (err) {
 			console.error('Error during profile loading:', err);
 		} finally {
@@ -112,18 +117,18 @@
 		}
 	}
 
-	async function loadProfileUser() {
+	async function loadProfileUser(profileUserId: string) {
 		try {
-			profileUser = await getUserProfile(userId);
+			profileUser = await getUserProfile(profileUserId);
 		} catch (err) {
 			console.error('Failed to load profile user:', err);
 			error = err instanceof Error ? err.message : 'Failed to load profile';
 		}
 	}
 
-	async function loadRatings() {
+	async function loadRatings(profileUserId: string) {
 		try {
-			ratings = await getUserRatings(userId);
+			ratings = await getUserRatings(profileUserId);
 		} catch (error) {
 			console.error('Failed to load ratings:', error);
 			ratings = []; // Set empty array as fallback
@@ -252,7 +257,7 @@
 		};
 
 		try {
-			await Promise.all([loadRatings(), loadProfileUser()]);
+			await Promise.all([loadRatings(userId), loadProfileUser(userId)]);
 			localStorage.setItem(
 				'profile_debug',
 				JSON.stringify({
@@ -665,9 +670,21 @@
 														/>
 													{/each}
 												</div>
-												<span class="text-sm font-medium text-gray-900 dark:text-white">
-													{rating.reviewer_username || 'Anonymous'}
-												</span>
+												{#if rating.reviewer_id}
+													<button
+														onclick={(e) => {
+															e.stopPropagation();
+															goto(`/profile/${rating.reviewer_id}`);
+														}}
+														class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline focus:outline-none focus:underline dark:text-blue-400 dark:hover:text-blue-300"
+													>
+														{rating.reviewer_username || 'Anonymous'}
+													</button>
+												{:else}
+													<span class="text-sm font-medium text-gray-900 dark:text-white">
+														{rating.reviewer_username || 'Anonymous'}
+													</span>
+												{/if}
 												<span class="text-xs text-gray-500 dark:text-gray-400">
 													{formatDate(rating.created_at)}
 												</span>

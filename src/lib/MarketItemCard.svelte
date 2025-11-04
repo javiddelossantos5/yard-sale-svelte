@@ -27,12 +27,26 @@
 
 		const photos = item.photos;
 		const featuredImage = item.featured_image;
-		if (featuredImage && photos.includes(featuredImage)) {
-			// Featured image first, then rest
-			return [featuredImage, ...photos.filter((p) => p !== featuredImage)];
+		
+		// Always put featured image first if it exists
+		if (featuredImage) {
+			if (photos.includes(featuredImage)) {
+				// Featured image is in the photos array, put it first
+				return [featuredImage, ...photos.filter((p) => p !== featuredImage)];
+			} else {
+				// Featured image exists but not in photos array, add it first anyway
+				return [featuredImage, ...photos];
+			}
 		}
 		return photos;
 	}
+
+	// Reset to first image (featured) whenever item changes
+	$effect(() => {
+		if (item) {
+			cardImageIndex = 0;
+		}
+	});
 
 	function nextCardImage(e: Event) {
 		e.preventDefault();
