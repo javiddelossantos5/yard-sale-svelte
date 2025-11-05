@@ -35,7 +35,8 @@ export default defineConfig(({ mode }) => {
 					target: API_BASE_URL,
 					changeOrigin: true,
 					secure: false,
-					logLevel: 'debug'
+					ws: true,
+					rewrite: (path) => path // Keep the path as-is (including /api prefix)
 				},
 				// Remove /api prefix for all other endpoints
 				'^/api/(?!login|register|me|user)': {
