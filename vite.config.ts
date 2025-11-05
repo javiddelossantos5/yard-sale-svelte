@@ -12,6 +12,11 @@ export default defineConfig(({ mode }) => {
 	// Get API base URL from environment variable, fallback to default
 	const API_BASE_URL = env.VITE_API_BASE_URL || 'http://10.1.2.165:8000';
 
+	// Log the API base URL for debugging (only in dev mode)
+	if (mode === 'development') {
+		console.log(`[Vite] Proxy target API base URL: ${API_BASE_URL}`);
+	}
+
 	return {
 		plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 		build: {
@@ -28,28 +33,34 @@ export default defineConfig(({ mode }) => {
 				// Keep /api prefix for auth and user endpoints
 				'^/api/(login|register|me|user)': {
 					target: API_BASE_URL,
-					changeOrigin: true
+					changeOrigin: true,
+					secure: false,
+					logLevel: 'debug'
 				},
 				// Remove /api prefix for all other endpoints
 				'^/api/(?!login|register|me|user)': {
 					target: API_BASE_URL,
 					changeOrigin: true,
+					secure: false,
 					rewrite: (path) => path.replace(/^\/api/, '')
 				},
 				// Proxy image upload endpoints directly
 				'^/(upload|images)': {
 					target: API_BASE_URL,
-					changeOrigin: true
+					changeOrigin: true,
+					secure: false
 				},
 				// Proxy market-items messaging endpoints directly
 				'^/market-items/(conversations|.*/messages|messages/.*)': {
 					target: API_BASE_URL,
-					changeOrigin: true
+					changeOrigin: true,
+					secure: false
 				},
 				// Proxy yard-sales messaging endpoints directly
 				'^/yard-sales/(conversations|.*/messages|messages/.*)': {
 					target: API_BASE_URL,
-					changeOrigin: true
+					changeOrigin: true,
+					secure: false
 				}
 			}
 		}
