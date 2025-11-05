@@ -1787,17 +1787,24 @@ export async function getYardSaleUnreadCount(): Promise<{ unread_count: number }
 	return res.json();
 }
 
+// Get API base URL from environment variable
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://10.1.2.165:8000';
+
 // Helper function to get the proxy URL for an image
 export function getImageProxyUrl(imageKey: string): string {
-	return `http://localhost:8000/image-proxy/${imageKey}`;
+	return `${API_BASE}/image-proxy/${imageKey}`;
 }
 
 // Helper function to get authenticated image URL
 export function getAuthenticatedImageUrl(imageUrl: string): string {
 	if (!imageUrl) return '';
 
-	// If it's already a localhost:8000 URL, add the token as a query parameter
-	if (imageUrl.includes('localhost:8000')) {
+	// If it's already an API base URL, add the token as a query parameter
+	// Check if the URL contains the API base URL (handles both localhost:8000 and 10.1.2.165:8000)
+	const apiBaseHosts = ['localhost:8000', '10.1.2.165:8000'];
+	const isApiUrl = apiBaseHosts.some(host => imageUrl.includes(host));
+	
+	if (isApiUrl) {
 		const token = localStorage.getItem('access_token');
 		if (token) {
 			const separator = imageUrl.includes('?') ? '&' : '?';
