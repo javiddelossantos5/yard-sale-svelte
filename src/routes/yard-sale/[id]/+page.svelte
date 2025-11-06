@@ -42,7 +42,8 @@
 		faUser,
 		faArrowRightFromBracket,
 		faChevronLeft,
-		faChevronRight
+		faChevronRight,
+		faShieldAlt
 	} from '@fortawesome/free-solid-svg-icons';
 	import { getPaymentMethodIcon } from '$lib/paymentUtils';
 	import { logout } from '$lib/auth';
@@ -597,11 +598,17 @@
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-8 w-8 shrink-0 rounded-lg object-cover"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="shrink-0 rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-8 w-8 rounded-lg object-cover"
+							/>
+						</button>
 						<div class="min-w-0 flex-1">
 							<h1 class="truncate text-lg font-semibold text-gray-900 dark:text-white">
 								{yardSale?.title || 'Yard Sale'}
@@ -727,11 +734,17 @@
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-12 w-12 shrink-0 rounded-xl object-cover shadow-sm"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="shrink-0 rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-12 w-12 rounded-xl object-cover shadow-sm"
+							/>
+						</button>
 						<div class="min-w-0 flex-1">
 							<h1 class="truncate text-2xl font-bold text-gray-900 dark:text-white">
 								{yardSale?.title || 'Yard Sale'}
@@ -1137,8 +1150,19 @@
 										<FontAwesomeIcon icon="user" class="h-4 w-4 text-white" />
 									</div>
 									<div class="flex-1 text-left">
-										<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-											Posted by {yardSale.owner_username}
+										<div class="flex items-center gap-2">
+											<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+												Posted by {yardSale.owner_username}
+											</div>
+											{#if yardSale.owner_is_admin}
+												<div
+													class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
+													title="Admin Verified"
+												>
+													<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
+													<span>Admin</span>
+												</div>
+											{/if}
 										</div>
 										{#if yardSale.owner_average_rating && typeof yardSale.owner_average_rating === 'number'}
 											<div class="flex items-center">

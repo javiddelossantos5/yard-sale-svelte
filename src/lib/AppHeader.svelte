@@ -84,11 +84,17 @@
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
 					{/if}
-					<img
-						src="/icon2.png"
-						alt="Yard Sale Finder Logo"
-						class="h-8 w-8 rounded-lg object-cover"
-					/>
+					<button
+						onclick={() => goto('/')}
+						class="rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+						aria-label="Go to home"
+					>
+						<img
+							src="/icon2.png"
+							alt="Yard Sale Finder Logo"
+							class="h-8 w-8 rounded-lg object-cover"
+						/>
+					</button>
 					<div>
 						<h1 class="text-lg font-semibold text-gray-900 dark:text-white">{title}</h1>
 						{#if subtitle || (count !== undefined && countLabel)}
@@ -212,11 +218,17 @@
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
 					{/if}
-					<img
-						src="/icon2.png"
-						alt="Yard Sale Finder Logo"
-						class="h-12 w-12 rounded-xl object-cover shadow-sm"
-					/>
+					<button
+						onclick={() => goto('/')}
+						class="rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+						aria-label="Go to home"
+					>
+						<img
+							src="/icon2.png"
+							alt="Yard Sale Finder Logo"
+							class="h-12 w-12 rounded-xl object-cover shadow-sm"
+						/>
+					</button>
 					<div>
 						<h1 class="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
 						{#if subtitle || (count !== undefined && countLabel)}

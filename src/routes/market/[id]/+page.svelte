@@ -40,7 +40,8 @@
 		faStore,
 		faArrowRightFromBracket,
 		faArrowRight,
-		faCheckCircle
+		faCheckCircle,
+		faShieldAlt
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
@@ -605,11 +606,17 @@
 							>
 								<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 							</button>
-							<img
-								src="/icon2.png"
-								alt="Yard Sale Finder Logo"
-								class="h-12 w-12 shrink-0 rounded-xl object-cover shadow-sm"
-							/>
+							<button
+								onclick={() => goto('/')}
+								class="shrink-0 rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+								aria-label="Go to home"
+							>
+								<img
+									src="/icon2.png"
+									alt="Yard Sale Finder Logo"
+									class="h-12 w-12 rounded-xl object-cover shadow-sm"
+								/>
+							</button>
 							<div class="min-w-0 flex-1">
 								<h1 class="truncate text-2xl font-bold text-gray-900 dark:text-white">
 									{item.name}
@@ -908,8 +915,19 @@
 										<FontAwesomeIcon icon={faUser} class="h-4 w-4 text-white" />
 									</div>
 									<div class="flex-1 text-left">
-										<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
-											Posted by {item.owner_username}
+										<div class="flex items-center gap-2">
+											<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+												Posted by {item.owner_username}
+											</div>
+											{#if item.owner_is_admin}
+												<div
+													class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
+													title="Admin Verified"
+												>
+													<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
+													<span>Admin</span>
+												</div>
+											{/if}
 										</div>
 										{#if item.created_at}
 											<div class="text-xs text-gray-500 dark:text-gray-400">
@@ -1030,7 +1048,7 @@
 							class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 						>
 							<div class="space-y-3">
-								{#if item.price_reduced && item.original_price}
+								{#if item.price_reduced && item.original_price && !item.is_free}
 									<div>
 										<p class="text-sm font-medium text-gray-500 dark:text-gray-400">
 											Original Price
@@ -1043,16 +1061,26 @@
 								<div>
 									<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Price</p>
 									<div class="flex items-baseline gap-2">
-										<p class="text-3xl font-bold text-gray-900 dark:text-white">
-											${formatPrice(item.price)}
-										</p>
-										{#if item.price_reduced && item.price_reduction_percentage}
+										{#if item.is_free}
+											<p class="text-3xl font-bold text-green-600 dark:text-green-400">Free</p>
 											<span
-												class="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white"
+												class="inline-flex items-center gap-1 rounded-full bg-green-500 px-2 py-1 text-xs font-semibold text-white"
 											>
 												<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
-												-{item.price_reduction_percentage.toFixed(0)}%
+												Free Item
 											</span>
+										{:else}
+											<p class="text-3xl font-bold text-gray-900 dark:text-white">
+												${formatPrice(item.price)}
+											</p>
+											{#if item.price_reduced && item.price_reduction_percentage}
+												<span
+													class="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white"
+												>
+													<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
+													-{item.price_reduction_percentage.toFixed(0)}%
+												</span>
+											{/if}
 										{/if}
 									</div>
 								</div>

@@ -14,7 +14,8 @@
 		faUser,
 		faStar,
 		faChevronLeft,
-		faChevronRight
+		faChevronRight,
+		faShieldAlt
 	} from '@fortawesome/free-solid-svg-icons';
 
 	let { item, hideStatusBadge = false }: { item: MarketItem; hideStatusBadge?: boolean } = $props();
@@ -236,6 +237,15 @@
 					<FontAwesomeIcon icon={faUser} class="h-2.5 w-2.5 text-white" />
 				</div>
 				<span class="font-semibold">by {item.owner_username}</span>
+				{#if item.owner_is_admin}
+					<div
+						class="ml-1.5 flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
+						title="Admin Verified"
+					>
+						<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
+						<span>Admin</span>
+					</div>
+				{/if}
 			</button>
 		</div>
 
@@ -248,23 +258,34 @@
 
 		<!-- Price Section -->
 		<div class="mb-3">
-			{#if item.price_reduced && item.original_price}
+			{#if item.price_reduced && item.original_price && !item.is_free}
 				<div class="mb-1 text-sm font-medium text-gray-400 line-through dark:text-gray-500">
 					${formatPrice(item.original_price)}
 				</div>
 			{/if}
 			<div class="flex items-baseline gap-2">
-				<span class="text-2xl font-bold text-gray-900 dark:text-white">
-					${formatPrice(item.price)}
-				</span>
-				{#if item.price_reduced && item.price_reduction_percentage}
+				{#if item.is_free}
+					<span class="text-2xl font-bold text-green-600 dark:text-green-400">Free</span>
 					<span
-						class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white"
-						title="Save ${formatPrice(item.price_reduction_amount || 0)}"
+						class="inline-flex shrink-0 items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-xs font-semibold text-white"
+						title="This item is free"
 					>
 						<FontAwesomeIcon icon={faTag} class="h-2.5 w-2.5" />
-						-{item.price_reduction_percentage.toFixed(0)}%
+						Free
 					</span>
+				{:else}
+					<span class="text-2xl font-bold text-gray-900 dark:text-white">
+						${formatPrice(item.price)}
+					</span>
+					{#if item.price_reduced && item.price_reduction_percentage}
+						<span
+							class="inline-flex shrink-0 items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white"
+							title="Save ${formatPrice(item.price_reduction_amount || 0)}"
+						>
+							<FontAwesomeIcon icon={faTag} class="h-2.5 w-2.5" />
+							-{item.price_reduction_percentage.toFixed(0)}%
+						</span>
+					{/if}
 				{/if}
 			</div>
 		</div>

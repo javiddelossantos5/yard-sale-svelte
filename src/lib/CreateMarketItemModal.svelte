@@ -26,7 +26,8 @@
 		contact_phone: '',
 		contact_email: '',
 		condition: '',
-		quantity: null
+		quantity: null,
+		is_free: false
 	});
 
 	let loading = $state(false);
@@ -65,12 +66,35 @@
 		return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
 	}
 
+	// Sync is_free with price
+	$effect(() => {
+		if (formData.is_free) {
+			formData.price = 0;
+		} else if (formData.price === 0 && !formData.is_free) {
+			// Don't auto-set is_free to true when price is 0, let user decide
+		}
+	});
+
+	// Sync price with is_free
+	$effect(() => {
+		if (formData.price === 0 && formData.is_free === false) {
+			// User manually set price to 0, suggest is_free
+		}
+	});
+
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
 
-		if (!formData.name.trim() || !formData.price || formData.price < 0) {
-			error = 'Please provide a name and a valid price';
+		if (!formData.name.trim() || formData.price < 0) {
+			error = 'Please provide a name and a valid price (>= 0)';
 			return;
+		}
+
+		// Sync is_free with price before submission
+		if (formData.is_free) {
+			formData.price = 0;
+		} else if (formData.price === 0) {
+			formData.is_free = true;
 		}
 
 		loading = true;
@@ -114,7 +138,8 @@
 			contact_phone: '',
 			contact_email: '',
 			condition: '',
-			quantity: null
+			quantity: null,
+			is_free: false
 		};
 	}
 </script>
@@ -211,9 +236,23 @@
 									step="0.01"
 									bind:value={formData.price}
 									required
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									disabled={formData.is_free}
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
 							</div>
+
+							<label
+								class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+							>
+								<input
+									type="checkbox"
+									bind:checked={formData.is_free}
+									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+								/>
+								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+									>This item is free</span
+								>
+							</label>
 
 							<label
 								class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"

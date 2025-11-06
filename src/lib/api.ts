@@ -36,6 +36,7 @@ export interface YardSale {
 	owner_id: string;
 	owner_username: string;
 	owner_average_rating?: number;
+	owner_is_admin?: boolean; // Indicates if the owner has admin permissions
 	comment_count: number;
 	venmo_url?: string;
 	facebook_url?: string;
@@ -1175,6 +1176,7 @@ export interface MarketItem {
 	created_at: string;
 	owner_id: string;
 	owner_username: string;
+	owner_is_admin?: boolean; // Indicates if the owner has admin permissions
 	comment_count: number;
 	is_watched?: boolean | null;
 	original_price?: number | null;
@@ -1187,6 +1189,7 @@ export interface MarketItem {
 	contact_email?: string | null;
 	condition?: string | null;
 	quantity?: number | null;
+	is_free?: boolean; // Indicates if the item is free
 }
 
 export interface MarketItemCreate {
@@ -1207,6 +1210,7 @@ export interface MarketItemCreate {
 	contact_email?: string | null;
 	condition?: string | null;
 	quantity?: number | null;
+	is_free?: boolean; // Indicates if the item is free
 }
 
 // Paginated response interface

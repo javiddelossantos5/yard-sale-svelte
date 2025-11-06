@@ -6,7 +6,7 @@
 	import { isYardSaleVisited, toggleYardSaleVisited } from './visitedYardSales';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faFacebook } from '@fortawesome/free-brands-svg-icons';
-	import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+	import { faChevronLeft, faChevronRight, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 	import { getPaymentMethodIcon } from './paymentUtils';
 	import { getCurrentUser, type CurrentUser, getAuthenticatedImageUrl } from './api';
 
@@ -210,6 +210,15 @@
 					<FontAwesomeIcon icon="user" class="h-3 w-3 text-white" />
 				</div>
 				<span class="font-semibold">by {yardSale.owner_username}</span>
+				{#if yardSale.owner_is_admin}
+					<div
+						class="ml-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm"
+						title="Admin Verified"
+					>
+						<FontAwesomeIcon icon={faShieldAlt} class="h-3 w-3" />
+						<span>Admin</span>
+					</div>
+				{/if}
 				{#if yardSale.owner_average_rating}
 					<div
 						class="ml-2 flex items-center rounded-full bg-yellow-100/60 px-2 py-1 dark:bg-yellow-900/30"
