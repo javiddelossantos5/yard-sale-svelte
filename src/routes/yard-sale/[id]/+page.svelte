@@ -12,6 +12,7 @@
 		getAuthenticatedImageUrl,
 		getYardSaleConversations,
 		getYardSaleUnreadCount,
+		isAdmin,
 		type YardSale,
 		type Comment,
 		type CurrentUser,
@@ -101,6 +102,7 @@
 
 	// Calculate isOwner reactively
 	let isOwner = $derived(yardSale && currentUserId ? yardSale.owner_id === currentUserId : false);
+	let canEdit = $derived(isOwner || (currentUser && isAdmin(currentUser)));
 
 	// Delete confirmation modal state
 	let showDeleteModal = $state(false);
@@ -954,7 +956,7 @@
 							</div>
 
 							<!-- Owner Actions -->
-							{#if isOwner}
+							{#if canEdit}
 								<div
 									class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
 								>

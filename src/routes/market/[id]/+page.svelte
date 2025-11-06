@@ -13,6 +13,7 @@
 		getAuthenticatedImageUrl,
 		getCurrentUser,
 		getMarketItemConversations,
+		isAdmin,
 		type MarketItem,
 		type MarketItemComment,
 		type CurrentUser,
@@ -288,7 +289,7 @@
 	}
 
 	function handleSetFeaturedImage() {
-		if (currentUser && item && currentUser.id === item.owner_id) {
+		if (currentUser && item && (currentUser.id === item.owner_id || isAdmin(currentUser))) {
 			showFeaturedImageModal = true;
 		}
 	}
@@ -303,7 +304,7 @@
 	}
 
 	function handleDeleteItem() {
-		if (currentUser && item && currentUser.id === item.owner_id) {
+		if (currentUser && item && (currentUser.id === item.owner_id || isAdmin(currentUser))) {
 			showDeleteModal = true;
 		}
 	}
@@ -456,6 +457,7 @@
 	});
 
 	const isOwner = $derived(currentUser && item && currentUser.id === item.owner_id);
+	const canEdit = $derived(isOwner || (currentUser && isAdmin(currentUser)));
 
 	function viewConversation() {
 		if (existingConversation) {
@@ -768,7 +770,7 @@
 								{/if}
 
 								<!-- Owner Actions -->
-								{#if isOwner}
+								{#if canEdit}
 									<div
 										class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
 									>

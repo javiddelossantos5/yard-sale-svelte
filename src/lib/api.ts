@@ -595,11 +595,13 @@ export async function createYardSale(yardSaleData: YardSaleCreate): Promise<Yard
 	return response.json();
 }
 
-export async function updateYardSale(id: number, yardSaleData: YardSaleCreate): Promise<YardSale> {
+export async function updateYardSale(id: string, yardSaleData: YardSaleCreate): Promise<YardSale> {
+	const token = localStorage.getItem('access_token');
 	const response = await fetch(`/api/yard-sales/${id}`, {
 		method: 'PUT',
 		headers: {
-			'Content-Type': 'application/json'
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
 		},
 		body: JSON.stringify(yardSaleData)
 	});
@@ -619,8 +621,12 @@ export async function updateYardSale(id: number, yardSaleData: YardSaleCreate): 
 }
 
 export async function deleteYardSale(id: string): Promise<void> {
+	const token = localStorage.getItem('access_token');
 	const response = await fetch(`/api/yard-sales/${id}`, {
-		method: 'DELETE'
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
 	});
 
 	// Handle token expiration
@@ -2066,4 +2072,190 @@ export async function deleteImage(imageKey: string): Promise<void> {
 	if (!response.ok) {
 		throw new Error(`Failed to delete image: ${response.status}`);
 	}
+}
+
+// ===== ADMIN API FUNCTIONS =====
+
+export interface AdminDashboardStats {
+	total_users: number;
+	total_items: number;
+	total_yard_sales: number;
+	active_items: number;
+	active_yard_sales: number;
+	free_items: number;
+	admin_users: number;
+	recent_activity: {
+		items_last_7_days: number;
+		yard_sales_last_7_days: number;
+		users_last_7_days: number;
+	};
+}
+
+export interface AdminItemsResponse {
+	items: MarketItem[];
+	total: number;
+	limit: number;
+	offset: number;
+	has_more: boolean;
+}
+
+export interface AdminYardSalesResponse {
+	yard_sales: YardSale[];
+	total: number;
+	limit: number;
+	offset: number;
+	has_more: boolean;
+}
+
+export interface AdminUsersResponse {
+	users: CurrentUser[];
+	total: number;
+	limit: number;
+	offset: number;
+	has_more: boolean;
+}
+
+// Get admin dashboard statistics
+export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
+	const token = localStorage.getItem('access_token');
+	const res = await fetch(`/api/admin/dashboard/stats`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+	if (!res.ok) {
+		const errorData = await res.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to fetch dashboard stats: ${res.status}`);
+	}
+	return res.json();
+}
+
+// Get all items (admin view - includes hidden)
+export async function getAdminItems(
+	params: {
+		skip?: number;
+		limit?: number;
+		status?: 'active' | 'sold' | 'hidden';
+	} = {}
+): Promise<AdminItemsResponse> {
+	const token = localStorage.getItem('access_token');
+	const query = new URLSearchParams();
+	if (params.skip !== undefined) query.set('skip', String(params.skip));
+	if (params.limit !== undefined) query.set('limit', String(params.limit));
+	if (params.status) query.set('status', params.status);
+
+	const url = `/api/admin/items${query.toString() ? `?${query}` : ''}`;
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+	if (!res.ok) {
+		const errorData = await res.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to fetch admin items: ${res.status}`);
+	}
+	return res.json();
+}
+
+// Get all yard sales (admin view - includes inactive)
+export async function getAdminYardSales(
+	params: {
+		skip?: number;
+		limit?: number;
+		status?: 'active' | 'closed' | 'on_break';
+	} = {}
+): Promise<AdminYardSalesResponse> {
+	const token = localStorage.getItem('access_token');
+	const query = new URLSearchParams();
+	if (params.skip !== undefined) query.set('skip', String(params.skip));
+	if (params.limit !== undefined) query.set('limit', String(params.limit));
+	if (params.status) query.set('status', params.status);
+
+	const url = `/api/admin/yard-sales${query.toString() ? `?${query}` : ''}`;
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+	if (!res.ok) {
+		const errorData = await res.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to fetch admin yard sales: ${res.status}`);
+	}
+	return res.json();
+}
+
+// Get all users (admin view)
+export async function getAdminUsers(
+	params: {
+		skip?: number;
+		limit?: number;
+		search?: string;
+	} = {}
+): Promise<AdminUsersResponse> {
+	const token = localStorage.getItem('access_token');
+	const query = new URLSearchParams();
+	if (params.skip !== undefined) query.set('skip', String(params.skip));
+	if (params.limit !== undefined) query.set('limit', String(params.limit));
+	if (params.search) query.set('search', params.search);
+
+	// Note: /api/admin/users gets proxied to /admin/users by vite.config.ts
+	const url = `/api/admin/users${query.toString() ? `?${query}` : ''}`;
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		const errorData = await res.json().catch(() => ({}));
+		throw new Error(errorData.detail || 'Token expired or insufficient permissions');
+	}
+
+	if (!res.ok) {
+		const errorData = await res.json().catch(() => ({}));
+		console.error('getAdminUsers error:', {
+			status: res.status,
+			statusText: res.statusText,
+			error: errorData
+		});
+		throw new Error(
+			errorData.detail || `Failed to fetch admin users: ${res.status} ${res.statusText}`
+		);
+	}
+
+	const data = await res.json();
+	// Ensure response has expected structure
+	if (!data.users) {
+		console.warn('Unexpected response format:', data);
+		return {
+			users: [],
+			total: 0,
+			limit: params.limit || 100,
+			offset: params.skip || 0,
+			has_more: false
+		};
+	}
+	return data;
+}
+
+// Helper function to check if current user is admin
+export function isAdmin(user: CurrentUser | null): boolean {
+	return user?.permissions === 'admin';
 }
