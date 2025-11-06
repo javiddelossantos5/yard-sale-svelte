@@ -84,11 +84,8 @@
 				}
 			}
 		} catch (e) {
-			// Don't show error for token expiration - handleTokenExpiration() will redirect
-			if (e instanceof Error && e.message === 'Token expired') {
-				// Silently handle - redirect will happen via handleTokenExpiration()
-				return;
-			}
+			console.error('Error loading messages:', e);
+			// Don't redirect - just show error and stop loading
 			error = e instanceof Error ? e.message : 'Failed to load messages';
 		} finally {
 			loading = false;
