@@ -6,7 +6,12 @@ const config = {
 	// Consult https://svelte.dev/docs/kit/integrations
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
-	kit: { adapter: adapter() }
+	kit: {
+		adapter: adapter({
+			// Ensure all routes are handled by the Node.js server
+			// This is important when SSR is disabled
+		})
+	}
 };
 
 export default config;
