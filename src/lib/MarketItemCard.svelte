@@ -41,6 +41,13 @@
 		return photos;
 	}
 
+	// Reactive image URL that updates when token becomes available
+	const currentImageUrl = $derived(() => {
+		const displayPhotos = getDisplayPhotos();
+		if (displayPhotos.length === 0) return '';
+		return getAuthenticatedImageUrl(displayPhotos[cardImageIndex] || '');
+	});
+
 	// Reset to first image (featured) whenever item changes
 	$effect(() => {
 		if (item) {
@@ -129,7 +136,7 @@
 			{@const displayPhotos = getDisplayPhotos()}
 			{@const hasMultipleImages = displayPhotos.length > 1}
 			<img
-				src={getAuthenticatedImageUrl(displayPhotos[cardImageIndex])}
+				src={currentImageUrl()}
 				alt={item.name}
 				loading="lazy"
 				class="aspect-[16/10] w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"

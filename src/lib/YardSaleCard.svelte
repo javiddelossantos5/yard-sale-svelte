@@ -66,6 +66,13 @@
 		return photos;
 	}
 
+	// Reactive image URL that updates when token becomes available
+	const currentImageUrl = $derived(() => {
+		const displayPhotos = getDisplayPhotos();
+		if (displayPhotos.length === 0) return '';
+		return getAuthenticatedImageUrl(displayPhotos[cardImageIndex] || '');
+	});
+
 	function nextCardImage(e: Event) {
 		e.stopPropagation();
 		const photos = getDisplayPhotos();
@@ -152,7 +159,7 @@
 			{@const hasMultipleImages = displayPhotos.length > 1}
 			<div class="relative mb-4">
 				<img
-					src={getAuthenticatedImageUrl(displayPhotos[cardImageIndex])}
+					src={currentImageUrl()}
 					alt={yardSale.title}
 					class="h-48 w-full rounded-2xl object-cover shadow-lg"
 					loading="lazy"

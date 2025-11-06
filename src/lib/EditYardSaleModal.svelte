@@ -786,6 +786,7 @@
 										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
 											{#each formData.photos as photo, index}
 												{@const isFeatured = formData.featured_image === photo}
+												{@const authenticatedPhotoUrl = getAuthenticatedImageUrl(photo || '')}
 												<button
 													type="button"
 													onclick={() => {
@@ -797,11 +798,11 @@
 												>
 													{#if photo}
 														<img
-															src={getAuthenticatedImageUrl(photo)}
+															src={authenticatedPhotoUrl}
 															alt="Photo {index + 1}"
 															class="aspect-square w-full object-cover"
 															onerror={(e) => {
-																console.error('Failed to load image:', photo);
+																console.error('Failed to load image:', photo, 'Authenticated URL:', authenticatedPhotoUrl);
 																(e.target as HTMLImageElement).style.display = 'none';
 															}}
 														/>

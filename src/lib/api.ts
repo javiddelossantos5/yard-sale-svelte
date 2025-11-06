@@ -1799,23 +1799,26 @@ export function getImageProxyUrl(imageKey: string): string {
 export function getAuthenticatedImageUrl(imageUrl: string): string {
 	if (!imageUrl) return '';
 
-	// Handle relative URLs - convert to full backend URL
-	// Use relative path so Vite proxy can add Authorization header
+	// Get token from localStorage (only in browser)
+	let token: string | null = null;
+	if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+		token = localStorage.getItem('access_token');
+	}
+
+	// Handle relative URLs - Use relative path so Vite proxy can add Authorization header
 	if (
 		imageUrl.startsWith('/image-proxy/') ||
 		imageUrl.startsWith('/images/') ||
 		imageUrl.startsWith('/upload/')
 	) {
-		// Keep as relative path - Vite proxy will handle it and add Authorization header
-		// Always try to get token, even if we're in SSR
-		let token: string | null = null;
-		if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-			token = localStorage.getItem('access_token');
-		}
-
 		if (token) {
 			const separator = imageUrl.includes('?') ? '&' : '?';
-			return `${imageUrl}${separator}token=${token}`;
+			const result = `${imageUrl}${separator}token=${token}`;
+			// Debug logging (only in development)
+			if (import.meta.env.DEV) {
+				console.debug('[Image URL] Added token to relative URL:', imageUrl.substring(0, 50), '→', result.substring(0, 80) + '...');
+			}
+			return result;
 		}
 
 		// If no token, still return the URL (will fail auth but helps debug)
@@ -1825,7 +1828,7 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 
 	// If it's already an API base URL, convert to relative path for proxy
 	// Check if the URL contains the API base URL (handles both localhost:8000 and 10.1.2.165:8000)
-	const apiBaseHosts = ['localhost:8000', '10.1.2.165:8000'];
+	const apiBaseHosts = ['localhost:8000', '10.1.2.165:8000', 'localhost:5173', '10.1.2.165:5173'];
 	const isApiUrl = apiBaseHosts.some((host) => imageUrl.includes(host));
 
 	if (isApiUrl) {
@@ -1834,15 +1837,13 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 			const url = new URL(imageUrl);
 			const relativePath = url.pathname + url.search;
 
-			// Get token from localStorage (only in browser)
-			let token: string | null = null;
-			if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-				token = localStorage.getItem('access_token');
-			}
-
 			if (token) {
 				const separator = relativePath.includes('?') ? '&' : '?';
-				return `${relativePath}${separator}token=${token}`;
+				const result = `${relativePath}${separator}token=${token}`;
+				if (import.meta.env.DEV) {
+					console.debug('[Image URL] Converted full URL to relative:', imageUrl.substring(0, 50), '→', result.substring(0, 80) + '...');
+				}
+				return result;
 			}
 
 			console.warn('[Image URL] No token found for full URL:', imageUrl);
@@ -1851,6 +1852,11 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 			// If URL parsing fails, return as-is
 			return imageUrl;
 		}
+	}
+
+	// If it's any other URL format, return as-is (might be external URL)
+	if (import.meta.env.DEV && imageUrl) {
+		console.debug('[Image URL] Unhandled URL format:', imageUrl.substring(0, 100));
 	}
 
 	return imageUrl;
