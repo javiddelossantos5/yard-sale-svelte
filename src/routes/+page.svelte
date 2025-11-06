@@ -8,6 +8,7 @@
 		getCurrentUser,
 		getYardSaleUnreadCount,
 		getMarketItemUnreadCount,
+		isAdmin,
 		type YardSale,
 		type CurrentUser
 	} from '$lib/api';
@@ -29,7 +30,8 @@
 		faArrowRightFromBracket,
 		faFilter,
 		faChevronDown,
-		faChevronUp
+		faChevronUp,
+		faShieldAlt
 	} from '@fortawesome/free-solid-svg-icons';
 	import { unreadMessageCount } from '$lib/notifications';
 
@@ -425,6 +427,21 @@
 				{#if mobileMenuOpen}
 					<div class="border-t border-gray-200 pt-4 pb-4 dark:border-gray-800">
 						<div class="space-y-1">
+							{#if currentUser && isAdmin(currentUser)}
+								<button
+									onclick={() => {
+										goto('/admin');
+										mobileMenuOpen = false;
+									}}
+									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+								>
+									<FontAwesomeIcon
+										icon={faShieldAlt}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
+									Admin Dashboard
+								</button>
+							{/if}
 							<button
 								onclick={() => {
 									goToMarket();

@@ -9,9 +9,9 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}Building production Docker image...${NC}"
 docker build -t svelte-yard-sale:prod .
 
-echo -e "${BLUE}Stopping existing container (if any)...${NC}"
+echo -e "${BLUE}Stopping and removing existing container (if any)...${NC}"
 docker stop svelte-prod 2>/dev/null || true
-docker rm svelte-prod 2>/dev/null || true
+docker rm -f svelte-prod 2>/dev/null || true
 
 echo -e "${BLUE}Starting production container...${NC}"
 docker run -d \
