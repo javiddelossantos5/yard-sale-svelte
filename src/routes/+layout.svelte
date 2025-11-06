@@ -18,10 +18,12 @@
 	import { browser } from '$app/environment';
 	let isClient = $state(browser);
 	let isLoggedInClient = $state(false);
+	let lastPath = $state<string>('');
 
 	onMount(() => {
 		isClient = true;
 		isLoggedInClient = isLoggedIn();
+		lastPath = $page.url.pathname;
 
 		// setupAuthFetch() is now called at module load time in auth.ts
 		// but call it here too to ensure it's set up (idempotent)
@@ -51,12 +53,20 @@
 
 	// Reactive check for authentication (only when path changes)
 	// Only run on client to avoid SSR hydration issues
+	// Always create $effect but guard it to prevent SSR execution
 	$effect(() => {
-		// Only run on client after initial mount
-		if (typeof window === 'undefined' || !isClient) return;
+		// Only run on client - this guard prevents SSR execution
+		if (typeof window === 'undefined' || !browser || !isClient) return;
 
-		isLoggedInClient = isLoggedIn();
-		checkAuth();
+		// Track page path to react to changes
+		const currentPath = $page.url.pathname;
+
+		// Only update if path actually changed
+		if (currentPath !== lastPath) {
+			lastPath = currentPath;
+			isLoggedInClient = isLoggedIn();
+			checkAuth();
+		}
 	});
 
 	function checkAuth() {
