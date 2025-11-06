@@ -13,7 +13,14 @@
 
 	let { children } = $props();
 
+	// Client-only state to prevent hydration mismatch
+	let isClient = $state(false);
+	let isLoggedInClient = $state(false);
+
 	onMount(() => {
+		isClient = true;
+		isLoggedInClient = isLoggedIn();
+
 		// setupAuthFetch() is now called at module load time in auth.ts
 		// but call it here too to ensure it's set up (idempotent)
 		setupAuthFetch();
@@ -24,7 +31,7 @@
 		// Load notification counts and start message polling if user is logged in and not on login page
 		// Use setTimeout to avoid interfering with initial page load
 		const currentPath = $page.url.pathname;
-		if (isLoggedIn() && currentPath !== '/login') {
+		if (isLoggedInClient && currentPath !== '/login') {
 			setTimeout(() => {
 				loadNotificationCounts().catch(() => {
 					// Silently handle errors - token expiration will be handled by setupAuthFetch
@@ -44,6 +51,7 @@
 	// Only run on client to avoid SSR hydration issues
 	$effect(() => {
 		if (typeof window !== 'undefined') {
+			isLoggedInClient = isLoggedIn();
 			checkAuth();
 		}
 	});
@@ -61,12 +69,12 @@
 			currentPath.startsWith('/login');
 
 		// Allow public pages without forcing login
-		if (!isLoggedIn() && !isPublicPath) {
+		if (!isLoggedInClient && !isPublicPath) {
 			goto('/login');
 		}
 
 		// If logged in and on login page, redirect to home
-		if (isLoggedIn() && isLoginPage) {
+		if (isLoggedInClient && isLoginPage) {
 			goto('/');
 		}
 	}
@@ -79,7 +87,7 @@
 <!-- Top Right Controls -->
 <div class="fixed top-4 right-4 z-50 flex items-center gap-3">
 	<!-- Notification Center (only show if logged in) -->
-	{#if isLoggedIn()}
+	{#if isClient && isLoggedInClient}
 		<div class="relative">
 			<NotificationCenter />
 		</div>
