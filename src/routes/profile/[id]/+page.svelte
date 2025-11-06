@@ -27,7 +27,8 @@
 		faHeart,
 		faUser,
 		faArrowRightFromBracket,
-		faChevronLeft
+		faChevronLeft,
+		faShieldAlt
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 
@@ -120,6 +121,15 @@
 	async function loadProfileUser(profileUserId: string) {
 		try {
 			profileUser = await getUserProfile(profileUserId);
+			// Debug: Log permissions field to see what backend returns
+			if (import.meta.env.DEV) {
+				console.log('[Profile] User data:', {
+					id: profileUser?.id,
+					username: profileUser?.username,
+					permissions: profileUser?.permissions,
+					fullData: profileUser
+				});
+			}
 		} catch (err) {
 			console.error('Failed to load profile user:', err);
 			error = err instanceof Error ? err.message : 'Failed to load profile';
@@ -330,9 +340,20 @@
 							class="h-8 w-8 shrink-0 rounded-lg object-cover"
 						/>
 						<div>
-							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-								{profileUser?.full_name || 'Profile'}
-							</h1>
+							<div class="flex items-center gap-2">
+								<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+									{profileUser?.full_name || 'Profile'}
+								</h1>
+								{#if profileUser?.permissions === 'admin' || (profileUser as any)?.is_admin === true}
+									<div
+										class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
+										title="Admin Verified"
+									>
+										<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
+										<span>Admin</span>
+									</div>
+								{/if}
+							</div>
 							<p class="text-xs text-gray-500 dark:text-gray-400">User profile</p>
 						</div>
 					</div>
@@ -460,9 +481,20 @@
 							class="h-12 w-12 shrink-0 rounded-xl object-cover shadow-sm"
 						/>
 						<div>
-							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-								{profileUser?.full_name || 'Profile'}
-							</h1>
+							<div class="flex items-center gap-2">
+								<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+									{profileUser?.full_name || 'Profile'}
+								</h1>
+								{#if profileUser?.permissions === 'admin' || (profileUser as any)?.is_admin === true}
+									<div
+										class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm"
+										title="Admin Verified"
+									>
+										<FontAwesomeIcon icon={faShieldAlt} class="h-3 w-3" />
+										<span>Admin</span>
+									</div>
+								{/if}
+							</div>
 							<div class="mt-0.5 flex items-center gap-3">
 								<p class="text-sm text-gray-600 dark:text-gray-400">
 									{profileUser?.bio || 'User profile'}
@@ -568,10 +600,32 @@
 						<!-- Profile Info -->
 						<div class="flex-1">
 							<div class="flex flex-col items-center sm:items-start">
-								<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-									{profileUser.full_name || 'Unknown User'}
-								</h1>
-								<p class="text-gray-600 dark:text-gray-300">@{profileUser.username || 'unknown'}</p>
+								<div class="flex items-center gap-2 flex-wrap">
+									<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+										{profileUser.full_name || 'Unknown User'}
+									</h1>
+									{#if profileUser.permissions === 'admin' || (profileUser as any).is_admin === true}
+										<div
+											class="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-1.5 text-xs font-bold text-white shadow-lg"
+											title="Admin Verified"
+										>
+											<FontAwesomeIcon icon={faShieldAlt} class="h-3.5 w-3.5" />
+											<span>Admin</span>
+										</div>
+									{/if}
+								</div>
+								<div class="flex items-center gap-2 flex-wrap">
+									<p class="text-gray-600 dark:text-gray-300">@{profileUser.username || 'unknown'}</p>
+									{#if profileUser.permissions === 'admin' || (profileUser as any).is_admin === true}
+										<div
+											class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm"
+											title="Admin Verified"
+										>
+											<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
+											<span>Admin</span>
+										</div>
+									{/if}
+								</div>
 
 								<!-- Trust Metrics -->
 								<div class="mt-3 flex flex-wrap items-center gap-4">

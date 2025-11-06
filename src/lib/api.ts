@@ -756,6 +756,7 @@ export interface CurrentUser {
 		zip: string;
 	};
 	bio: string;
+	permissions?: string; // User permissions (e.g., "admin", "user")
 	// Trust metrics
 	average_rating?: number;
 	total_ratings?: number;
@@ -1269,7 +1270,17 @@ export async function getMarketItems(
 	const res = await fetch(url, {
 		headers: token ? { Authorization: `Bearer ${token}` } : undefined
 	});
-	if (!res.ok) throw new Error('Failed to fetch market items');
+	if (!res.ok) {
+		// Log error details for debugging
+		const errorText = await res.text();
+		console.error('[getMarketItems] Request failed:', {
+			status: res.status,
+			statusText: res.statusText,
+			url: url,
+			error: errorText
+		});
+		throw new Error(`Failed to fetch market items: ${res.status} ${res.statusText}`);
+	}
 	return res.json();
 }
 

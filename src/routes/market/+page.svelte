@@ -168,6 +168,7 @@
 				// Ignore errors loading unread count
 			}
 		} catch (e: any) {
+			console.error('[Market Page] Error loading items:', e);
 			error = e?.message || 'Failed to load market items';
 		} finally {
 			loading = false;

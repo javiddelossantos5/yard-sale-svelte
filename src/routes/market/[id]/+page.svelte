@@ -9,6 +9,7 @@
 		watchMarketItem,
 		unwatchMarketItem,
 		updateMarketItem,
+		deleteMarketItem,
 		getAuthenticatedImageUrl,
 		getCurrentUser,
 		getMarketItemConversations,
@@ -47,6 +48,7 @@
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
 	import MarketItemFeaturedImageModal from '$lib/MarketItemFeaturedImageModal.svelte';
 	import ConfirmationModal from '$lib/ConfirmationModal.svelte';
+	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
 
@@ -66,6 +68,8 @@
 	let submittingComment = $state(false);
 	let markingAsSold = $state(false);
 	let showMarkAsSoldModal = $state(false);
+	let showDeleteModal = $state(false);
+	let deleting = $state(false);
 
 	// Image carousel state
 	let currentImageIndex = $state(0);
@@ -296,6 +300,35 @@
 	async function handleFeaturedImageSuccess() {
 		showFeaturedImageModal = false;
 		await load(); // Reload the item after setting featured image
+	}
+
+	function handleDeleteItem() {
+		if (currentUser && item && currentUser.id === item.owner_id) {
+			showDeleteModal = true;
+		}
+	}
+
+	function handleCloseDeleteModal() {
+		showDeleteModal = false;
+	}
+
+	async function handleConfirmDelete() {
+		if (!item || deleting) return;
+
+		deleting = true;
+		error = null;
+		showDeleteModal = false;
+		try {
+			await deleteMarketItem(item.id);
+			// Redirect to marketplace after successful deletion
+			goto('/market');
+		} catch (e: any) {
+			error = e?.message || 'Failed to delete market item';
+			// Keep the modal open so user can try again or cancel
+			showDeleteModal = true;
+		} finally {
+			deleting = false;
+		}
 	}
 
 	// Image carousel functions
@@ -755,6 +788,14 @@
 										>
 											<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4 shrink-0" />
 											<span>Edit</span>
+										</button>
+										<button
+											onclick={handleDeleteItem}
+											disabled={deleting}
+											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
+										>
+											<FontAwesomeIcon icon={faTrash} class="mr-2 h-4 w-4 shrink-0" />
+											<span>{deleting ? 'Deleting...' : 'Delete'}</span>
 										</button>
 										{#if item.photos && item.photos.length > 0}
 											<button
@@ -1431,6 +1472,14 @@
 			itemName={item.name}
 		/>
 	{/if}
+
+	<!-- Delete Confirmation Modal -->
+	<DeleteConfirmationModal
+		isOpen={showDeleteModal}
+		itemName="market item"
+		onClose={handleCloseDeleteModal}
+		onConfirm={handleConfirmDelete}
+	/>
 
 	<!-- Full-Screen Image Viewer Modal -->
 	{#if imageViewerOpen && item}
