@@ -1793,25 +1793,43 @@ export async function getYardSaleUnreadCount(): Promise<{ unread_count: number }
 let cachedApiBase: string | null = null;
 
 function getApiBase(): string {
-	// Check cache first (computed once on client)
-	if (cachedApiBase !== null) {
-		return cachedApiBase;
-	}
-
-	// Check environment variable first
+	// Always check environment variable first (takes precedence)
 	const envApiBase = import.meta.env.VITE_API_BASE_URL;
 	if (envApiBase && typeof envApiBase === 'string') {
-		cachedApiBase = envApiBase;
-		return cachedApiBase;
+		// Only cache if we're on the client side
+		if (typeof window !== 'undefined') {
+			cachedApiBase = envApiBase;
+		}
+		return envApiBase;
 	}
 
 	// Only evaluate on client side (window is available)
-	if (typeof window !== 'undefined') {
-		// In production (HTTPS), use current origin so nginx can proxy
-		if (window.location.protocol === 'https:') {
-			cachedApiBase = window.location.origin;
+	// If window is not available (SSR), return a placeholder that won't be used
+	if (typeof window === 'undefined') {
+		return 'http://10.1.2.165:8000'; // Placeholder for SSR
+	}
+
+	// Check cache only on client side (after first evaluation)
+	// But verify the cache is still valid (not from SSR)
+	if (cachedApiBase !== null && cachedApiBase !== 'http://10.1.2.165:8000') {
+		// If we have a cached value and it's not the fallback, use it
+		// But if it's the fallback and we're now on HTTPS, recalculate
+		if (window.location.protocol === 'https:' && cachedApiBase.startsWith('http://')) {
+			// Clear invalid cache (was set during SSR or wrong protocol)
+			cachedApiBase = null;
+		} else {
 			return cachedApiBase;
 		}
+	}
+
+	// In production (HTTPS), use current origin so nginx can proxy
+	if (window.location.protocol === 'https:') {
+		cachedApiBase = window.location.origin;
+		// Debug logging in production to help diagnose issues
+		if (import.meta.env.PROD) {
+			console.log('[API Base] Using HTTPS origin:', cachedApiBase);
+		}
+		return cachedApiBase;
 	}
 
 	// Fallback to direct IP for development
@@ -1924,7 +1942,20 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 
 	// Use full backend URL instead of relative path to avoid proxy issues
 	// Call getApiBase() to ensure it's evaluated on client side
-	const response = await fetch(`${getApiBase()}/upload/image`, {
+	const apiBase = getApiBase();
+	const uploadUrl = `${apiBase}/upload/image`;
+
+	// Debug logging to help diagnose production issues
+	if (import.meta.env.PROD) {
+		console.log('[Upload Image] API Base:', apiBase);
+		console.log('[Upload Image] Full URL:', uploadUrl);
+		console.log(
+			'[Upload Image] Window protocol:',
+			typeof window !== 'undefined' ? window.location.protocol : 'N/A'
+		);
+	}
+
+	const response = await fetch(uploadUrl, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
