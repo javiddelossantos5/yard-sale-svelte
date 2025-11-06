@@ -311,8 +311,7 @@
 	}
 
 	function handleLogout() {
-		logout();
-		goto('/login');
+		logout(); // logout() now handles redirect automatically
 	}
 
 	function formatPhoneNumber(phone: string): string {

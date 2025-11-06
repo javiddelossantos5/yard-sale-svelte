@@ -36,7 +36,7 @@
 	let yardSaleUnreadCount = $state(0);
 	let marketItemUnreadCount = $state(0);
 	let currentUser = $state<CurrentUser | null>(null);
-	
+
 	// Initialize activeTab from URL query parameter
 	let activeTab = $state<'all' | 'yard-sales' | 'market'>(() => {
 		const tabParam = $page.url.searchParams.get('tab');
@@ -127,14 +127,21 @@
 	}
 
 	const totalUnreadCount = $derived(yardSaleUnreadCount + marketItemUnreadCount);
-	type UnifiedConversation = (YardSaleConversation & { type: 'yard-sale' }) | 
-	                            (MarketItemConversation & { type: 'market' });
+	type UnifiedConversation =
+		| (YardSaleConversation & { type: 'yard-sale' })
+		| (MarketItemConversation & { type: 'market' });
 
 	const filteredConversations = $derived(() => {
 		if (activeTab === 'yard-sales') {
-			return yardSaleConversations.map((c) => ({ ...c, type: 'yard-sale' as const })) as UnifiedConversation[];
+			return yardSaleConversations.map((c) => ({
+				...c,
+				type: 'yard-sale' as const
+			})) as UnifiedConversation[];
 		} else if (activeTab === 'market') {
-			return marketItemConversations.map((c) => ({ ...c, type: 'market' as const })) as UnifiedConversation[];
+			return marketItemConversations.map((c) => ({
+				...c,
+				type: 'market' as const
+			})) as UnifiedConversation[];
 		} else {
 			// Combine and sort by updated_at
 			const all: UnifiedConversation[] = [
@@ -152,8 +159,7 @@
 	}
 
 	function handleLogout() {
-		logout();
-		goto('/login');
+		logout(); // logout() now handles redirect automatically
 	}
 </script>
 
@@ -190,7 +196,8 @@
 							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">Messages</h1>
 							{#if totalUnreadCount > 0}
 								<p class="text-xs text-gray-500 dark:text-gray-400">
-									{totalUnreadCount} {totalUnreadCount === 1 ? 'unread' : 'unread'}
+									{totalUnreadCount}
+									{totalUnreadCount === 1 ? 'unread' : 'unread'}
 								</p>
 							{:else}
 								<p class="text-xs text-gray-500 dark:text-gray-400">All conversations</p>
@@ -321,7 +328,8 @@
 								</p>
 								{#if totalUnreadCount > 0}
 									<span class="text-xs text-gray-500 dark:text-gray-500">
-										• {totalUnreadCount} {totalUnreadCount === 1 ? 'unread' : 'unread'}
+										• {totalUnreadCount}
+										{totalUnreadCount === 1 ? 'unread' : 'unread'}
 									</span>
 								{/if}
 							</div>
@@ -472,7 +480,9 @@
 				{#each filteredConversations() as conv}
 					{@const isYardSale = conv.type === 'yard-sale'}
 					{@const convId = conv.id}
-					{@const route = isYardSale ? `/yard-sale/messages/${convId}` : `/market/messages/${convId}`}
+					{@const route = isYardSale
+						? `/yard-sale/messages/${convId}`
+						: `/market/messages/${convId}`}
 					{@const otherParticipant = isYardSale
 						? getYardSaleOtherParticipant(conv as YardSaleConversation)
 						: getMarketItemOtherParticipant(conv as MarketItemConversation)}
@@ -557,14 +567,22 @@
 												e.stopPropagation();
 												if (isYardSale) {
 													const ysConv = conv as YardSaleConversation;
-													goto(`/profile/${currentUser?.id === ysConv.participant1_id
-														? ysConv.participant2_id
-														: ysConv.participant1_id}`);
+													goto(
+														`/profile/${
+															currentUser?.id === ysConv.participant1_id
+																? ysConv.participant2_id
+																: ysConv.participant1_id
+														}`
+													);
 												} else {
 													const miConv = conv as MarketItemConversation;
-													goto(`/profile/${currentUser?.id === miConv.participant1_id
-														? miConv.participant2_id
-														: miConv.participant1_id}`);
+													goto(
+														`/profile/${
+															currentUser?.id === miConv.participant1_id
+																? miConv.participant2_id
+																: miConv.participant1_id
+														}`
+													);
 												}
 											}}
 											class="mt-0.5 cursor-pointer text-sm text-gray-600 transition hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
@@ -576,14 +594,22 @@
 													e.stopPropagation();
 													if (isYardSale) {
 														const ysConv = conv as YardSaleConversation;
-														goto(`/profile/${currentUser?.id === ysConv.participant1_id
-															? ysConv.participant2_id
-															: ysConv.participant1_id}`);
+														goto(
+															`/profile/${
+																currentUser?.id === ysConv.participant1_id
+																	? ysConv.participant2_id
+																	: ysConv.participant1_id
+															}`
+														);
 													} else {
 														const miConv = conv as MarketItemConversation;
-														goto(`/profile/${currentUser?.id === miConv.participant1_id
-															? miConv.participant2_id
-															: miConv.participant1_id}`);
+														goto(
+															`/profile/${
+																currentUser?.id === miConv.participant1_id
+																	? miConv.participant2_id
+																	: miConv.participant1_id
+															}`
+														);
 													}
 												}
 											}}
@@ -629,4 +655,3 @@
 		color: rgb(96 165 250); /* blue-400 */
 	}
 </style>
-

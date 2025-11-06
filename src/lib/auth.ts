@@ -101,9 +101,20 @@ export function isLoggedIn(): boolean {
 	return getAccessToken() !== null;
 }
 
-export function logout(): void {
+export function logout(redirectToLogin: boolean = true): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.removeItem(ACCESS_TOKEN_KEY);
+	}
+	
+	// Use hard redirect for better mobile compatibility
+	if (redirectToLogin && typeof window !== 'undefined') {
+		const currentPath = window.location.pathname;
+		if (currentPath !== '/login') {
+			// Use setTimeout to ensure localStorage is cleared first
+			setTimeout(() => {
+				window.location.href = '/login';
+			}, 0);
+		}
 	}
 }
 
@@ -116,28 +127,13 @@ export function handleTokenExpiration(): void {
 	isHandlingTokenExpiration = true;
 
 	// Clear session and redirect to login
-	// Clear the expired token
-	logout();
+	// logout() will handle the redirect automatically
+	logout(true);
 
-	// Redirect to login page only if we're not already there
-	if (typeof window !== 'undefined') {
-		const currentPath = window.location.pathname;
-		if (currentPath !== '/login') {
-			// Use setTimeout to allow current execution to complete
-			setTimeout(() => {
-				window.location.href = '/login';
-				// Reset flag after redirect
-				setTimeout(() => {
-					isHandlingTokenExpiration = false;
-				}, 1000);
-			}, 0);
-		} else {
-			// Reset flag if we're already on login page
-			isHandlingTokenExpiration = false;
-		}
-	} else {
+	// Reset flag after a delay to allow redirect to happen
+	setTimeout(() => {
 		isHandlingTokenExpiration = false;
-	}
+	}, 1000);
 }
 
 export function isTokenExpired(response: Response): boolean {

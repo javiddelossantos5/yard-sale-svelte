@@ -78,8 +78,7 @@
 	}
 
 	function handleLogout() {
-		logout();
-		goto('/login');
+		logout(); // logout() now handles redirect automatically
 	}
 </script>
 
