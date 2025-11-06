@@ -82,6 +82,16 @@
 
 	// React to conversationId changes (runs on mount and when conversationId changes)
 	$effect(() => {
+		// Check if user is logged in before loading
+		if (typeof window !== 'undefined') {
+			const token = localStorage.getItem('access_token');
+			if (!token) {
+				// Not logged in, redirect immediately
+				window.location.href = '/login';
+				return;
+			}
+		}
+		
 		if (conversationId) {
 			console.log('Loading conversation for ID:', conversationId);
 			load();

@@ -107,13 +107,13 @@ export function logout(redirectToLogin: boolean = true): void {
 	}
 	
 	// Use hard redirect for better mobile compatibility
+	// Do it immediately without setTimeout to prevent page from continuing to load
 	if (redirectToLogin && typeof window !== 'undefined') {
 		const currentPath = window.location.pathname;
 		if (currentPath !== '/login') {
-			// Use setTimeout to ensure localStorage is cleared first
-			setTimeout(() => {
-				window.location.href = '/login';
-			}, 0);
+			// Use immediate redirect - don't wait
+			window.location.href = '/login';
+			return; // Exit immediately to prevent any further execution
 		}
 	}
 }

@@ -83,7 +83,9 @@
 
 		// Allow public pages without forcing login
 		if (!isLoggedInClient && !isPublicPath) {
-			goto('/login');
+			// Use hard redirect for better mobile compatibility
+			window.location.href = '/login';
+			return;
 		}
 
 		// If logged in and on login page, redirect to home
