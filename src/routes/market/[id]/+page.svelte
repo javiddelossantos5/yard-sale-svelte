@@ -2,8 +2,23 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	
-	// Debug: Log when component is created
-	console.log('[MarketItemDetail] Component created/loaded. Current path:', typeof window !== 'undefined' ? window.location.pathname : 'SSR');
+	// Debug: Log when component is created - this should ALWAYS fire for market item detail pages
+	// Also verify we're on the correct route
+	if (typeof window !== 'undefined') {
+		const currentPath = window.location.pathname;
+		const isMarketItemRoute = currentPath.startsWith('/market/') && currentPath !== '/market' && !currentPath.startsWith('/market/messages') && !currentPath.startsWith('/market/watched');
+		
+		console.log('[MarketItemDetail] ====== COMPONENT CREATED ======');
+		console.log('[MarketItemDetail] Current path:', currentPath);
+		console.log('[MarketItemDetail] Is market item route?', isMarketItemRoute);
+		console.log('[MarketItemDetail] Route params:', $page.params);
+		console.log('[MarketItemDetail] Component file: src/routes/market/[id]/+page.svelte');
+		
+		// If we're not on a market item route, something is very wrong
+		if (!isMarketItemRoute) {
+			console.error('[MarketItemDetail] ERROR: This component is loading on the wrong route!', currentPath);
+		}
+	}
 	import {
 		getMarketItemById,
 		getMarketItemComments,
@@ -508,6 +523,7 @@
 </svelte:head>
 
 <!-- DEBUG: Market Item Detail Page - Route: /market/[id] -->
+{#if typeof window === 'undefined' || window.location.pathname.startsWith('/market/') && !window.location.pathname.startsWith('/market/messages') && !window.location.pathname.startsWith('/market/watched') && window.location.pathname !== '/market'}
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900" style="min-height: 100vh;" data-page="market-item-detail">
 	{#if loading}
 		<div class="px-4 py-6 text-gray-600 dark:text-gray-300">Loading item...</div>
@@ -1600,3 +1616,4 @@
 		</div>
 	{/if}
 </div>
+{/if}
