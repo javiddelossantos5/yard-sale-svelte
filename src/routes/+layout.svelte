@@ -136,11 +136,6 @@
 
 		const currentPath = $page.url.pathname;
 		const isLoginPage = currentPath === '/login';
-		const isPublicPath =
-			currentPath === '/' ||
-			currentPath.startsWith('/market') ||
-			currentPath.startsWith('/yard-sale') ||
-			currentPath.startsWith('/login');
 
 		// If we're already on login page, don't redirect
 		if (isLoginPage) {
@@ -148,13 +143,9 @@
 			return;
 		}
 
-		// Allow public pages without forcing login
-		if (!isLoggedInClient && !isPublicPath) {
-			// Use hard redirect for better mobile compatibility
-			isRedirecting = true;
-			window.location.replace('/login'); // Use replace instead of href
-			return;
-		}
+		// Don't force redirects based on token - let pages handle their own auth
+		// Only update login status
+		isLoggedInClient = isLoggedIn();
 
 		// If logged in and on login page, redirect to home
 		if (isLoggedInClient && isLoginPage) {

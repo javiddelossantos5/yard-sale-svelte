@@ -30,18 +30,13 @@
 	const conversationId = $derived($page.params.id);
 	const backUrl = $derived('/messages?tab=market');
 
-	// Synchronous check before any rendering - redirect immediately if logout or not authenticated
+	// Synchronous check before any rendering - redirect immediately if logout is happening
 	if (typeof window !== 'undefined') {
-		// Check logout flag first
+		// Check logout flag only - don't check token
 		if (
 			typeof sessionStorage !== 'undefined' &&
 			sessionStorage.getItem('logout_redirecting') === 'true'
 		) {
-			window.location.replace('/login');
-		}
-		// Check auth token
-		const token = localStorage.getItem('access_token');
-		if (!token) {
 			window.location.replace('/login');
 		}
 	}
@@ -112,18 +107,9 @@
 			return;
 		}
 
-		// Check if user is logged in before loading
-		if (typeof window !== 'undefined') {
-			const token = localStorage.getItem('access_token');
-			if (!token) {
-				// Not logged in, redirect immediately
-				window.location.replace('/login');
-				return;
-			}
-			// User is authenticated, set flag and start loading
-			isAuthenticated = true;
-			loading = true;
-		}
+		// Start loading - don't check token
+		isAuthenticated = true;
+		loading = true;
 		load();
 	});
 
@@ -191,8 +177,8 @@
 	}
 </script>
 
-{#if typeof window === 'undefined' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('logout_redirecting') === 'true') || !localStorage.getItem('access_token')}
-	<!-- Don't render anything if logout is happening or not authenticated -->
+{#if typeof window === 'undefined' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('logout_redirecting') === 'true')}
+	<!-- Don't render anything if logout is happening -->
 {:else}
 	<div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
 		<!-- Header -->

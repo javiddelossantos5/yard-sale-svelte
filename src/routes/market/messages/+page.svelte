@@ -67,15 +67,6 @@
 			return;
 		}
 		
-		// Check if user is logged in before loading
-		if (typeof window !== 'undefined') {
-			const token = localStorage.getItem('access_token');
-			if (!token) {
-				// Not logged in, redirect immediately
-				window.location.replace('/login');
-				return;
-			}
-		}
 		load();
 	});
 
