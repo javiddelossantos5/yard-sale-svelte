@@ -22,14 +22,20 @@
 	const conversationId = $derived($page.params.id);
 	const backUrl = $derived('/messages?tab=yard-sales');
 
-	// Synchronous check before any rendering - redirect immediately if logout is happening
+	// Check if we should render this page at all
+	let shouldRender = $state(true);
 	if (typeof window !== 'undefined') {
+		// If we're on login page, don't render (shouldn't happen, but safety check)
+		if (window.location.pathname === '/login') {
+			shouldRender = false;
+		}
 		// Check logout flag only - don't check token
 		if (
 			typeof sessionStorage !== 'undefined' &&
 			sessionStorage.getItem('logout_redirecting') === 'true'
 		) {
 			window.location.replace('/login');
+			shouldRender = false;
 		}
 	}
 
@@ -91,6 +97,11 @@
 
 	// React to conversationId changes (runs on mount and when conversationId changes)
 	$effect(() => {
+		// Don't run if we're on login page
+		if (typeof window !== 'undefined' && window.location.pathname === '/login') {
+			return;
+		}
+
 		// Check if we're in the middle of a logout redirect - if so, redirect immediately
 		if (
 			typeof sessionStorage !== 'undefined' &&
@@ -168,8 +179,8 @@
 	const isMyMessage = (message: Message) => currentUser && message.sender_id === currentUser.id;
 </script>
 
-{#if typeof window === 'undefined' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('logout_redirecting') === 'true')}
-	<!-- Don't render anything if logout is happening -->
+{#if !shouldRender || typeof window === 'undefined' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('logout_redirecting') === 'true')}
+	<!-- Don't render anything if on login page or logout is happening -->
 {:else}
 	<div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
 		<!-- Header -->
