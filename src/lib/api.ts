@@ -1232,6 +1232,8 @@ export async function getMarketItems(
 		status?: 'active' | 'sold' | 'hidden' | 'all';
 		accepts_best_offer?: boolean;
 		price_reduced?: boolean;
+		is_free?: boolean;
+		owner_is_admin?: boolean;
 		limit?: number;
 		offset?: number;
 		sort_by?: 'price' | 'created_at' | 'price_reduction_percentage' | 'name';
@@ -1247,12 +1249,24 @@ export async function getMarketItems(
 	if (params.accepts_best_offer !== undefined)
 		query.set('accepts_best_offer', String(params.accepts_best_offer));
 	if (params.price_reduced !== undefined) query.set('price_reduced', String(params.price_reduced));
+	if (params.is_free !== undefined) query.set('is_free', String(params.is_free));
+	if (params.owner_is_admin !== undefined)
+		query.set('owner_is_admin', String(params.owner_is_admin));
 	if (params.limit != null) query.set('limit', String(params.limit));
 	if (params.offset != null) query.set('offset', String(params.offset));
 	if (params.sort_by) query.set('sort_by', params.sort_by);
 	if (params.sort_order) query.set('sort_order', params.sort_order);
 	const token = localStorage.getItem('access_token');
-	const res = await fetch(`/api/market-items${query.toString() ? `?${query}` : ''}`, {
+	const url = `/api/market-items${query.toString() ? `?${query}` : ''}`;
+	// Debug logging for filter parameters
+	if (import.meta.env.DEV && (params.is_free === true || params.owner_is_admin === true)) {
+		console.log('[getMarketItems] Filter params:', {
+			is_free: params.is_free,
+			owner_is_admin: params.owner_is_admin,
+			url: url
+		});
+	}
+	const res = await fetch(url, {
 		headers: token ? { Authorization: `Bearer ${token}` } : undefined
 	});
 	if (!res.ok) throw new Error('Failed to fetch market items');

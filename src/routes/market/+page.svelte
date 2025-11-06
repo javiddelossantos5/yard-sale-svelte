@@ -39,6 +39,8 @@
 	let maxPrice = $state('');
 	let acceptsBestOfferFilter = $state(false);
 	let priceReducedFilter = $state(false);
+	let isFreeFilter = $state(false);
+	let adminPostedFilter = $state(false);
 	let sortBy = $state<'price' | 'created_at' | 'price_reduction_percentage' | 'name'>('created_at');
 	let sortOrder = $state<'asc' | 'desc'>('desc');
 	let sortByDisplay = $state<
@@ -82,6 +84,8 @@
 				status?: 'active' | 'sold' | 'hidden' | 'all';
 				accepts_best_offer?: boolean;
 				price_reduced?: boolean;
+				is_free?: boolean;
+				owner_is_admin?: boolean;
 				sort_by?: 'price' | 'created_at' | 'price_reduction_percentage' | 'name';
 				sort_order?: 'asc' | 'desc';
 			} = {};
@@ -128,6 +132,16 @@
 				params.price_reduced = true;
 			}
 
+			// Free items filter
+			if (isFreeFilter) {
+				params.is_free = true;
+			}
+
+			// Admin posted filter
+			if (adminPostedFilter) {
+				params.owner_is_admin = true;
+			}
+
 			// Sorting
 			// Handle sort_by and sort_order based on sortByDisplay
 			if (sortByDisplay === 'price_asc') {
@@ -169,6 +183,8 @@
 		maxPrice; // Track max price
 		acceptsBestOfferFilter; // Track best offer filter
 		priceReducedFilter; // Track price reduced filter
+		isFreeFilter; // Track free items filter
+		adminPostedFilter; // Track admin posted filter
 		sortByDisplay; // Track sort by display
 		sortOrder; // Track sort order
 		load();
@@ -181,6 +197,8 @@
 		maxPrice = '';
 		acceptsBestOfferFilter = false;
 		priceReducedFilter = false;
+		isFreeFilter = false;
+		adminPostedFilter = false;
 		statusFilter = 'active';
 		sortByDisplay = 'created_at';
 		sortOrder = 'desc';
@@ -208,11 +226,17 @@
 				<div class="flex h-16 items-center justify-between">
 					<!-- Logo and Title -->
 					<div class="flex items-center space-x-3">
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-8 w-8 rounded-lg object-cover"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-8 w-8 rounded-lg object-cover"
+							/>
+						</button>
 						<div>
 							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">Marketplace</h1>
 							<p class="text-xs text-gray-500 dark:text-gray-400">
@@ -336,11 +360,17 @@
 				<div class="flex h-20 items-center justify-between">
 					<!-- Left: Logo and Title -->
 					<div class="flex items-center space-x-4">
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-12 w-12 rounded-xl object-cover shadow-sm"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-12 w-12 rounded-xl object-cover shadow-sm"
+							/>
+						</button>
 						<div>
 							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Marketplace</h1>
 							<div class="mt-0.5 flex items-center gap-3">
@@ -451,6 +481,8 @@
 						maxPrice ||
 						acceptsBestOfferFilter ||
 						priceReducedFilter ||
+						isFreeFilter ||
+						adminPostedFilter ||
 						statusFilter !== 'active' ||
 						sortByDisplay !== 'created_at' ||
 						sortOrder !== 'desc'
@@ -599,6 +631,38 @@
 									Price Reduced
 								</span>
 							</label>
+
+							<!-- Free Items Filter -->
+							<label
+								for="isFree"
+								class="flex cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-500 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:focus-within:border-green-500 dark:hover:bg-gray-600"
+							>
+								<input
+									type="checkbox"
+									id="isFree"
+									bind:checked={isFreeFilter}
+									class="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 dark:border-gray-600 dark:bg-gray-700"
+								/>
+								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+									Free Items
+								</span>
+							</label>
+
+							<!-- Admin Posted Filter -->
+							<label
+								for="adminPosted"
+								class="flex cursor-pointer items-center rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-500 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:focus-within:border-purple-500 dark:hover:bg-gray-600"
+							>
+								<input
+									type="checkbox"
+									id="adminPosted"
+									bind:checked={adminPostedFilter}
+									class="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700"
+								/>
+								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+									Admin Posted
+								</span>
+							</label>
 						</div>
 
 						<!-- Row 4: Sort Options -->
@@ -645,7 +709,7 @@
 					</div>
 
 					<!-- Active Filters Indicator and Clear Button -->
-					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || statusFilter !== 'active' || sortByDisplay !== 'created_at' || sortOrder !== 'desc'}
+					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || isFreeFilter || adminPostedFilter || statusFilter !== 'active' || sortByDisplay !== 'created_at' || sortOrder !== 'desc'}
 						<div
 							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
 						>
