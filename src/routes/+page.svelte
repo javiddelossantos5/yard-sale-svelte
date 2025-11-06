@@ -7,6 +7,7 @@
 		getYardSalesByCategory,
 		getCurrentUser,
 		getYardSaleUnreadCount,
+		getMarketItemUnreadCount,
 		type YardSale,
 		type CurrentUser
 	} from '$lib/api';
@@ -77,6 +78,21 @@
 	// Create yard sale modal state
 	let showCreateModal = $state(false);
 
+	// Function to refresh message unread count
+	async function refreshMessageCount() {
+		if (!currentUser) return;
+		
+		try {
+			const [yardSaleResult, marketResult] = await Promise.all([
+				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
+				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
+			]);
+			messageUnreadCount = (yardSaleResult.unread_count || 0) + (marketResult.unread_count || 0);
+		} catch {
+			// Ignore errors loading unread count
+		}
+	}
+
 	onMount(() => {
 		// Load current user first, which will also load yard sales
 		loadCurrentUser().catch((err) => {
@@ -90,9 +106,29 @@
 
 		window.addEventListener('visitedStatusChanged', handleVisitedStatusChanged);
 
+		// Refresh message count when page becomes visible (user returns to tab)
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === 'visible' && currentUser) {
+				refreshMessageCount();
+			}
+		};
+
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		// Refresh message count when window regains focus
+		const handleFocus = () => {
+			if (currentUser) {
+				refreshMessageCount();
+			}
+		};
+
+		window.addEventListener('focus', handleFocus);
+
 		// Cleanup
 		return () => {
 			window.removeEventListener('visitedStatusChanged', handleVisitedStatusChanged);
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+			window.removeEventListener('focus', handleFocus);
 		};
 	});
 
@@ -113,12 +149,16 @@
 			// Sync visited status with backend when user is loaded
 			if (currentUser) {
 				await syncVisitedStatus();
-				// Load unread message count
+				// Load unread message counts from both yard sales and marketplace
 				try {
-					const result = await getYardSaleUnreadCount();
-					messageUnreadCount = result.unread_count;
+					const [yardSaleResult, marketResult] = await Promise.all([
+						getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
+						getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
+					]);
+					messageUnreadCount = (yardSaleResult.unread_count || 0) + (marketResult.unread_count || 0);
 				} catch {
 					// Ignore errors loading unread count
+					messageUnreadCount = 0;
 				}
 			}
 
