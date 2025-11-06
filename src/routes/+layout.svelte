@@ -8,7 +8,7 @@
 	import { darkMode, toggleDarkMode } from '$lib/darkMode';
 	import NotificationCenter from '$lib/NotificationCenter.svelte';
 	import { loadNotificationCounts } from '$lib/notifications';
-	import '$lib/messagePoller'; // Start message polling
+	import { messagePoller } from '$lib/messagePoller'; // Import messagePoller (don't auto-start)
 	import '$lib/fontawesome';
 
 	let { children } = $props();
@@ -21,7 +21,7 @@
 		// Check authentication on every page load
 		checkAuth();
 
-		// Load notification counts if user is logged in and not on login page
+		// Load notification counts and start message polling if user is logged in and not on login page
 		// Use setTimeout to avoid interfering with initial page load
 		const currentPath = $page.url.pathname;
 		if (isLoggedIn() && currentPath !== '/login') {
@@ -29,7 +29,14 @@
 				loadNotificationCounts().catch(() => {
 					// Silently handle errors - token expiration will be handled by setupAuthFetch
 				});
+				// Start message polling only if logged in and not on login page
+				messagePoller.startPolling().catch(() => {
+					// Silently handle errors
+				});
 			}, 100);
+		} else {
+			// Stop message polling if not logged in or on login page
+			messagePoller.stopPolling();
 		}
 	});
 

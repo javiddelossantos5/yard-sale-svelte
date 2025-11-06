@@ -66,10 +66,5 @@ class MessagePoller {
 // Create singleton instance
 export const messagePoller = new MessagePoller();
 
-// Auto-start polling when the module is imported (in browser only)
-if (browser) {
-	// Start polling after a short delay to ensure the app is initialized
-	setTimeout(() => {
-		messagePoller.startPolling();
-	}, 2000);
-}
+// Note: Message polling is now controlled from +layout.svelte
+// to prevent it from running on the login page or when user is not logged in
