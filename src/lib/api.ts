@@ -1787,8 +1787,13 @@ export async function getYardSaleUnreadCount(): Promise<{ unread_count: number }
 	return res.json();
 }
 
-// Get API base URL from environment variable
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://10.1.2.165:8000';
+// Get API base URL from environment variable, or use current origin in production
+// This allows nginx to proxy requests and avoids CORS/mixed content issues
+const API_BASE =
+	import.meta.env.VITE_API_BASE_URL ||
+	(typeof window !== 'undefined' && window.location.protocol === 'https:'
+		? window.location.origin // Use current domain in production (proxied through nginx)
+		: 'http://10.1.2.165:8000'); // Fallback to direct IP for development
 
 // Helper function to get the proxy URL for an image
 export function getImageProxyUrl(imageKey: string): string {
@@ -1832,8 +1837,15 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 	}
 
 	// If it's already an API base URL, convert to relative path for proxy
-	// Check if the URL contains the API base URL (handles both localhost:8000 and 10.1.2.165:8000)
-	const apiBaseHosts = ['localhost:8000', '10.1.2.165:8000', 'localhost:5173', '10.1.2.165:5173'];
+	// Check if the URL contains the API base URL (handles localhost, IP addresses, and production domain)
+	const apiBaseHosts = [
+		'localhost:8000',
+		'10.1.2.165:8000',
+		'localhost:5173',
+		'10.1.2.165:5173',
+		'yardsalefinders.com',
+		'main.yardsalefinders.com'
+	];
 	const isApiUrl = apiBaseHosts.some((host) => imageUrl.includes(host));
 
 	if (isApiUrl) {
