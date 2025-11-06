@@ -15,13 +15,15 @@
 
 	// Client-only state to prevent hydration mismatch
 	// Use browser check to ensure this is only true on client
+	// Since SSR is disabled, we're always on client
 	import { browser } from '$app/environment';
-	let isClient = $state(browser);
+	let isClient = $state(typeof window !== 'undefined' ? true : browser);
 	let isLoggedInClient = $state(false);
 	let lastPath = $state<string>('');
 	let isRedirecting = $state(false); // Prevent redirect loops
 
 	onMount(() => {
+		// Set isClient immediately to ensure rendering works
 		isClient = true;
 
 		// Check if we're in the middle of a logout redirect
@@ -35,6 +37,9 @@
 			if (currentPath === '/login') {
 				isLoggedInClient = false;
 				isRedirecting = false;
+				// Still set up auth fetch and stop polling, but don't do auth checks
+				setupAuthFetch();
+				messagePoller.stopPolling();
 				return;
 			}
 		}
@@ -46,6 +51,9 @@
 		const currentPath = String($page.url.pathname);
 		if (currentPath === '/login') {
 			isRedirecting = false;
+			// Still set up auth fetch and stop polling, but don't do auth checks
+			setupAuthFetch();
+			messagePoller.stopPolling();
 			return; // Exit early - don't run any auth checks
 		}
 
@@ -197,4 +205,5 @@
 	</button>
 </div>
 
+<!-- Always render children - SSR is disabled so we're always on client -->
 {@render children?.()}
