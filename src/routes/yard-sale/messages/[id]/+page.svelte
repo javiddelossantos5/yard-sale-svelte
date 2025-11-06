@@ -24,11 +24,12 @@
 
 	let messages = $state<Message[]>([]);
 	let conversation = $state<{ yard_sale_title?: string; yard_sale_id?: string } | null>(null);
-	let loading = $state(true);
+	let loading = $state(false); // Start as false - only set to true after auth check
 	let error = $state<string | null>(null);
 	let newMessage = $state('');
 	let sending = $state(false);
 	let currentUser = $state<CurrentUser | null>(null);
+	let isAuthenticated = $state(false); // Track auth status
 
 	async function load() {
 		if (!conversationId) {
@@ -82,8 +83,11 @@
 
 	// React to conversationId changes (runs on mount and when conversationId changes)
 	$effect(() => {
-		// Check if we're in the middle of a logout redirect - if so, don't do anything
+		// Check if we're in the middle of a logout redirect - if so, redirect immediately
 		if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('logout_redirecting') === 'true') {
+			if (typeof window !== 'undefined') {
+				window.location.replace('/login');
+			}
 			return;
 		}
 		
@@ -94,6 +98,11 @@
 				// Not logged in, redirect immediately
 				window.location.replace('/login');
 				return;
+			}
+			// User is authenticated, set flag and start loading
+			if (!isAuthenticated) {
+				isAuthenticated = true;
+				loading = true;
 			}
 		}
 		
@@ -196,7 +205,9 @@
 	</div>
 	<!-- Messages -->
 	<div class="flex-1 overflow-y-auto px-4 py-6" id="messages-container">
-		{#if loading}
+		{#if !isAuthenticated}
+			<!-- Don't show anything if not authenticated - redirect is happening -->
+		{:else if loading}
 			<div class="flex h-full items-center justify-center">
 				<p class="text-sm text-gray-500 dark:text-gray-400">Loading messages...</p>
 			</div>

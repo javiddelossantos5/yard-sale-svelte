@@ -12,6 +12,26 @@ const ACCESS_TOKEN_KEY = 'access_token';
 let fetchWrapped = false;
 let isHandlingTokenExpiration = false;
 
+// Lazy import messagePoller to avoid circular dependencies
+let messagePollerInstance: { stopPolling: () => void } | null = null;
+function getMessagePoller() {
+	if (!messagePollerInstance && typeof window !== 'undefined') {
+		try {
+			// Dynamic import to avoid circular dependency
+			import('./messagePoller')
+				.then((module) => {
+					messagePollerInstance = module.messagePoller;
+				})
+				.catch(() => {
+					// Ignore if can't import
+				});
+		} catch {
+			// Ignore if can't import
+		}
+	}
+	return messagePollerInstance;
+}
+
 // Initialize auth fetch wrapper immediately if in browser
 if (typeof window !== 'undefined') {
 	setupAuthFetch();
@@ -104,6 +124,17 @@ export function isLoggedIn(): boolean {
 export function logout(redirectToLogin: boolean = true): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.removeItem(ACCESS_TOKEN_KEY);
+	}
+
+	// Stop message polling immediately to prevent any API calls
+	// Try to stop polling if messagePoller is available
+	const poller = getMessagePoller();
+	if (poller) {
+		try {
+			poller.stopPolling();
+		} catch {
+			// Ignore errors stopping polling
+		}
 	}
 
 	// Use hard redirect for better mobile compatibility
