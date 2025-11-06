@@ -1816,7 +1816,12 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 			const result = `${imageUrl}${separator}token=${token}`;
 			// Debug logging (only in development)
 			if (import.meta.env.DEV) {
-				console.debug('[Image URL] Added token to relative URL:', imageUrl.substring(0, 50), '→', result.substring(0, 80) + '...');
+				console.debug(
+					'[Image URL] Added token to relative URL:',
+					imageUrl.substring(0, 50),
+					'→',
+					result.substring(0, 80) + '...'
+				);
 			}
 			return result;
 		}
@@ -1841,7 +1846,12 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 				const separator = relativePath.includes('?') ? '&' : '?';
 				const result = `${relativePath}${separator}token=${token}`;
 				if (import.meta.env.DEV) {
-					console.debug('[Image URL] Converted full URL to relative:', imageUrl.substring(0, 50), '→', result.substring(0, 80) + '...');
+					console.debug(
+						'[Image URL] Converted full URL to relative:',
+						imageUrl.substring(0, 50),
+						'→',
+						result.substring(0, 80) + '...'
+					);
 				}
 				return result;
 			}

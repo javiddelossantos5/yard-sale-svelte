@@ -786,7 +786,7 @@
 										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
 											{#each formData.photos as photo, index}
 												{@const isFeatured = formData.featured_image === photo}
-												{@const authenticatedPhotoUrl = getAuthenticatedImageUrl(photo || '')}
+												{@const authenticatedPhotoUrl = $derived(getAuthenticatedImageUrl(photo || ''))}
 												<button
 													type="button"
 													onclick={() => {
