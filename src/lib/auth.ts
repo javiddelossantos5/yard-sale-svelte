@@ -105,14 +105,18 @@ export function logout(redirectToLogin: boolean = true): void {
 	if (typeof localStorage !== 'undefined') {
 		localStorage.removeItem(ACCESS_TOKEN_KEY);
 	}
-	
+
 	// Use hard redirect for better mobile compatibility
 	// Do it immediately without setTimeout to prevent page from continuing to load
 	if (redirectToLogin && typeof window !== 'undefined') {
 		const currentPath = window.location.pathname;
 		if (currentPath !== '/login') {
+			// Set a flag to prevent redirect loops
+			if (typeof sessionStorage !== 'undefined') {
+				sessionStorage.setItem('logout_redirecting', 'true');
+			}
 			// Use immediate redirect - don't wait
-			window.location.href = '/login';
+			window.location.replace('/login'); // Use replace instead of href to prevent back button issues
 			return; // Exit immediately to prevent any further execution
 		}
 	}

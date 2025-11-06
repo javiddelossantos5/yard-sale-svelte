@@ -23,12 +23,30 @@
 
 	onMount(() => {
 		isClient = true;
+
+		// Check if we're in the middle of a logout redirect
+		if (
+			typeof sessionStorage !== 'undefined' &&
+			sessionStorage.getItem('logout_redirecting') === 'true'
+		) {
+			sessionStorage.removeItem('logout_redirecting');
+			// If we're on login page, we're done - don't check auth
+			const currentPath = String($page.url.pathname);
+			if (currentPath === '/login') {
+				isLoggedInClient = false;
+				isRedirecting = false;
+				return;
+			}
+		}
+
 		isLoggedInClient = isLoggedIn();
 		lastPath = $page.url.pathname;
 
 		// If we're on login page, reset redirect flag and don't check auth
-		if ($page.url.pathname === '/login') {
+		const currentPath = String($page.url.pathname);
+		if (currentPath === '/login') {
 			isRedirecting = false;
+			return; // Exit early - don't run any auth checks
 		}
 
 		// setupAuthFetch() is now called at module load time in auth.ts
@@ -36,14 +54,12 @@
 		setupAuthFetch();
 
 		// Check authentication on every page load (but not on login page)
-		if ($page.url.pathname !== '/login') {
-			checkAuth();
-		}
+		checkAuth();
 
 		// Load notification counts and start message polling if user is logged in and not on login page
 		// Use setTimeout to avoid interfering with initial page load
-		const currentPath = $page.url.pathname;
-		if (isLoggedInClient && currentPath !== '/login') {
+		const currentPathForPolling = String($page.url.pathname);
+		if (isLoggedInClient && currentPathForPolling !== '/login') {
 			setTimeout(() => {
 				loadNotificationCounts().catch(() => {
 					// Silently handle errors - token expiration will be handled by setupAuthFetch
@@ -69,13 +85,26 @@
 		// Don't run if we're redirecting
 		if (isRedirecting) return;
 
-		// Track page path to react to changes
-		const currentPath = $page.url.pathname;
+		// Don't run if we're in the middle of a logout redirect
+		if (
+			typeof sessionStorage !== 'undefined' &&
+			sessionStorage.getItem('logout_redirecting') === 'true'
+		) {
+			return;
+		}
 
-		// If we're on login page, update login status but don't check auth
+		// Track page path to react to changes
+		const currentPath = String($page.url.pathname);
+
+		// If we're on login page, update login status but don't check auth - and clear any redirect flags
 		if (currentPath === '/login') {
 			isLoggedInClient = isLoggedIn();
 			isRedirecting = false; // Reset redirect flag when on login page
+			// Clear logout redirect flag
+			if (typeof sessionStorage !== 'undefined') {
+				sessionStorage.removeItem('logout_redirecting');
+			}
+			// Don't run checkAuth on login page - exit early
 			return;
 		}
 
@@ -83,7 +112,10 @@
 		if (currentPath !== lastPath) {
 			lastPath = currentPath;
 			isLoggedInClient = isLoggedIn();
-			checkAuth();
+			// Only check auth if we're not on login page
+			if (currentPath !== '/login') {
+				checkAuth();
+			}
 		}
 	});
 
@@ -93,6 +125,14 @@
 
 		// Prevent redirect loops
 		if (isRedirecting) return;
+
+		// Don't redirect if we're in the middle of a logout redirect
+		if (
+			typeof sessionStorage !== 'undefined' &&
+			sessionStorage.getItem('logout_redirecting') === 'true'
+		) {
+			return;
+		}
 
 		const currentPath = $page.url.pathname;
 		const isLoginPage = currentPath === '/login';
@@ -112,7 +152,7 @@
 		if (!isLoggedInClient && !isPublicPath) {
 			// Use hard redirect for better mobile compatibility
 			isRedirecting = true;
-			window.location.href = '/login';
+			window.location.replace('/login'); // Use replace instead of href
 			return;
 		}
 

@@ -84,12 +84,20 @@
 	}
 
 	onMount(() => {
+		// Check if we're in the middle of a logout redirect - if so, don't do anything
+		if (
+			typeof sessionStorage !== 'undefined' &&
+			sessionStorage.getItem('logout_redirecting') === 'true'
+		) {
+			return;
+		}
+
 		// Check if user is logged in before loading
 		if (typeof window !== 'undefined') {
 			const token = localStorage.getItem('access_token');
 			if (!token) {
 				// Not logged in, redirect immediately
-				window.location.href = '/login';
+				window.location.replace('/login');
 				return;
 			}
 		}
