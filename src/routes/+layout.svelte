@@ -44,7 +44,7 @@
 	function checkAuth() {
 		// Only run on client
 		if (typeof window === 'undefined') return;
-		
+
 		const currentPath = $page.url.pathname;
 		const isLoginPage = currentPath === '/login';
 		const isPublicPath =
