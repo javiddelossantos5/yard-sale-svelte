@@ -1830,12 +1830,12 @@ let cachedApiBase: string | null = null;
 function getApiBase(): string {
 	// Always check environment variable first (takes precedence)
 	const envApiBase = import.meta.env.VITE_API_BASE_URL;
-	if (envApiBase && typeof envApiBase === 'string') {
+	if (envApiBase && typeof envApiBase === 'string' && envApiBase.trim() !== '') {
 		// Only cache if we're on the client side
 		if (typeof window !== 'undefined') {
-			cachedApiBase = envApiBase;
+			cachedApiBase = envApiBase.trim();
 		}
-		return envApiBase;
+		return envApiBase.trim();
 	}
 
 	// Only evaluate on client side (window is available)
@@ -1845,39 +1845,39 @@ function getApiBase(): string {
 		return 'https://api.yardsalefinders.com'; // Placeholder for SSR (matches production)
 	}
 
-	// Check cache only on client side (after first evaluation)
-	// But verify the cache is still valid (not from SSR)
-	if (cachedApiBase !== null && cachedApiBase !== 'http://10.1.2.165:8000') {
-		// If we have a cached value and it's not the fallback, use it
-		// But if it's the fallback and we're now on HTTPS, recalculate
-		if (window.location.protocol === 'https:' && cachedApiBase.startsWith('http://')) {
-			// Clear invalid cache (was set during SSR or wrong protocol)
-			cachedApiBase = null;
-		} else {
-			return cachedApiBase;
-		}
-	}
-
-	// In production (HTTPS), use API subdomain
+	// IMPORTANT: Check HTTPS/production FIRST before checking cache
+	// This ensures we always use HTTPS in production, even if cache was set incorrectly
 	if (window.location.protocol === 'https:') {
 		// Check if we're on the production domain
 		if (
 			window.location.hostname === 'yardsalefinders.com' ||
 			window.location.hostname === 'main.yardsalefinders.com'
 		) {
+			// Always use HTTPS API in production - ignore any cached HTTP values
 			cachedApiBase = 'https://api.yardsalefinders.com';
+			// Debug logging in production to help diagnose issues
+			console.log('[API Base] Production detected - Using HTTPS API:', cachedApiBase);
+			return cachedApiBase;
 		} else {
 			// For other HTTPS domains, use current origin (for nginx proxy)
 			cachedApiBase = window.location.origin;
+			return cachedApiBase;
 		}
-		// Debug logging in production to help diagnose issues
-		if (import.meta.env.PROD) {
-			console.log('[API Base] Using HTTPS API:', cachedApiBase);
-		}
-		return cachedApiBase;
 	}
 
-	// Fallback to direct IP for development
+	// Check cache only for HTTP (development) - but validate it first
+	if (cachedApiBase !== null) {
+		// If cache exists and we're on HTTP (dev), use it
+		if (window.location.protocol === 'http:' && cachedApiBase.startsWith('http://')) {
+			return cachedApiBase;
+		}
+		// If cache is HTTP but we're on HTTPS, clear it (shouldn't happen due to check above, but safety)
+		if (window.location.protocol === 'https:' && cachedApiBase.startsWith('http://')) {
+			cachedApiBase = null;
+		}
+	}
+
+	// Fallback to direct IP for development (HTTP only)
 	cachedApiBase = 'http://10.1.2.165:8000';
 	return cachedApiBase;
 }
