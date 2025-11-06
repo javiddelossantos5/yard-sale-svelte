@@ -49,7 +49,22 @@ export default defineConfig(({ mode }) => {
 				'^/(upload|images|image-proxy)': {
 					target: API_BASE_URL,
 					changeOrigin: true,
-					secure: false
+					secure: false,
+					configure: (proxy, options) => {
+						proxy.on('proxyReq', (proxyReq, req, res) => {
+							// Try to get token from query parameter or cookie
+							const url = new URL(req.url || '', `http://${req.headers.host}`);
+							const token = url.searchParams.get('token');
+
+							if (token) {
+								// Add Authorization header from token query parameter
+								proxyReq.setHeader('Authorization', `Bearer ${token}`);
+								// Remove token from query string to avoid exposing it
+								url.searchParams.delete('token');
+								proxyReq.path = url.pathname + url.search;
+							}
+						});
+					}
 				},
 				// Proxy market-items messaging endpoints directly
 				'^/market-items/(conversations|.*/messages|messages/.*)': {

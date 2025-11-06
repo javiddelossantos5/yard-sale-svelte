@@ -1800,32 +1800,40 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 	if (!imageUrl) return '';
 
 	// Handle relative URLs - convert to full backend URL
+	// Use relative path so Vite proxy can add Authorization header
 	if (
 		imageUrl.startsWith('/image-proxy/') ||
 		imageUrl.startsWith('/images/') ||
 		imageUrl.startsWith('/upload/')
 	) {
-		// It's a relative path, prepend the API base URL
-		const fullUrl = imageUrl.startsWith('/') ? `${API_BASE}${imageUrl}` : `${API_BASE}/${imageUrl}`;
-
+		// Keep as relative path - Vite proxy will handle it and add Authorization header
 		const token = localStorage.getItem('access_token');
 		if (token) {
-			const separator = fullUrl.includes('?') ? '&' : '?';
-			return `${fullUrl}${separator}token=${token}`;
+			const separator = imageUrl.includes('?') ? '&' : '?';
+			return `${imageUrl}${separator}token=${token}`;
 		}
-		return fullUrl;
+		return imageUrl;
 	}
 
-	// If it's already an API base URL, add the token as a query parameter
+	// If it's already an API base URL, convert to relative path for proxy
 	// Check if the URL contains the API base URL (handles both localhost:8000 and 10.1.2.165:8000)
 	const apiBaseHosts = ['localhost:8000', '10.1.2.165:8000'];
 	const isApiUrl = apiBaseHosts.some((host) => imageUrl.includes(host));
 
 	if (isApiUrl) {
-		const token = localStorage.getItem('access_token');
-		if (token) {
-			const separator = imageUrl.includes('?') ? '&' : '?';
-			return `${imageUrl}${separator}token=${token}`;
+		// Extract the path from the full URL
+		try {
+			const url = new URL(imageUrl);
+			const relativePath = url.pathname + url.search;
+			const token = localStorage.getItem('access_token');
+			if (token) {
+				const separator = relativePath.includes('?') ? '&' : '?';
+				return `${relativePath}${separator}token=${token}`;
+			}
+			return relativePath;
+		} catch {
+			// If URL parsing fails, return as-is
+			return imageUrl;
 		}
 	}
 
