@@ -18,7 +18,7 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
-	import { getMarketItemUnreadCount } from '$lib/api';
+	import { getMarketItemUnreadCount, getYardSaleUnreadCount } from '$lib/api';
 
 	let mobileMenuOpen = $state(false);
 	let filtersExpanded = $state(false);
@@ -160,12 +160,16 @@
 			items = response.items;
 			totalItems = response.total;
 
-			// Load unread message count
+			// Load unread message counts from both yard sales and marketplace
 			try {
-				const unread = await getMarketItemUnreadCount();
-				messageUnreadCount = unread.unread_count;
+				const [yardSaleResult, marketResult] = await Promise.all([
+					getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
+					getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
+				]);
+				messageUnreadCount = (yardSaleResult.unread_count || 0) + (marketResult.unread_count || 0);
 			} catch {
 				// Ignore errors loading unread count
+				messageUnreadCount = 0;
 			}
 		} catch (e: any) {
 			console.error('[Market Page] Error loading items:', e);
@@ -174,6 +178,47 @@
 			loading = false;
 		}
 	}
+
+	// Function to refresh message unread count
+	async function refreshMessageCount() {
+		if (!currentUser) return;
+
+		try {
+			const [yardSaleResult, marketResult] = await Promise.all([
+				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
+				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
+			]);
+			messageUnreadCount = (yardSaleResult.unread_count || 0) + (marketResult.unread_count || 0);
+		} catch {
+			// Ignore errors loading unread count
+		}
+	}
+
+	onMount(() => {
+		// Refresh message count when page becomes visible (user returns to tab)
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === 'visible' && currentUser) {
+				refreshMessageCount();
+			}
+		};
+
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		// Refresh message count when window regains focus
+		const handleFocus = () => {
+			if (currentUser) {
+				refreshMessageCount();
+			}
+		};
+
+		window.addEventListener('focus', handleFocus);
+
+		// Cleanup
+		return () => {
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+			window.removeEventListener('focus', handleFocus);
+		};
+	});
 
 	// Load on mount and when filter changes
 	$effect(() => {
