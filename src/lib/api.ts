@@ -840,10 +840,10 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 			const token = localStorage.getItem('access_token');
 			const response = await fetch('/api/me', {
 				headers: token
-				? {
-						Authorization: `Bearer ${token}`
-					}
-				: {}
+					? {
+							Authorization: `Bearer ${token}`
+						}
+					: {}
 			});
 
 			// Handle token expiration
@@ -1799,11 +1799,28 @@ export function getImageProxyUrl(imageKey: string): string {
 export function getAuthenticatedImageUrl(imageUrl: string): string {
 	if (!imageUrl) return '';
 
+	// Handle relative URLs - convert to full backend URL
+	if (
+		imageUrl.startsWith('/image-proxy/') ||
+		imageUrl.startsWith('/images/') ||
+		imageUrl.startsWith('/upload/')
+	) {
+		// It's a relative path, prepend the API base URL
+		const fullUrl = imageUrl.startsWith('/') ? `${API_BASE}${imageUrl}` : `${API_BASE}/${imageUrl}`;
+
+		const token = localStorage.getItem('access_token');
+		if (token) {
+			const separator = fullUrl.includes('?') ? '&' : '?';
+			return `${fullUrl}${separator}token=${token}`;
+		}
+		return fullUrl;
+	}
+
 	// If it's already an API base URL, add the token as a query parameter
 	// Check if the URL contains the API base URL (handles both localhost:8000 and 10.1.2.165:8000)
 	const apiBaseHosts = ['localhost:8000', '10.1.2.165:8000'];
-	const isApiUrl = apiBaseHosts.some(host => imageUrl.includes(host));
-	
+	const isApiUrl = apiBaseHosts.some((host) => imageUrl.includes(host));
+
 	if (isApiUrl) {
 		const token = localStorage.getItem('access_token');
 		if (token) {

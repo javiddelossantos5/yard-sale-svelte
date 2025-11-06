@@ -45,8 +45,8 @@ export default defineConfig(({ mode }) => {
 					secure: false,
 					rewrite: (path) => path.replace(/^\/api/, '')
 				},
-				// Proxy image upload endpoints directly
-				'^/(upload|images)': {
+				// Proxy image upload and proxy endpoints directly
+				'^/(upload|images|image-proxy)': {
 					target: API_BASE_URL,
 					changeOrigin: true,
 					secure: false
