@@ -117,8 +117,16 @@
 			e.preventDefault();
 			e.stopPropagation();
 		}
-		console.log('[MarketItemCard] Opening item:', item.id, 'Target URL:', `/market/${item.id}`);
-		goto(`/market/${item.id}`);
+		const targetUrl = `/market/${item.id}`;
+		console.log('[MarketItemCard] Opening item:', item.id, 'Target URL:', targetUrl);
+		
+		// Use hard navigation to avoid SvelteKit routing issues
+		// This ensures the correct route is loaded
+		if (typeof window !== 'undefined') {
+			window.location.href = targetUrl;
+		} else {
+			goto(targetUrl);
+		}
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
