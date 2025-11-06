@@ -146,6 +146,19 @@ export function logout(redirectToLogin: boolean = true): void {
 			if (typeof sessionStorage !== 'undefined') {
 				sessionStorage.setItem('logout_redirecting', 'true');
 			}
+
+			// On mobile, use both replace and add meta refresh as backup
+			// This ensures redirect happens even if replace is delayed
+			try {
+				// Add meta refresh tag as backup for mobile browsers
+				const metaRefresh = document.createElement('meta');
+				metaRefresh.httpEquiv = 'refresh';
+				metaRefresh.content = '0;url=/login';
+				document.head.appendChild(metaRefresh);
+			} catch {
+				// Ignore if can't add meta tag
+			}
+
 			// Use immediate redirect - don't wait
 			window.location.replace('/login'); // Use replace instead of href to prevent back button issues
 			return; // Exit immediately to prevent any further execution

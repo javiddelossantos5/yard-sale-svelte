@@ -166,6 +166,9 @@
 	const isMyMessage = (message: Message) => currentUser && message.sender_id === currentUser.id;
 </script>
 
+{#if typeof window === 'undefined' || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('logout_redirecting') === 'true') || !localStorage.getItem('access_token')}
+	<!-- Don't render anything if logout is happening or not authenticated -->
+{:else}
 <div class="flex h-screen flex-col bg-gray-50 dark:bg-gray-900">
 	<!-- Header -->
 	<div
@@ -294,3 +297,4 @@
 		</div>
 	</div>
 </div>
+{/if}
