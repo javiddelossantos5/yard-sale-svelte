@@ -34,11 +34,17 @@
 	});
 
 	// Reactive check for authentication (only when path changes)
+	// Only run on client to avoid SSR hydration issues
 	$effect(() => {
-		checkAuth();
+		if (typeof window !== 'undefined') {
+			checkAuth();
+		}
 	});
 
 	function checkAuth() {
+		// Only run on client
+		if (typeof window === 'undefined') return;
+		
 		const currentPath = $page.url.pathname;
 		const isLoginPage = currentPath === '/login';
 		const isPublicPath =
