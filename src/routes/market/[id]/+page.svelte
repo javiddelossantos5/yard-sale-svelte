@@ -153,12 +153,22 @@
 		error = null;
 		try {
 			const id = $page.params.id || '';
+			console.log('[MarketItemDetail] Loading item with ID:', id, 'Current URL:', typeof window !== 'undefined' ? window.location.pathname : 'SSR');
+			
+			if (!id) {
+				error = 'Invalid item ID';
+				loading = false;
+				return;
+			}
+			
 			const [user, loadedItem] = await Promise.all([
 				getCurrentUser().catch(() => null),
 				getMarketItemById(id)
 			]);
 			currentUser = user;
 			item = loadedItem;
+			
+			console.log('[MarketItemDetail] Loaded item:', item ? item.name : 'null');
 
 			if (item?.is_watched !== undefined && item?.is_watched !== null) {
 				isWatched = item.is_watched === true;
@@ -201,8 +211,15 @@
 		}
 	}
 
+	// React to changes in the route parameter
+	const itemId = $derived($page.params.id || '');
+	
 	$effect(() => {
-		load();
+		// Only load if we have an ID
+		if (itemId) {
+			console.log('[MarketItemDetail] Effect triggered, itemId:', itemId);
+			load();
+		}
 	});
 
 	function getRelativeTime(dateString: string): string {
