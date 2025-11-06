@@ -52,16 +52,24 @@ export default defineConfig(({ mode }) => {
 					secure: false,
 					configure: (proxy, options) => {
 						proxy.on('proxyReq', (proxyReq, req, res) => {
-							// Try to get token from query parameter or cookie
-							const url = new URL(req.url || '', `http://${req.headers.host}`);
-							const token = url.searchParams.get('token');
+							try {
+								// Parse the request URL to extract token
+								const fullUrl = req.url || '';
+								const url = new URL(fullUrl, `http://${req.headers.host || 'localhost'}`);
+								const token = url.searchParams.get('token');
 
-							if (token) {
-								// Add Authorization header from token query parameter
-								proxyReq.setHeader('Authorization', `Bearer ${token}`);
-								// Remove token from query string to avoid exposing it
-								url.searchParams.delete('token');
-								proxyReq.path = url.pathname + url.search;
+								if (token) {
+									// Add Authorization header from token query parameter
+									proxyReq.setHeader('Authorization', `Bearer ${token}`);
+									// Remove token from query string for security
+									url.searchParams.delete('token');
+									proxyReq.path = url.pathname + url.search;
+									console.log(`[Vite Proxy] Added Authorization header for: ${url.pathname}`);
+								} else {
+									console.warn(`[Vite Proxy] No token found in request: ${fullUrl}`);
+								}
+							} catch (error) {
+								console.error('[Vite Proxy] Error parsing URL:', error);
 							}
 						});
 					}

@@ -1807,11 +1807,19 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 		imageUrl.startsWith('/upload/')
 	) {
 		// Keep as relative path - Vite proxy will handle it and add Authorization header
-		const token = localStorage.getItem('access_token');
+		// Always try to get token, even if we're in SSR
+		let token: string | null = null;
+		if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+			token = localStorage.getItem('access_token');
+		}
+
 		if (token) {
 			const separator = imageUrl.includes('?') ? '&' : '?';
 			return `${imageUrl}${separator}token=${token}`;
 		}
+
+		// If no token, still return the URL (will fail auth but helps debug)
+		console.warn('[Image URL] No token found in localStorage for image:', imageUrl);
 		return imageUrl;
 	}
 
@@ -1825,11 +1833,19 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 		try {
 			const url = new URL(imageUrl);
 			const relativePath = url.pathname + url.search;
-			const token = localStorage.getItem('access_token');
+
+			// Get token from localStorage (only in browser)
+			let token: string | null = null;
+			if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+				token = localStorage.getItem('access_token');
+			}
+
 			if (token) {
 				const separator = relativePath.includes('?') ? '&' : '?';
 				return `${relativePath}${separator}token=${token}`;
 			}
+
+			console.warn('[Image URL] No token found for full URL:', imageUrl);
 			return relativePath;
 		} catch {
 			// If URL parsing fails, return as-is
