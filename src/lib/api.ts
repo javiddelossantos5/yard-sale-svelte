@@ -1829,17 +1829,6 @@ let cachedApiBase: string | null = null;
 let lastHostname: string | null = null; // Track hostname to detect domain changes
 
 function getApiBase(): string {
-	// Always check environment variable first (takes precedence)
-	const envApiBase = import.meta.env.VITE_API_BASE_URL;
-	if (envApiBase && typeof envApiBase === 'string' && envApiBase.trim() !== '') {
-		// Only cache if we're on the client side
-		if (typeof window !== 'undefined') {
-			cachedApiBase = envApiBase.trim();
-			lastHostname = window.location.hostname;
-		}
-		return envApiBase.trim();
-	}
-
 	// Only evaluate on client side (window is available)
 	// If window is not available (SSR), return a placeholder that won't be used
 	// This should never be used in actual API calls since they all check for browser first
@@ -1847,23 +1836,17 @@ function getApiBase(): string {
 		return 'https://api.yardsalefinders.com'; // Placeholder for SSR (matches production)
 	}
 
-	// IMPORTANT: Always check current window.location FIRST, before using cache
-	// This ensures we always use the correct URL for the current environment
+	// IMPORTANT: Check HTTPS/production FIRST, before checking environment variable
+	// This ensures production always uses HTTPS, even if env var is set to HTTP
 	const currentProtocol = window.location.protocol;
 	const currentHostname = window.location.hostname;
 	const isProduction =
 		currentHostname === 'yardsalefinders.com' || currentHostname === 'main.yardsalefinders.com';
 
-	// If we're on HTTPS production, ALWAYS use HTTPS API (ignore cache)
+	// If we're on HTTPS production, ALWAYS use HTTPS API (ignore HTTP env vars and cache)
 	if (currentProtocol === 'https:' && isProduction) {
-		// Clear cache if it's wrong (safety check)
-		if (cachedApiBase !== 'https://api.yardsalefinders.com') {
-			if (cachedApiBase && cachedApiBase.startsWith('http://')) {
-				console.warn('[API Base] Clearing invalid HTTP cache in production:', cachedApiBase);
-			}
-			cachedApiBase = 'https://api.yardsalefinders.com';
-			lastHostname = currentHostname;
-		}
+		cachedApiBase = 'https://api.yardsalefinders.com';
+		lastHostname = currentHostname;
 		// Debug logging
 		console.log('[API Base] Production HTTPS - Using:', cachedApiBase);
 		console.log('[API Base] Current location:', {
@@ -1871,7 +1854,25 @@ function getApiBase(): string {
 			hostname: currentHostname,
 			origin: window.location.origin
 		});
+		console.log('[API Base] Env var (ignored in production):', import.meta.env.VITE_API_BASE_URL);
 		return cachedApiBase;
+	}
+
+	// Check environment variable (but only if not on HTTPS production)
+	// This allows dev/staging to use env var, but production always uses HTTPS
+	const envApiBase = import.meta.env.VITE_API_BASE_URL;
+	if (envApiBase && typeof envApiBase === 'string' && envApiBase.trim() !== '') {
+		const trimmedEnv = envApiBase.trim();
+		// Only use HTTP env var if we're on HTTP (dev) or if env var is HTTPS
+		if (currentProtocol === 'http:' || trimmedEnv.startsWith('https://')) {
+			// Only cache if we're on the client side
+			cachedApiBase = trimmedEnv;
+			lastHostname = currentHostname;
+			return trimmedEnv;
+		} else {
+			// Ignore HTTP env var if we're on HTTPS (shouldn't happen due to check above, but safety)
+			console.warn('[API Base] Ignoring HTTP env var on HTTPS:', trimmedEnv);
+		}
 	}
 
 	// For other HTTPS domains, use current origin
