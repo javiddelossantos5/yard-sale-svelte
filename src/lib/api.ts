@@ -1840,8 +1840,9 @@ function getApiBase(): string {
 
 	// Only evaluate on client side (window is available)
 	// If window is not available (SSR), return a placeholder that won't be used
+	// This should never be used in actual API calls since they all check for browser first
 	if (typeof window === 'undefined') {
-		return 'http://10.1.2.165:8000'; // Placeholder for SSR
+		return 'https://api.yardsalefinders.com'; // Placeholder for SSR (matches production)
 	}
 
 	// Check cache only on client side (after first evaluation)
@@ -1857,12 +1858,21 @@ function getApiBase(): string {
 		}
 	}
 
-	// In production (HTTPS), use current origin so nginx can proxy
+	// In production (HTTPS), use API subdomain
 	if (window.location.protocol === 'https:') {
-		cachedApiBase = window.location.origin;
+		// Check if we're on the production domain
+		if (
+			window.location.hostname === 'yardsalefinders.com' ||
+			window.location.hostname === 'main.yardsalefinders.com'
+		) {
+			cachedApiBase = 'https://api.yardsalefinders.com';
+		} else {
+			// For other HTTPS domains, use current origin (for nginx proxy)
+			cachedApiBase = window.location.origin;
+		}
 		// Debug logging in production to help diagnose issues
 		if (import.meta.env.PROD) {
-			console.log('[API Base] Using HTTPS origin:', cachedApiBase);
+			console.log('[API Base] Using HTTPS API:', cachedApiBase);
 		}
 		return cachedApiBase;
 	}
@@ -1931,7 +1941,8 @@ export function getAuthenticatedImageUrl(imageUrl: string): string {
 		'localhost:5173',
 		'10.1.2.165:5173',
 		'yardsalefinders.com',
-		'main.yardsalefinders.com'
+		'main.yardsalefinders.com',
+		'api.yardsalefinders.com'
 	];
 	const isApiUrl = apiBaseHosts.some((host) => imageUrl.includes(host));
 
