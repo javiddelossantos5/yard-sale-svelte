@@ -386,7 +386,7 @@
 	<!-- Tabs -->
 	<div class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
 		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<div class="flex gap-2">
+			<div class="flex gap-2 py-2">
 				<button
 					onclick={() => {
 						activeTab = 'all';
