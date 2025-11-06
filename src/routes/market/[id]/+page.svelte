@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	
+	// Debug: Log when component is created
+	console.log('[MarketItemDetail] Component created/loaded. Current path:', typeof window !== 'undefined' ? window.location.pathname : 'SSR');
 	import {
 		getMarketItemById,
 		getMarketItemComments,
@@ -504,7 +507,8 @@
 	</style>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900" style="min-height: 100vh;">
+<!-- DEBUG: Market Item Detail Page - Route: /market/[id] -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900" style="min-height: 100vh;" data-page="market-item-detail">
 	{#if loading}
 		<div class="px-4 py-6 text-gray-600 dark:text-gray-300">Loading item...</div>
 	{:else if error}

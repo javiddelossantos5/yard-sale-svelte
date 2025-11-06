@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	
+	// Debug: Log when component is created
+	console.log('[AdminUsers] Component created/loaded. Current path:', typeof window !== 'undefined' ? window.location.pathname : 'SSR');
 	import {
 		getAdminUsers,
 		getCurrentUser,
@@ -86,7 +89,8 @@
 	<title>Admin - Manage Users</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<!-- DEBUG: Admin Users Page - Route: /admin/users -->
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900" data-page="admin-users">
 	<!-- Header -->
 	<header
 		class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-900/80"
