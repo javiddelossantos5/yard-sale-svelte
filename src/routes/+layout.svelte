@@ -19,18 +19,26 @@
 	let isClient = $state(browser);
 	let isLoggedInClient = $state(false);
 	let lastPath = $state<string>('');
+	let isRedirecting = $state(false); // Prevent redirect loops
 
 	onMount(() => {
 		isClient = true;
 		isLoggedInClient = isLoggedIn();
 		lastPath = $page.url.pathname;
 
+		// If we're on login page, reset redirect flag and don't check auth
+		if ($page.url.pathname === '/login') {
+			isRedirecting = false;
+		}
+
 		// setupAuthFetch() is now called at module load time in auth.ts
 		// but call it here too to ensure it's set up (idempotent)
 		setupAuthFetch();
 
-		// Check authentication on every page load
-		checkAuth();
+		// Check authentication on every page load (but not on login page)
+		if ($page.url.pathname !== '/login') {
+			checkAuth();
+		}
 
 		// Load notification counts and start message polling if user is logged in and not on login page
 		// Use setTimeout to avoid interfering with initial page load
@@ -58,8 +66,18 @@
 		// Only run on client - this guard prevents SSR execution
 		if (typeof window === 'undefined' || !browser || !isClient) return;
 
+		// Don't run if we're redirecting
+		if (isRedirecting) return;
+
 		// Track page path to react to changes
 		const currentPath = $page.url.pathname;
+
+		// If we're on login page, update login status but don't check auth
+		if (currentPath === '/login') {
+			isLoggedInClient = isLoggedIn();
+			isRedirecting = false; // Reset redirect flag when on login page
+			return;
+		}
 
 		// Only update if path actually changed
 		if (currentPath !== lastPath) {
@@ -73,6 +91,9 @@
 		// Only run on client
 		if (typeof window === 'undefined') return;
 
+		// Prevent redirect loops
+		if (isRedirecting) return;
+
 		const currentPath = $page.url.pathname;
 		const isLoginPage = currentPath === '/login';
 		const isPublicPath =
@@ -81,9 +102,16 @@
 			currentPath.startsWith('/yard-sale') ||
 			currentPath.startsWith('/login');
 
+		// If we're already on login page, don't redirect
+		if (isLoginPage) {
+			isLoggedInClient = isLoggedIn();
+			return;
+		}
+
 		// Allow public pages without forcing login
 		if (!isLoggedInClient && !isPublicPath) {
 			// Use hard redirect for better mobile compatibility
+			isRedirecting = true;
 			window.location.href = '/login';
 			return;
 		}
