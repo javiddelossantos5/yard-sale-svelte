@@ -1797,14 +1797,14 @@ function getApiBase(): string {
 	if (cachedApiBase !== null) {
 		return cachedApiBase;
 	}
-	
+
 	// Check environment variable first
 	const envApiBase = import.meta.env.VITE_API_BASE_URL;
 	if (envApiBase && typeof envApiBase === 'string') {
 		cachedApiBase = envApiBase;
 		return cachedApiBase;
 	}
-	
+
 	// Only evaluate on client side (window is available)
 	if (typeof window !== 'undefined') {
 		// In production (HTTPS), use current origin so nginx can proxy
@@ -1813,7 +1813,7 @@ function getApiBase(): string {
 			return cachedApiBase;
 		}
 	}
-	
+
 	// Fallback to direct IP for development
 	cachedApiBase = 'http://10.1.2.165:8000';
 	return cachedApiBase;
