@@ -1789,15 +1789,49 @@ export async function getYardSaleUnreadCount(): Promise<{ unread_count: number }
 
 // Get API base URL from environment variable, or use current origin in production
 // This allows nginx to proxy requests and avoids CORS/mixed content issues
-const API_BASE =
-	import.meta.env.VITE_API_BASE_URL ||
-	(typeof window !== 'undefined' && window.location.protocol === 'https:'
-		? window.location.origin // Use current domain in production (proxied through nginx)
-		: 'http://10.1.2.165:8000'); // Fallback to direct IP for development
+// Must be a function to ensure it's evaluated on the client side, not during SSR
+let cachedApiBase: string | null = null;
+
+function getApiBase(): string {
+	// Check cache first (computed once on client)
+	if (cachedApiBase !== null) {
+		return cachedApiBase;
+	}
+	
+	// Check environment variable first
+	const envApiBase = import.meta.env.VITE_API_BASE_URL;
+	if (envApiBase && typeof envApiBase === 'string') {
+		cachedApiBase = envApiBase;
+		return cachedApiBase;
+	}
+	
+	// Only evaluate on client side (window is available)
+	if (typeof window !== 'undefined') {
+		// In production (HTTPS), use current origin so nginx can proxy
+		if (window.location.protocol === 'https:') {
+			cachedApiBase = window.location.origin;
+			return cachedApiBase;
+		}
+	}
+	
+	// Fallback to direct IP for development
+	cachedApiBase = 'http://10.1.2.165:8000';
+	return cachedApiBase;
+}
+
+// Export getApiBase so it can be used directly
+// This ensures it's always evaluated on the client side when actually used
+export function getApiBaseUrl(): string {
+	return getApiBase();
+}
+
+// For backward compatibility, create API_BASE that calls getApiBase
+// This ensures it's evaluated when used, not at module load time
+const API_BASE = getApiBase();
 
 // Helper function to get the proxy URL for an image
 export function getImageProxyUrl(imageKey: string): string {
-	return `${API_BASE}/image-proxy/${imageKey}`;
+	return `${getApiBase()}/image-proxy/${imageKey}`;
 }
 
 // Helper function to get authenticated image URL
@@ -1889,7 +1923,8 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 	formData.append('file', file);
 
 	// Use full backend URL instead of relative path to avoid proxy issues
-	const response = await fetch(`${API_BASE}/upload/image`, {
+	// Call getApiBase() to ensure it's evaluated on client side
+	const response = await fetch(`${getApiBase()}/upload/image`, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -1922,7 +1957,8 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 
 export async function getUserImages(): Promise<UploadedImage[]> {
 	// Use full backend URL instead of relative path
-	const response = await fetch(`${API_BASE}/images`, {
+	// Call getApiBase() to ensure it's evaluated on client side
+	const response = await fetch(`${getApiBase()}/images`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
@@ -1953,7 +1989,8 @@ export async function getUserImages(): Promise<UploadedImage[]> {
 
 export async function deleteImage(imageKey: string): Promise<void> {
 	// Use full backend URL instead of relative path
-	const response = await fetch(`${API_BASE}/images/${imageKey}`, {
+	// Call getApiBase() to ensure it's evaluated on client side
+	const response = await fetch(`${getApiBase()}/images/${imageKey}`, {
 		method: 'DELETE',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
