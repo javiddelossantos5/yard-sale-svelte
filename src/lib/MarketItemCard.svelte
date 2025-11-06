@@ -28,7 +28,7 @@
 
 		const photos = item.photos;
 		const featuredImage = item.featured_image;
-		
+
 		// Always put featured image first if it exists
 		if (featuredImage) {
 			if (photos.includes(featuredImage)) {
@@ -119,7 +119,7 @@
 		}
 		const targetUrl = `/market/${item.id}`;
 		console.log('[MarketItemCard] Opening item:', item.id, 'Target URL:', targetUrl);
-		
+
 		// Use hard navigation to avoid SvelteKit routing issues
 		// This ensures the correct route is loaded
 		if (typeof window !== 'undefined') {
@@ -190,6 +190,9 @@
 					class="absolute top-2 right-2 z-10 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white dark:bg-white/20"
 					onclick={(e) => e.stopPropagation()}
 					onmousedown={(e) => e.stopPropagation()}
+					onkeydown={(e) => e.stopPropagation()}
+					role="presentation"
+					aria-hidden="true"
 				>
 					{cardImageIndex + 1} / {displayPhotos.length}
 				</div>
@@ -333,7 +336,8 @@
 					class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 ring-1 ring-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-800/50"
 					title="Available quantity"
 				>
-					{item.quantity} {item.quantity === 1 ? 'item' : 'items'} available
+					{item.quantity}
+					{item.quantity === 1 ? 'item' : 'items'} available
 				</span>
 			{/if}
 		</div>

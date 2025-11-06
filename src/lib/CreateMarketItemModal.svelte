@@ -52,14 +52,7 @@
 		'Other'
 	];
 
-	const conditions = [
-		'New',
-		'Like New',
-		'Used',
-		'Good',
-		'Fair',
-		'Poor'
-	];
+	const conditions = ['New', 'Like New', 'Used', 'Good', 'Fair', 'Poor'];
 
 	function normalizeUrl(url: string): string {
 		if (!url?.trim()) return '';
@@ -212,7 +205,7 @@
 								<label
 									for="description"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Description <span class="text-gray-400 font-normal">(Optional)</span></label
+									>Description <span class="font-normal text-gray-400">(Optional)</span></label
 								>
 								<textarea
 									id="description"
@@ -237,7 +230,7 @@
 									bind:value={formData.price}
 									required
 									disabled={formData.is_free}
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
 							</div>
 
@@ -271,7 +264,7 @@
 								<label
 									for="category"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Category <span class="text-gray-400 font-normal">(Optional)</span></label
+									>Category <span class="font-normal text-gray-400">(Optional)</span></label
 								>
 								<select
 									id="category"
@@ -290,7 +283,7 @@
 									<label
 										for="condition"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Condition <span class="text-gray-400 font-normal">(Optional)</span></label
+										>Condition <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<select
 										id="condition"
@@ -307,7 +300,7 @@
 									<label
 										for="quantity"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Quantity <span class="text-gray-400 font-normal">(Optional)</span></label
+										>Quantity <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="quantity"
@@ -322,9 +315,9 @@
 							</div>
 
 							<div>
-								<label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Photos <span class="text-gray-400 font-normal">(Optional)</span></label
-								>
+								<div class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+									Photos <span class="font-normal text-gray-400">(Optional)</span>
+								</div>
 								<ImageUpload
 									images={formData.photos || []}
 									maxImages={10}
@@ -386,7 +379,7 @@
 									<label
 										for="venmo"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Venmo URL <span class="text-gray-400 font-normal">(Optional)</span></label
+										>Venmo URL <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="venmo"
@@ -401,7 +394,9 @@
 									<label
 										for="facebook"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Facebook Marketplace URL <span class="text-gray-400 font-normal">(Optional)</span></label
+										>Facebook Marketplace URL <span class="font-normal text-gray-400"
+											>(Optional)</span
+										></label
 									>
 									<input
 										id="facebook"
@@ -419,7 +414,7 @@
 									<label
 										for="contact_phone"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Contact Phone <span class="text-gray-400 font-normal">(Optional)</span></label
+										>Contact Phone <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="contact_phone"
@@ -433,7 +428,7 @@
 									<label
 										for="contact_email"
 										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Contact Email <span class="text-gray-400 font-normal">(Optional)</span></label
+										>Contact Email <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="contact_email"
