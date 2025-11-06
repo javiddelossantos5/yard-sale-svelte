@@ -112,13 +112,19 @@
 		return phone;
 	}
 
-	function openItem() {
+	function openItem(e?: Event) {
+		if (e) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
+		console.log('[MarketItemCard] Opening item:', item.id, 'Target URL:', `/market/${item.id}`);
 		goto(`/market/${item.id}`);
 	}
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' || event.key === ' ') {
 			event.preventDefault();
+			event.stopPropagation();
 			openItem();
 		}
 	}
@@ -127,8 +133,12 @@
 <div
 	role="button"
 	tabindex="0"
-	onclick={openItem}
+	onclick={(e) => openItem(e)}
 	onkeydown={handleKeydown}
+	ontouchstart={(e) => {
+		// Prevent event bubbling on touch devices
+		e.stopPropagation();
+	}}
 	class="group cursor-pointer overflow-hidden rounded-3xl bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.6),0_20px_40px_rgba(0,0,0,0.06)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:shadow-[0_1px_0_rgba(255,255,255,0.7),0_30px_60px_rgba(0,0,0,0.1)] focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-blue-500/70 active:scale-[0.99] dark:bg-gray-800/80 dark:ring-gray-700"
 >
 	<!-- Image Section -->
