@@ -1826,6 +1826,7 @@ export async function getYardSaleUnreadCount(): Promise<{ unread_count: number }
 // This allows nginx to proxy requests and avoids CORS/mixed content issues
 // Must be a function to ensure it's evaluated on the client side, not during SSR
 let cachedApiBase: string | null = null;
+let lastHostname: string | null = null; // Track hostname to detect domain changes
 
 function getApiBase(): string {
 	// Always check environment variable first (takes precedence)
@@ -1834,6 +1835,7 @@ function getApiBase(): string {
 		// Only cache if we're on the client side
 		if (typeof window !== 'undefined') {
 			cachedApiBase = envApiBase.trim();
+			lastHostname = window.location.hostname;
 		}
 		return envApiBase.trim();
 	}
@@ -1845,24 +1847,38 @@ function getApiBase(): string {
 		return 'https://api.yardsalefinders.com'; // Placeholder for SSR (matches production)
 	}
 
-	// IMPORTANT: Check HTTPS/production FIRST before checking cache
-	// This ensures we always use HTTPS in production, even if cache was set incorrectly
-	if (window.location.protocol === 'https:') {
-		// Check if we're on the production domain
-		if (
-			window.location.hostname === 'yardsalefinders.com' ||
-			window.location.hostname === 'main.yardsalefinders.com'
-		) {
-			// Always use HTTPS API in production - ignore any cached HTTP values
+	// IMPORTANT: Always check current window.location FIRST, before using cache
+	// This ensures we always use the correct URL for the current environment
+	const currentProtocol = window.location.protocol;
+	const currentHostname = window.location.hostname;
+	const isProduction =
+		currentHostname === 'yardsalefinders.com' || currentHostname === 'main.yardsalefinders.com';
+
+	// If we're on HTTPS production, ALWAYS use HTTPS API (ignore cache)
+	if (currentProtocol === 'https:' && isProduction) {
+		// Clear cache if it's wrong (safety check)
+		if (cachedApiBase !== 'https://api.yardsalefinders.com') {
+			if (cachedApiBase && cachedApiBase.startsWith('http://')) {
+				console.warn('[API Base] Clearing invalid HTTP cache in production:', cachedApiBase);
+			}
 			cachedApiBase = 'https://api.yardsalefinders.com';
-			// Debug logging in production to help diagnose issues
-			console.log('[API Base] Production detected - Using HTTPS API:', cachedApiBase);
-			return cachedApiBase;
-		} else {
-			// For other HTTPS domains, use current origin (for nginx proxy)
-			cachedApiBase = window.location.origin;
-			return cachedApiBase;
+			lastHostname = currentHostname;
 		}
+		// Debug logging
+		console.log('[API Base] Production HTTPS - Using:', cachedApiBase);
+		console.log('[API Base] Current location:', {
+			protocol: currentProtocol,
+			hostname: currentHostname,
+			origin: window.location.origin
+		});
+		return cachedApiBase;
+	}
+
+	// For other HTTPS domains, use current origin
+	if (currentProtocol === 'https:') {
+		cachedApiBase = window.location.origin;
+		lastHostname = currentHostname;
+		return cachedApiBase;
 	}
 
 	// Check cache only for HTTP (development) - but validate it first
@@ -1992,12 +2008,19 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 	const uploadUrl = `${apiBase}/upload/image`;
 
 	// Debug logging to help diagnose production issues
-	if (import.meta.env.PROD) {
+	if (
+		import.meta.env.PROD ||
+		(typeof window !== 'undefined' && window.location.protocol === 'https:')
+	) {
 		console.log('[Upload Image] API Base:', apiBase);
 		console.log('[Upload Image] Full URL:', uploadUrl);
 		console.log(
 			'[Upload Image] Window protocol:',
 			typeof window !== 'undefined' ? window.location.protocol : 'N/A'
+		);
+		console.log(
+			'[Upload Image] Window hostname:',
+			typeof window !== 'undefined' ? window.location.hostname : 'N/A'
 		);
 	}
 
@@ -2035,7 +2058,18 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 export async function getUserImages(): Promise<UploadedImage[]> {
 	// Use full backend URL instead of relative path
 	// Call getApiBase() to ensure it's evaluated on client side
-	const response = await fetch(`${getApiBase()}/images`, {
+	const apiBase = getApiBase();
+	const imagesUrl = `${apiBase}/images`;
+
+	// Debug logging to help diagnose production issues
+	if (import.meta.env.PROD || window.location.protocol === 'https:') {
+		console.log('[Get User Images] API Base:', apiBase);
+		console.log('[Get User Images] Full URL:', imagesUrl);
+		console.log('[Get User Images] Window protocol:', window.location.protocol);
+		console.log('[Get User Images] Window hostname:', window.location.hostname);
+	}
+
+	const response = await fetch(imagesUrl, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
