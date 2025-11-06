@@ -14,7 +14,9 @@
 	let { children } = $props();
 
 	// Client-only state to prevent hydration mismatch
-	let isClient = $state(false);
+	// Use browser check to ensure this is only true on client
+	import { browser } from '$app/environment';
+	let isClient = $state(browser);
 	let isLoggedInClient = $state(false);
 
 	onMount(() => {
@@ -50,10 +52,11 @@
 	// Reactive check for authentication (only when path changes)
 	// Only run on client to avoid SSR hydration issues
 	$effect(() => {
-		if (typeof window !== 'undefined') {
-			isLoggedInClient = isLoggedIn();
-			checkAuth();
-		}
+		// Only run on client after initial mount
+		if (typeof window === 'undefined' || !isClient) return;
+
+		isLoggedInClient = isLoggedIn();
+		checkAuth();
 	});
 
 	function checkAuth() {
