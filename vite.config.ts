@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => {
 				allow: ['.'] // Allow opening local files
 			},
 			host: true, // <-- allow network access
-			allowedHosts: ['yardsalefinders.com', 'localhost', '10.1.2.165'], // <-- add your hostnames
+			allowedHosts: ['yardsalefinders.com', 'main.yardsalefinders.com', 'localhost', '10.1.2.165'], // <-- add your hostnames
 			proxy: {
 				// Keep /api prefix for auth and user endpoints
 				'^/api/(login|register|me|user)': {
