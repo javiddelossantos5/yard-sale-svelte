@@ -175,11 +175,17 @@
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-8 w-8 shrink-0 rounded-lg object-cover"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="shrink-0 rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-8 w-8 rounded-lg object-cover"
+							/>
+						</button>
 						<div>
 							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">Messages</h1>
 							{#if totalUnreadCount > 0}
@@ -296,11 +302,17 @@
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-12 w-12 shrink-0 rounded-xl object-cover shadow-sm"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="shrink-0 rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-12 w-12 rounded-xl object-cover shadow-sm"
+							/>
+						</button>
 						<div>
 							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Messages</h1>
 							<div class="mt-0.5 flex items-center gap-3">
@@ -473,7 +485,12 @@
 					{@const unreadCount = conv.unread_count || 0}
 
 					<div
-						onclick={() => goto(route)}
+						onclick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							console.log('Navigating to:', route);
+							goto(route);
+						}}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault();

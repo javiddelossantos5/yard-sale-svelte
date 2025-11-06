@@ -31,16 +31,22 @@
 	let currentUser = $state<CurrentUser | null>(null);
 
 	async function load() {
-		if (!conversationId) return;
+		if (!conversationId) {
+			console.warn('No conversationId found');
+			return;
+		}
 
+		console.log('Loading conversation messages for ID:', conversationId);
 		loading = true;
 		error = null;
 		try {
+			console.log('Making API calls...');
 			const [msgs, user, convs] = await Promise.all([
 				getYardSaleConversationMessages(conversationId),
 				getCurrentUser(),
 				getYardSaleConversations()
 			]);
+			console.log('API calls completed. Messages:', msgs.length);
 			messages = msgs;
 			currentUser = user;
 
@@ -74,8 +80,14 @@
 		}
 	}
 
-	onMount(() => {
-		load();
+	// React to conversationId changes (runs on mount and when conversationId changes)
+	$effect(() => {
+		if (conversationId) {
+			console.log('Loading conversation for ID:', conversationId);
+			load();
+		} else {
+			console.warn('No conversationId available');
+		}
 	});
 
 	async function sendMessage() {

@@ -144,7 +144,12 @@
 			<div class="space-y-2">
 				{#each conversations as conv}
 					<div
-						onclick={() => goto(`/yard-sale/messages/${conv.id}`)}
+						onclick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							console.log('Navigating to yard sale message:', `/yard-sale/messages/${conv.id}`);
+							goto(`/yard-sale/messages/${conv.id}`);
+						}}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault();

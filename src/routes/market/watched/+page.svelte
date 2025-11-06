@@ -235,11 +235,17 @@
 				<div class="flex h-16 items-center justify-between">
 					<!-- Logo and Title -->
 					<div class="flex items-center space-x-3">
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-8 w-8 rounded-lg object-cover"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-8 w-8 rounded-lg object-cover"
+							/>
+						</button>
 						<div>
 							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">Watched Items</h1>
 							<p class="text-xs text-gray-500 dark:text-gray-400">
@@ -344,11 +350,17 @@
 				<div class="flex h-20 items-center justify-between">
 					<!-- Left: Logo and Title -->
 					<div class="flex items-center space-x-4">
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-12 w-12 rounded-xl object-cover shadow-sm"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-12 w-12 rounded-xl object-cover shadow-sm"
+							/>
+						</button>
 						<div>
 							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Watched Items</h1>
 							<div class="mt-0.5 flex items-center gap-3">

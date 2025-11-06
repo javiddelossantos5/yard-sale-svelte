@@ -169,11 +169,17 @@
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-8 w-8 shrink-0 rounded-lg object-cover"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="shrink-0 rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-8 w-8 rounded-lg object-cover"
+							/>
+						</button>
 						<div class="min-w-0 flex-1">
 							{#if conversation?.item_id}
 								<button
@@ -309,11 +315,17 @@
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 						</button>
-						<img
-							src="/icon2.png"
-							alt="Yard Sale Finder Logo"
-							class="h-12 w-12 shrink-0 rounded-xl object-cover shadow-sm"
-						/>
+						<button
+							onclick={() => goto('/')}
+							class="shrink-0 rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+							aria-label="Go to home"
+						>
+							<img
+								src="/icon2.png"
+								alt="Yard Sale Finder Logo"
+								class="h-12 w-12 rounded-xl object-cover shadow-sm"
+							/>
+						</button>
 						<div class="min-w-0 flex-1">
 							{#if conversation?.item_id}
 								<button

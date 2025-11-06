@@ -511,11 +511,17 @@
 							>
 								<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 							</button>
-							<img
-								src="/icon2.png"
-								alt="Yard Sale Finder Logo"
-								class="h-8 w-8 shrink-0 rounded-lg object-cover"
-							/>
+							<button
+								onclick={() => goto('/')}
+								class="shrink-0 rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+								aria-label="Go to home"
+							>
+								<img
+									src="/icon2.png"
+									alt="Yard Sale Finder Logo"
+									class="h-8 w-8 rounded-lg object-cover"
+								/>
+							</button>
 							<div class="min-w-0 flex-1">
 								<h1 class="truncate text-lg font-semibold text-gray-900 dark:text-white">
 									{item.name}
