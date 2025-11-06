@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { createYardSale, updateYardSale, getAuthenticatedImageUrl, type YardSaleCreate, type YardSale } from './api';
+	import {
+		createYardSale,
+		updateYardSale,
+		getAuthenticatedImageUrl,
+		type YardSaleCreate,
+		type YardSale
+	} from './api';
 	import ImageUpload from './ImageUpload.svelte';
 
 	let {
@@ -45,6 +51,13 @@
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
+
+	// Helper function to get authenticated image URL
+	// This will be called on each render, so it will pick up the token once localStorage is available
+	function getAuthImageUrl(photo: string): string {
+		if (!photo) return '';
+		return getAuthenticatedImageUrl(photo);
+	}
 	let availablePaymentMethods = $state<any[]>([
 		{ id: 'cash', name: 'Cash', icon: 'dollar-sign', icon_type: 'solid' },
 		{ id: 'credit-card', name: 'Credit Card', icon: 'credit-card', icon_type: 'solid' },
@@ -777,7 +790,9 @@
 								/>
 								{#if formData.photos && formData.photos.length > 0}
 									<div class="mt-4">
-										<label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+										<label
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>
 											Featured Image <span class="text-xs text-gray-400">(Optional)</span>
 										</label>
 										<p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
@@ -786,7 +801,6 @@
 										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
 											{#each formData.photos as photo, index}
 												{@const isFeatured = formData.featured_image === photo}
-												{@const authenticatedPhotoUrl = $derived.by(() => getAuthenticatedImageUrl(photo || ''))}
 												<button
 													type="button"
 													onclick={() => {
@@ -798,16 +812,24 @@
 												>
 													{#if photo}
 														<img
-															src={authenticatedPhotoUrl}
+															src={getAuthImageUrl(photo)}
 															alt="Photo {index + 1}"
 															class="aspect-square w-full object-cover"
 															onerror={(e) => {
-																console.error('Failed to load image:', photo, 'Authenticated URL:', authenticatedPhotoUrl);
+																const imgUrl = getAuthImageUrl(photo);
+																console.error(
+																	'Failed to load image:',
+																	photo,
+																	'Authenticated URL:',
+																	imgUrl
+																);
 																(e.target as HTMLImageElement).style.display = 'none';
 															}}
 														/>
 													{:else}
-														<div class="flex aspect-square w-full items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+														<div
+															class="flex aspect-square w-full items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500"
+														>
 															<span class="text-xs">Photo {index + 1}</span>
 														</div>
 													{/if}
@@ -815,11 +837,7 @@
 														<div
 															class="absolute top-2 right-2 rounded-full bg-blue-600 p-1.5 text-white shadow-lg"
 														>
-															<svg
-																class="h-3 w-3"
-																fill="currentColor"
-																viewBox="0 0 20 20"
-															>
+															<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
 																<path
 																	d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
 																/>
