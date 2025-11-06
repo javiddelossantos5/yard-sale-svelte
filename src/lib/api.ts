@@ -1819,7 +1819,8 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 	const formData = new FormData();
 	formData.append('file', file);
 
-	const response = await fetch('/upload/image', {
+	// Use full backend URL instead of relative path to avoid proxy issues
+	const response = await fetch(`${API_BASE}/upload/image`, {
 		method: 'POST',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
@@ -1851,7 +1852,8 @@ export async function uploadImage(file: File): Promise<UploadedImage> {
 }
 
 export async function getUserImages(): Promise<UploadedImage[]> {
-	const response = await fetch('/images', {
+	// Use full backend URL instead of relative path
+	const response = await fetch(`${API_BASE}/images`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
@@ -1881,7 +1883,8 @@ export async function getUserImages(): Promise<UploadedImage[]> {
 }
 
 export async function deleteImage(imageKey: string): Promise<void> {
-	const response = await fetch(`/images/${imageKey}`, {
+	// Use full backend URL instead of relative path
+	const response = await fetch(`${API_BASE}/images/${imageKey}`, {
 		method: 'DELETE',
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
