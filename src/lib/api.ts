@@ -2321,6 +2321,77 @@ export async function getAdminUsers(
 	return data;
 }
 
+// Update user (admin only)
+export interface UserUpdateData {
+	full_name?: string;
+	email?: string;
+	phone_number?: string;
+	city?: string;
+	state?: string;
+	zip_code?: string;
+	bio?: string;
+	is_active?: boolean;
+	permissions?: 'admin' | 'user';
+}
+
+export async function updateUser(
+	userId: string,
+	userData: UserUpdateData
+): Promise<CurrentUser> {
+	const token = localStorage.getItem('access_token');
+	const response = await fetch(`/api/admin/users/${userId}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(userData)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to update user: ${response.status}`);
+	}
+
+	return response.json();
+}
+
+// Update user permissions (admin only) - kept for backward compatibility
+export async function updateUserPermissions(
+	userId: string,
+	permissions: 'admin' | 'user'
+): Promise<CurrentUser> {
+	return updateUser(userId, { permissions });
+}
+
+// Delete user (admin only)
+export async function deleteUser(userId: string): Promise<void> {
+	const token = localStorage.getItem('access_token');
+	const response = await fetch(`/api/admin/users/${userId}`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to delete user: ${response.status}`);
+	}
+}
+
 // Helper function to check if current user is admin
 export function isAdmin(user: CurrentUser | null): boolean {
 	return user?.permissions === 'admin';

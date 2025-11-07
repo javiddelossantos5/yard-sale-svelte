@@ -23,10 +23,12 @@
 		faShieldAlt,
 		faEnvelope,
 		faPhone,
-		faMapMarkerAlt
+		faMapMarkerAlt,
+		faPencil
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
+	import EditUserModal from '$lib/EditUserModal.svelte';
 
 	let currentUser = $state<CurrentUser | null>(null);
 	let users = $state<CurrentUser[]>([]);
@@ -34,6 +36,8 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let mobileMenuOpen = $state(false);
+	let selectedUser = $state<CurrentUser | null>(null);
+	let showEditModal = $state(false);
 
 	onMount(async () => {
 		await loadData();
@@ -82,6 +86,18 @@
 
 	function handleLogout() {
 		logout(); // logout() now handles redirect automatically
+	}
+
+	function handleEditUser(user: CurrentUser, e: Event) {
+		e.preventDefault();
+		e.stopPropagation();
+		selectedUser = user;
+		showEditModal = true;
+	}
+
+	function handleEditSuccess() {
+		// Reload users after successful update
+		loadUsers();
 	}
 </script>
 
@@ -296,11 +312,24 @@
 		{:else}
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				{#each users as user}
-					<button
-						onclick={() => goToProfile(user.id)}
-						class="group relative rounded-2xl bg-white p-6 text-left shadow-sm transition-all hover:shadow-md dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600"
+					<div
+						class="group relative rounded-2xl bg-white p-6 shadow-sm transition-all hover:shadow-md dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700 dark:hover:ring-gray-600"
 					>
-						<div class="flex items-start gap-4">
+						<!-- Edit Button -->
+						<button
+							onclick={(e) => handleEditUser(user, e)}
+							class="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 opacity-0 transition-all duration-200 hover:bg-blue-200 hover:scale-110 group-hover:opacity-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+							aria-label="Edit user permissions"
+							title="Edit permissions"
+						>
+							<FontAwesomeIcon icon={faPencil} class="h-3.5 w-3.5" />
+						</button>
+
+						<button
+							onclick={() => goToProfile(user.id)}
+							class="w-full text-left"
+						>
+							<div class="flex items-start gap-4">
 							<!-- Avatar -->
 							<div
 								class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xl font-bold text-white"
@@ -379,10 +408,22 @@
 								{/if}
 							</div>
 						</div>
-					</button>
+						</button>
+					</div>
 				{/each}
 			</div>
 		{/if}
 	</div>
+
+	<!-- Edit User Modal -->
+	<EditUserModal
+		isOpen={showEditModal}
+		onClose={() => {
+			showEditModal = false;
+			selectedUser = null;
+		}}
+		onSuccess={handleEditSuccess}
+		user={selectedUser}
+	/>
 </div>
 
