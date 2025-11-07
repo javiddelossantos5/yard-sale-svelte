@@ -7,6 +7,8 @@
 		type YardSale
 	} from './api';
 	import ImageUpload from './ImageUpload.svelte';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 	let {
 		isOpen,
@@ -51,6 +53,7 @@
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
+	let showOptionalFields = $state(false);
 
 	// Helper function to get authenticated image URL
 	// This will be called on each render, so it will pick up the token once localStorage is available
@@ -289,6 +292,7 @@
 			photos: [],
 			featured_image: ''
 		};
+		showOptionalFields = false;
 	}
 
 	function handleCategoryChange(category: string, event: Event) {
@@ -395,6 +399,7 @@
 						{/if}
 
 						<div class="space-y-6">
+							<!-- Required Fields -->
 							<!-- Title -->
 							<div>
 								<label
@@ -413,23 +418,6 @@
 								/>
 							</div>
 
-							<!-- Description -->
-							<div>
-								<label
-									for="description"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-								>
-									Description <span class="text-xs text-gray-400">(Optional)</span>
-								</label>
-								<textarea
-									id="description"
-									bind:value={formData.description}
-									rows="4"
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									placeholder="Describe what you're selling..."
-								></textarea>
-							</div>
-
 							<!-- Date and Time Section -->
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<!-- Start Date -->
@@ -445,22 +433,6 @@
 										id="start_date"
 										bind:value={formData.start_date}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-
-								<!-- End Date -->
-								<div>
-									<label
-										for="end_date"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>
-										End Date <span class="text-xs text-gray-400">(Optional)</span>
-									</label>
-									<input
-										type="date"
-										id="end_date"
-										bind:value={formData.end_date}
 										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
@@ -578,300 +550,22 @@
 								</div>
 							</div>
 
-							<!-- Contact Information Section -->
-							<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-								<!-- Contact Name -->
-								<div>
-									<label
-										for="contact_name"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>
-										Contact Name <span class="text-red-500">*</span>
-									</label>
-									<input
-										type="text"
-										id="contact_name"
-										bind:value={formData.contact_name}
-										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										placeholder="Your Name"
-									/>
-								</div>
-
-								<!-- Contact Phone -->
-								<div>
-									<label
-										for="contact_phone"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>
-										Phone <span class="text-xs text-gray-400">(Optional)</span>
-									</label>
-									<input
-										type="tel"
-										id="contact_phone"
-										bind:value={formData.contact_phone}
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										placeholder="(555) 123-4567"
-									/>
-								</div>
-
-								<!-- Contact Email -->
-								<div>
-									<label
-										for="contact_email"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>
-										Email <span class="text-xs text-gray-400">(Optional)</span>
-									</label>
-									<input
-										type="email"
-										id="contact_email"
-										bind:value={formData.contact_email}
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										placeholder="your@email.com"
-									/>
-								</div>
-							</div>
-
-							<!-- Price Range -->
+							<!-- Contact Name -->
 							<div>
 								<label
-									for="price_range"
+									for="contact_name"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 								>
-									Price Range <span class="text-xs text-gray-400">(Optional)</span>
-								</label>
-								<select
-									id="price_range"
-									bind:value={formData.price_range}
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-								>
-									<option value="">Select Price Range</option>
-									{#each priceRanges as range}
-										<option value={range}>{range}</option>
-									{/each}
-								</select>
-							</div>
-
-							<!-- Categories -->
-							<div>
-								<label
-									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									for="categories"
-								>
-									Categories <span class="text-xs text-gray-400">(Optional)</span>
-								</label>
-								<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-									{#each categories as category}
-										<label
-											class="flex items-center rounded-lg bg-gray-50 p-3 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
-											for="category-{category}"
-										>
-											<input
-												id="category-{category}"
-												type="checkbox"
-												checked={formData.categories?.includes(category) || false}
-												onchange={(e) => handleCategoryChange(category, e)}
-												class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-											/>
-											<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-												>{category}</span
-											>
-										</label>
-									{/each}
-								</div>
-							</div>
-
-							<!-- Payment Methods -->
-							<div>
-								<label
-									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									for="payment-methods"
-								>
-									Payment Methods <span class="text-xs text-gray-400">(Optional)</span>
-								</label>
-								<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-									{#each availablePaymentMethods as method}
-										<label
-											class="flex items-center rounded-lg bg-gray-50 p-3 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
-											for="payment-{method.id}"
-										>
-											<input
-												id="payment-{method.id}"
-												type="checkbox"
-												checked={formData.payment_methods?.includes(method.name) || false}
-												onchange={(e) => handlePaymentMethodChange(method.name, e)}
-												class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-											/>
-											<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-												>{method.name}</span
-											>
-										</label>
-									{/each}
-								</div>
-							</div>
-
-							<!-- Venmo URL -->
-							<div>
-								<label
-									for="venmo-url"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-								>
-									Venmo URL <span class="text-xs text-gray-400">(Optional)</span>
+									Contact Name <span class="text-red-500">*</span>
 								</label>
 								<input
-									id="venmo-url"
-									type="url"
-									bind:value={formData.venmo_url}
-									onblur={() => {
-										if (
-											formData.venmo_url &&
-											!formData.venmo_url.startsWith('http://') &&
-											!formData.venmo_url.startsWith('https://')
-										) {
-											formData.venmo_url = `https://${formData.venmo_url}`;
-										}
-									}}
-									oninput={() => {
-										// Venmo URL is independent of payment methods
-									}}
-									placeholder="https://venmo.com/your-username"
+									type="text"
+									id="contact_name"
+									bind:value={formData.contact_name}
+									required
 									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									placeholder="Your Name"
 								/>
-								<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-									Add your Venmo profile URL to allow customers to pay directly
-								</p>
-							</div>
-
-							<!-- Facebook Marketplace URL -->
-							<div>
-								<label
-									for="facebook-url"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-								>
-									Facebook Marketplace URL <span class="text-xs text-gray-400">(Optional)</span>
-								</label>
-								<input
-									id="facebook-url"
-									type="url"
-									bind:value={formData.facebook_url}
-									onblur={() => {
-										if (
-											formData.facebook_url &&
-											!formData.facebook_url.startsWith('http://') &&
-											!formData.facebook_url.startsWith('https://')
-										) {
-											formData.facebook_url = `https://${formData.facebook_url}`;
-										}
-									}}
-									placeholder="https://www.facebook.com/marketplace/item/..."
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-								/>
-								<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-									Link to your Facebook Marketplace listing for additional advertising
-								</p>
-							</div>
-
-							<!-- Images -->
-							<div>
-								<label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-									Photos <span class="text-xs text-gray-400">(Optional)</span>
-								</label>
-								<ImageUpload
-									images={formData.photos || []}
-									maxImages={10}
-									onImagesChange={(images) => {
-										formData.photos = images;
-										// Reset featured image if it's no longer in photos
-										if (formData.featured_image && !images.includes(formData.featured_image)) {
-											formData.featured_image = '';
-										}
-									}}
-								/>
-								{#if formData.photos && formData.photos.length > 0}
-									<div class="mt-4">
-										<label
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>
-											Featured Image <span class="text-xs text-gray-400">(Optional)</span>
-										</label>
-										<p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
-											Select which photo should be featured on your yard sale card
-										</p>
-										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-											{#each formData.photos as photo, index}
-												{@const isFeatured = formData.featured_image === photo}
-												<button
-													type="button"
-													onclick={() => {
-														formData.featured_image = isFeatured ? '' : photo;
-													}}
-													class="group relative overflow-hidden rounded-xl border-2 transition-all {isFeatured
-														? 'border-blue-600 ring-2 ring-blue-500 ring-offset-2'
-														: 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'}"
-												>
-													{#if photo}
-														<img
-															src={getAuthImageUrl(photo)}
-															alt="Photo {index + 1}"
-															class="aspect-square w-full object-cover"
-															onerror={(e) => {
-																const imgUrl = getAuthImageUrl(photo);
-																console.error(
-																	'Failed to load image:',
-																	photo,
-																	'Authenticated URL:',
-																	imgUrl
-																);
-																(e.target as HTMLImageElement).style.display = 'none';
-															}}
-														/>
-													{:else}
-														<div
-															class="flex aspect-square w-full items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500"
-														>
-															<span class="text-xs">Photo {index + 1}</span>
-														</div>
-													{/if}
-													{#if isFeatured}
-														<div
-															class="absolute top-2 right-2 rounded-full bg-blue-600 p-1.5 text-white shadow-lg"
-														>
-															<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-																<path
-																	d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-																/>
-															</svg>
-														</div>
-													{/if}
-													<div
-														class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
-													>
-														<span class="text-xs font-medium text-white">
-															{isFeatured ? 'Featured' : 'Click to feature'}
-														</span>
-													</div>
-												</button>
-											{/each}
-										</div>
-									</div>
-								{/if}
-							</div>
-
-							<!-- Allow Messages -->
-							<div>
-								<label
-									class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
-								>
-									<input
-										type="checkbox"
-										bind:checked={formData.allow_messages}
-										class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-									/>
-									<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-										>Allow messages through the app</span
-									>
-								</label>
 							</div>
 
 							<!-- Status -->
@@ -893,22 +587,351 @@
 								</select>
 							</div>
 
-							<!-- Status Reason -->
-							{#if formData.status === 'on_break' || formData.status === 'closed'}
-								<div>
-									<label
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										for="status-reason"
-									>
-										Status Reason <span class="text-xs text-gray-400">(Optional)</span>
-									</label>
-									<input
-										id="status-reason"
-										type="text"
-										bind:value={formData.status_reason}
-										placeholder="e.g., Taking a lunch break, All items sold, etc."
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
+							<!-- More Options Button -->
+							<button
+								type="button"
+								onclick={() => (showOptionalFields = !showOptionalFields)}
+								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+							>
+								<span>More Options</span>
+								<FontAwesomeIcon
+									icon={showOptionalFields ? faChevronUp : faChevronDown}
+									class="h-4 w-4 transition-transform duration-200"
+								/>
+							</button>
+
+							<!-- Optional Fields (Collapsible) -->
+							{#if showOptionalFields}
+								<div class="space-y-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+									<!-- Description -->
+									<div>
+										<label
+											for="description"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>
+											Description <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<textarea
+											id="description"
+											bind:value={formData.description}
+											rows="4"
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											placeholder="Describe what you're selling..."
+										></textarea>
+									</div>
+
+									<!-- End Date -->
+									<div>
+										<label
+											for="end_date"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>
+											End Date <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<input
+											type="date"
+											id="end_date"
+											bind:value={formData.end_date}
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										/>
+									</div>
+
+									<!-- Contact Information Section -->
+									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+										<!-- Contact Phone -->
+										<div>
+											<label
+												for="contact_phone"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>
+												Phone <span class="text-xs text-gray-400">(Optional)</span>
+											</label>
+											<input
+												type="tel"
+												id="contact_phone"
+												bind:value={formData.contact_phone}
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												placeholder="(555) 123-4567"
+											/>
+										</div>
+
+										<!-- Contact Email -->
+										<div>
+											<label
+												for="contact_email"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>
+												Email <span class="text-xs text-gray-400">(Optional)</span>
+											</label>
+											<input
+												type="email"
+												id="contact_email"
+												bind:value={formData.contact_email}
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												placeholder="your@email.com"
+											/>
+										</div>
+									</div>
+
+									<!-- Status Reason -->
+									{#if formData.status === 'on_break' || formData.status === 'closed'}
+										<div>
+											<label
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												for="status-reason"
+											>
+												Status Reason <span class="text-xs text-gray-400">(Optional)</span>
+											</label>
+											<input
+												id="status-reason"
+												type="text"
+												bind:value={formData.status_reason}
+												placeholder="e.g., Taking a lunch break, All items sold, etc."
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									<!-- Price Range -->
+									<div>
+										<label
+											for="price_range"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>
+											Price Range <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<select
+											id="price_range"
+											bind:value={formData.price_range}
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										>
+											<option value="">Select Price Range</option>
+											{#each priceRanges as range}
+												<option value={range}>{range}</option>
+											{/each}
+										</select>
+									</div>
+
+									<!-- Categories -->
+									<div>
+										<label
+											class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											for="categories"
+										>
+											Categories <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+											{#each categories as category}
+												<label
+													class="flex items-center rounded-lg bg-gray-50 p-3 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+													for="category-{category}"
+												>
+													<input
+														id="category-{category}"
+														type="checkbox"
+														checked={formData.categories?.includes(category) || false}
+														onchange={(e) => handleCategoryChange(category, e)}
+														class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+													/>
+													<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+														>{category}</span
+													>
+												</label>
+											{/each}
+										</div>
+									</div>
+
+									<!-- Payment Methods -->
+									<div>
+										<label
+											class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											for="payment-methods"
+										>
+											Payment Methods <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+											{#each availablePaymentMethods as method}
+												<label
+													class="flex items-center rounded-lg bg-gray-50 p-3 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+													for="payment-{method.id}"
+												>
+													<input
+														id="payment-{method.id}"
+														type="checkbox"
+														checked={formData.payment_methods?.includes(method.name) || false}
+														onchange={(e) => handlePaymentMethodChange(method.name, e)}
+														class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+													/>
+													<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+														>{method.name}</span
+													>
+												</label>
+											{/each}
+										</div>
+									</div>
+
+									<!-- Venmo URL -->
+									<div>
+										<label
+											for="venmo-url"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>
+											Venmo URL <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<input
+											id="venmo-url"
+											type="url"
+											bind:value={formData.venmo_url}
+											onblur={() => {
+												if (
+													formData.venmo_url &&
+													!formData.venmo_url.startsWith('http://') &&
+													!formData.venmo_url.startsWith('https://')
+												) {
+													formData.venmo_url = `https://${formData.venmo_url}`;
+												}
+											}}
+											oninput={() => {
+												// Venmo URL is independent of payment methods
+											}}
+											placeholder="https://venmo.com/your-username"
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										/>
+										<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+											Add your Venmo profile URL to allow customers to pay directly
+										</p>
+									</div>
+
+									<!-- Facebook Marketplace URL -->
+									<div>
+										<label
+											for="facebook-url"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>
+											Facebook Marketplace URL <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<input
+											id="facebook-url"
+											type="url"
+											bind:value={formData.facebook_url}
+											onblur={() => {
+												if (
+													formData.facebook_url &&
+													!formData.facebook_url.startsWith('http://') &&
+													!formData.facebook_url.startsWith('https://')
+												) {
+													formData.facebook_url = `https://${formData.facebook_url}`;
+												}
+											}}
+											placeholder="https://www.facebook.com/marketplace/item/..."
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										/>
+										<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+											Link to your Facebook Marketplace listing for additional advertising
+										</p>
+									</div>
+
+									<!-- Images -->
+									<div>
+										<label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+											Photos <span class="text-xs text-gray-400">(Optional)</span>
+										</label>
+										<ImageUpload
+											images={formData.photos || []}
+											maxImages={10}
+											onImagesChange={(images) => {
+												formData.photos = images;
+												// Reset featured image if it's no longer in photos
+												if (formData.featured_image && !images.includes(formData.featured_image)) {
+													formData.featured_image = '';
+												}
+											}}
+										/>
+										{#if formData.photos && formData.photos.length > 0}
+											<div class="mt-4">
+												<label
+													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>
+													Featured Image <span class="text-xs text-gray-400">(Optional)</span>
+												</label>
+												<p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
+													Select which photo should be featured on your yard sale card
+												</p>
+												<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+													{#each formData.photos as photo, index}
+														{@const isFeatured = formData.featured_image === photo}
+														<button
+															type="button"
+															onclick={() => {
+																formData.featured_image = isFeatured ? '' : photo;
+															}}
+															class="group relative overflow-hidden rounded-xl border-2 transition-all {isFeatured
+																? 'border-blue-600 ring-2 ring-blue-500 ring-offset-2'
+																: 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'}"
+														>
+															{#if photo}
+																<img
+																	src={getAuthImageUrl(photo)}
+																	alt="Photo {index + 1}"
+																	class="aspect-square w-full object-cover"
+																	onerror={(e) => {
+																		const imgUrl = getAuthImageUrl(photo);
+																		console.error(
+																			'Failed to load image:',
+																			photo,
+																			'Authenticated URL:',
+																			imgUrl
+																		);
+																		(e.target as HTMLImageElement).style.display = 'none';
+																	}}
+																/>
+															{:else}
+																<div
+																	class="flex aspect-square w-full items-center justify-center bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500"
+																>
+																	<span class="text-xs">Photo {index + 1}</span>
+																</div>
+															{/if}
+															{#if isFeatured}
+																<div
+																	class="absolute top-2 right-2 rounded-full bg-blue-600 p-1.5 text-white shadow-lg"
+																>
+																	<svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+																		<path
+																			d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+																		/>
+																	</svg>
+																</div>
+															{/if}
+															<div
+																class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
+															>
+																<span class="text-xs font-medium text-white">
+																	{isFeatured ? 'Featured' : 'Click to feature'}
+																</span>
+															</div>
+														</button>
+													{/each}
+												</div>
+											</div>
+										{/if}
+									</div>
+
+									<!-- Allow Messages -->
+									<div>
+										<label
+											class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+										>
+											<input
+												type="checkbox"
+												bind:checked={formData.allow_messages}
+												class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+											/>
+											<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+												>Allow messages through the app</span
+											>
+										</label>
+									</div>
 								</div>
 							{/if}
 						</div>

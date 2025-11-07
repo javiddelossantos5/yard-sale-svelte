@@ -2,7 +2,7 @@
 	import { createMarketItem, type MarketItemCreate, getAuthenticatedImageUrl } from './api';
 	import ImageUpload from './ImageUpload.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faStar } from '@fortawesome/free-solid-svg-icons';
+	import { faStar, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 	let { isOpen, onClose, onSuccess } = $props<{
 		isOpen: boolean;
@@ -37,6 +37,7 @@
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
+	let showOptionalFields = $state(false);
 
 	const categories = [
 		'Furniture',
@@ -212,6 +213,7 @@
 			state: null,
 			zip_code: null
 		};
+		showOptionalFields = false;
 	}
 </script>
 
@@ -263,6 +265,7 @@
 						{/if}
 
 						<div class="space-y-6">
+							<!-- Required Fields -->
 							<div>
 								<label
 									for="name"
@@ -275,36 +278,6 @@
 									bind:value={formData.name}
 									required
 									placeholder="e.g., Dyson Vacuum"
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-								/>
-							</div>
-
-							<div>
-								<label
-									for="description"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Description <span class="font-normal text-gray-400">(Optional)</span></label
-								>
-								<textarea
-									id="description"
-									rows="4"
-									bind:value={formData.description}
-									placeholder="Describe the item..."
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-								></textarea>
-							</div>
-
-							<div>
-								<label
-									for="seller"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Seller/Contact Name <span class="font-normal text-gray-400">(Optional)</span></label
-								>
-								<input
-									id="seller"
-									type="text"
-									bind:value={formData.seller}
-									placeholder="Enter seller or contact name"
 									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
 							</div>
@@ -340,285 +313,333 @@
 								>
 							</label>
 
-							<label
-								class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+							<!-- More Options Button -->
+							<button
+								type="button"
+								onclick={() => (showOptionalFields = !showOptionalFields)}
+								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 							>
-								<input
-									type="checkbox"
-									bind:checked={formData.accepts_best_offer}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+								<span>More Options</span>
+								<FontAwesomeIcon
+									icon={showOptionalFields ? faChevronUp : faChevronDown}
+									class="h-4 w-4 transition-transform duration-200"
 								/>
-								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Accept Best Offer</span
-								>
-							</label>
+							</button>
 
-							<div>
-								<label
-									for="category"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Category <span class="font-normal text-gray-400">(Optional)</span></label
-								>
-								<select
-									id="category"
-									bind:value={formData.category}
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-								>
-									<option value="">Select Category</option>
-									{#each categories as category}
-										<option value={category}>{category}</option>
-									{/each}
-								</select>
-							</div>
+							<!-- Optional Fields (Collapsible) -->
+							{#if showOptionalFields}
+								<div class="space-y-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+									<div>
+										<label
+											for="description"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>Description <span class="font-normal text-gray-400">(Optional)</span></label
+										>
+										<textarea
+											id="description"
+											rows="4"
+											bind:value={formData.description}
+											placeholder="Describe the item..."
+											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										></textarea>
+									</div>
 
-							{#if formData.category === 'Automotive'}
-								<div>
+									<div>
+										<label
+											for="seller"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>Seller/Contact Name <span class="font-normal text-gray-400">(Optional)</span></label
+										>
+										<input
+											id="seller"
+											type="text"
+											bind:value={formData.seller}
+											placeholder="Enter seller or contact name"
+											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										/>
+									</div>
+
 									<label
-										for="miles"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Mileage <span class="font-normal text-gray-400">(Optional)</span></label
+										class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
 									>
-									<input
-										id="miles"
-										type="number"
-										min="0"
-										step="1"
-										bind:value={formData.miles}
-										placeholder="Enter mileage"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-							{/if}
+										<input
+											type="checkbox"
+											bind:checked={formData.accepts_best_offer}
+											class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+										/>
+										<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+											>Accept Best Offer</span
+										>
+									</label>
 
-							<!-- Location Section -->
-							<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-								<!-- City -->
-								<div>
-									<label
-										for="city"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>City <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<input
-										id="city"
-										type="text"
-										bind:value={formData.city}
-										placeholder="Enter city"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-
-								<!-- State -->
-								<div>
-									<label
-										for="state"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>State <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<select
-										id="state"
-										bind:value={formData.state}
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-									>
-										<option value="">Select State</option>
-										{#each states as stateOption}
-											<option value={stateOption}>{stateOption}</option>
-										{/each}
-									</select>
-								</div>
-
-								<!-- ZIP Code -->
-								<div>
-									<label
-										for="zip_code"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Zip Code <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<input
-										id="zip_code"
-										type="text"
-										bind:value={formData.zip_code}
-										placeholder="Enter zip code"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-							</div>
-
-							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<div>
-									<label
-										for="condition"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Condition <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<select
-										id="condition"
-										bind:value={formData.condition}
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-									>
-										<option value="">Select Condition</option>
-										{#each conditions as condition}
-											<option value={condition}>{condition}</option>
-										{/each}
-									</select>
-								</div>
-								<div>
-									<label
-										for="quantity"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Quantity <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<input
-										id="quantity"
-										type="number"
-										min="1"
-										step="1"
-										bind:value={formData.quantity}
-										placeholder="Number of items"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-							</div>
-
-							<div>
-								<div class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-									Photos <span class="font-normal text-gray-400">(Optional)</span>
-								</div>
-								<ImageUpload
-									images={formData.photos || []}
-									maxImages={10}
-									onImagesChange={(images) => {
-										formData.photos = images;
-										// Keep current featured_image if it's still in the list, otherwise use first image
-										if (!formData.featured_image || !images.includes(formData.featured_image)) {
-											formData.featured_image = images[0] || '';
-										}
-									}}
-								/>
-								{#if formData.photos && formData.photos.length > 0}
-									<div class="mt-4">
-										<p class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
-											Select Featured Image
-										</p>
-										<p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
-											Select which photo should be featured on your item card
-										</p>
-										<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-											{#each formData.photos as photo, index}
-												{#if photo}
-													{@const isFeatured = formData.featured_image === photo}
-													<button
-														type="button"
-														onclick={() => {
-															formData.featured_image = isFeatured ? '' : photo;
-														}}
-														class="group relative overflow-hidden rounded-xl border-2 transition-all {isFeatured
-															? 'border-blue-600 ring-2 ring-blue-500 ring-offset-2'
-															: 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'}"
-													>
-														<img
-															src={getAuthenticatedImageUrl(photo)}
-															alt="Photo {index + 1}"
-															class="aspect-square w-full object-cover"
-															onerror={(e) => {
-																console.error('Failed to load image:', photo);
-																(e.target as HTMLImageElement).style.display = 'none';
-															}}
-														/>
-														{#if isFeatured}
-															<div
-																class="absolute top-2 right-2 rounded-full bg-blue-600 p-1.5 text-white shadow-lg"
-															>
-																<FontAwesomeIcon icon={faStar} class="h-3 w-3" />
-															</div>
-														{/if}
-													</button>
-												{/if}
+									<div>
+										<label
+											for="category"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>Category <span class="font-normal text-gray-400">(Optional)</span></label
+										>
+										<select
+											id="category"
+											bind:value={formData.category}
+											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										>
+											<option value="">Select Category</option>
+											{#each categories as category}
+												<option value={category}>{category}</option>
 											{/each}
+										</select>
+									</div>
+
+									{#if formData.category === 'Automotive'}
+										<div>
+											<label
+												for="miles"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Mileage <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="miles"
+												type="number"
+												min="0"
+												step="1"
+												bind:value={formData.miles}
+												placeholder="Enter mileage"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									<!-- Location Section -->
+									<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+										<!-- City -->
+										<div>
+											<label
+												for="city"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>City <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="city"
+												type="text"
+												bind:value={formData.city}
+												placeholder="Enter city"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+
+										<!-- State -->
+										<div>
+											<label
+												for="state"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>State <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<select
+												id="state"
+												bind:value={formData.state}
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+											>
+												<option value="">Select State</option>
+												{#each states as stateOption}
+													<option value={stateOption}>{stateOption}</option>
+												{/each}
+											</select>
+										</div>
+
+										<!-- ZIP Code -->
+										<div>
+											<label
+												for="zip_code"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Zip Code <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="zip_code"
+												type="text"
+												bind:value={formData.zip_code}
+												placeholder="Enter zip code"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
 										</div>
 									</div>
-								{/if}
-							</div>
 
-							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<div>
-									<label
-										for="venmo"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Venmo URL <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<input
-										id="venmo"
-										type="url"
-										bind:value={formData.venmo_url}
-										onblur={() => (formData.venmo_url = normalizeUrl(formData.venmo_url || ''))}
-										placeholder="https://venmo.com/your-username"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-								<div>
-									<label
-										for="facebook"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Facebook Marketplace URL <span class="font-normal text-gray-400"
-											>(Optional)</span
-										></label
-									>
-									<input
-										id="facebook"
-										type="url"
-										bind:value={formData.facebook_url}
-										onblur={() =>
-											(formData.facebook_url = normalizeUrl(formData.facebook_url || ''))}
-										placeholder="https://www.facebook.com/marketplace/item/..."
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-							</div>
+									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+										<div>
+											<label
+												for="condition"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Condition <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<select
+												id="condition"
+												bind:value={formData.condition}
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+											>
+												<option value="">Select Condition</option>
+												{#each conditions as condition}
+													<option value={condition}>{condition}</option>
+												{/each}
+											</select>
+										</div>
+										<div>
+											<label
+												for="quantity"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Quantity <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="quantity"
+												type="number"
+												min="1"
+												step="1"
+												bind:value={formData.quantity}
+												placeholder="Number of items"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									</div>
 
-							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<div>
-									<label
-										for="contact_phone"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Contact Phone <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<input
-										id="contact_phone"
-										type="tel"
-										bind:value={formData.contact_phone}
-										placeholder="(555) 123-4567"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-								<div>
-									<label
-										for="contact_email"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Contact Email <span class="font-normal text-gray-400">(Optional)</span></label
-									>
-									<input
-										id="contact_email"
-										type="email"
-										bind:value={formData.contact_email}
-										placeholder="seller@example.com"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-									/>
-								</div>
-							</div>
+									<div>
+										<div class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+											Photos <span class="font-normal text-gray-400">(Optional)</span>
+										</div>
+										<ImageUpload
+											images={formData.photos || []}
+											maxImages={10}
+											onImagesChange={(images) => {
+												formData.photos = images;
+												// Keep current featured_image if it's still in the list, otherwise use first image
+												if (!formData.featured_image || !images.includes(formData.featured_image)) {
+													formData.featured_image = images[0] || '';
+												}
+											}}
+										/>
+										{#if formData.photos && formData.photos.length > 0}
+											<div class="mt-4">
+												<p class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+													Select Featured Image
+												</p>
+												<p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
+													Select which photo should be featured on your item card
+												</p>
+												<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+													{#each formData.photos as photo, index}
+														{#if photo}
+															{@const isFeatured = formData.featured_image === photo}
+															<button
+																type="button"
+																onclick={() => {
+																	formData.featured_image = isFeatured ? '' : photo;
+																}}
+																class="group relative overflow-hidden rounded-xl border-2 transition-all {isFeatured
+																	? 'border-blue-600 ring-2 ring-blue-500 ring-offset-2'
+																	: 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'}"
+															>
+																<img
+																	src={getAuthenticatedImageUrl(photo)}
+																	alt="Photo {index + 1}"
+																	class="aspect-square w-full object-cover"
+																	onerror={(e) => {
+																		console.error('Failed to load image:', photo);
+																		(e.target as HTMLImageElement).style.display = 'none';
+																	}}
+																/>
+																{#if isFeatured}
+																	<div
+																		class="absolute top-2 right-2 rounded-full bg-blue-600 p-1.5 text-white shadow-lg"
+																	>
+																		<FontAwesomeIcon icon={faStar} class="h-3 w-3" />
+																	</div>
+																{/if}
+															</button>
+														{/if}
+													{/each}
+												</div>
+											</div>
+										{/if}
+									</div>
 
-							<label
-								class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
-							>
-								<input
-									type="checkbox"
-									bind:checked={formData.is_public}
-									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-								/>
-								<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-									>Make this item publicly visible</span
-								>
-							</label>
+									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+										<div>
+											<label
+												for="venmo"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Venmo URL <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="venmo"
+												type="url"
+												bind:value={formData.venmo_url}
+												onblur={() => (formData.venmo_url = normalizeUrl(formData.venmo_url || ''))}
+												placeholder="https://venmo.com/your-username"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+										<div>
+											<label
+												for="facebook"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Facebook Marketplace URL <span class="font-normal text-gray-400"
+													>(Optional)</span
+												></label
+											>
+											<input
+												id="facebook"
+												type="url"
+												bind:value={formData.facebook_url}
+												onblur={() =>
+													(formData.facebook_url = normalizeUrl(formData.facebook_url || ''))}
+												placeholder="https://www.facebook.com/marketplace/item/..."
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									</div>
+
+									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+										<div>
+											<label
+												for="contact_phone"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Contact Phone <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="contact_phone"
+												type="tel"
+												bind:value={formData.contact_phone}
+												placeholder="(555) 123-4567"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+										<div>
+											<label
+												for="contact_email"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Contact Email <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="contact_email"
+												type="email"
+												bind:value={formData.contact_email}
+												placeholder="seller@example.com"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									</div>
+
+									<label
+										class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+									>
+										<input
+											type="checkbox"
+											bind:checked={formData.is_public}
+											class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+										/>
+										<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+											>Make this item publicly visible</span
+										>
+									</label>
+								</div>
+							{/if}
 						</div>
 					</div>
 
