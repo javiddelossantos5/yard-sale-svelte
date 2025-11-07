@@ -3,15 +3,19 @@
 		isOpen,
 		onClose,
 		onConfirm,
-		itemName = 'yard sale'
+		itemName = 'yard sale',
+		itemType = 'item'
 	} = $props<{
 		isOpen: boolean;
 		onClose: () => void;
 		onConfirm: () => void;
 		itemName?: string;
+		itemType?: 'item' | 'image' | 'yard-sale' | 'market-item';
 	}>();
 
 	let isDeleting = $state(false);
+
+	const isImage = itemType === 'image';
 
 	async function handleConfirm() {
 		isDeleting = true;
@@ -110,16 +114,26 @@
 										Permanent Deletion
 									</h4>
 									<div class="mt-2 text-sm text-red-700 dark:text-red-300">
-										<p>
-											This will permanently delete your {itemName} and all associated data including:
-										</p>
-										<ul class="mt-2 list-inside list-disc space-y-1">
-											<li>All comments and messages</li>
-											<li>Contact information</li>
-											<li>Photos and descriptions</li>
-											<li>Event details and location</li>
-										</ul>
-										<p class="mt-2 font-medium">This action cannot be reversed or undone.</p>
+										{#if isImage}
+											<p>
+												This will permanently delete {itemName} from your account.
+											</p>
+											<p class="mt-2">
+												The image will be removed from all items where it is currently used.
+											</p>
+											<p class="mt-2 font-medium">This action cannot be reversed or undone.</p>
+										{:else}
+											<p>
+												This will permanently delete your {itemName} and all associated data including:
+											</p>
+											<ul class="mt-2 list-inside list-disc space-y-1">
+												<li>All comments and messages</li>
+												<li>Contact information</li>
+												<li>Photos and descriptions</li>
+												<li>Event details and location</li>
+											</ul>
+											<p class="mt-2 font-medium">This action cannot be reversed or undone.</p>
+										{/if}
 									</div>
 								</div>
 							</div>

@@ -6,6 +6,7 @@
 		getAuthenticatedImageUrl,
 		type UploadedImage
 	} from './api';
+	import DeleteConfirmationModal from './DeleteConfirmationModal.svelte';
 
 	let {
 		images = [],
@@ -25,6 +26,11 @@
 	// Convert image URLs to UploadedImage objects for display
 	let uploadedImages = $state<UploadedImage[]>([]);
 	let allUserImages = $state<UploadedImage[]>([]);
+
+	// Delete confirmation modal state
+	let showDeleteModal = $state(false);
+	let imageToDelete = $state<{ key: string; url: string; filename: string } | null>(null);
+	let isDeleting = $state(false);
 
 	// Load user's uploaded images on mount
 	$effect(() => {
@@ -119,6 +125,40 @@
 			await loadUserImages();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to delete image';
+		}
+	}
+
+	function openDeleteModal(imageKey: string, imageUrl: string, filename: string) {
+		imageToDelete = { key: imageKey, url: imageUrl, filename };
+		showDeleteModal = true;
+		error = null;
+	}
+
+	async function handleDeleteImage() {
+		if (!imageToDelete) return;
+
+		isDeleting = true;
+		error = null;
+
+		try {
+			await deleteImage(imageToDelete.key);
+
+			// If this image is currently selected, remove it
+			if (images.includes(imageToDelete.url)) {
+				const newImages = images.filter((url) => url !== imageToDelete.url);
+				onImagesChange(newImages);
+			}
+
+			// Refresh the user images
+			await loadUserImages();
+
+			// Close modal and reset state
+			showDeleteModal = false;
+			imageToDelete = null;
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Failed to delete image';
+		} finally {
+			isDeleting = false;
 		}
 	}
 
@@ -244,45 +284,96 @@
 	{#if allUserImages.length > 0}
 		<div class="space-y-3">
 			<h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-				Available Images ({allUserImages.length - uploadedImages.length} available)
+				Your Uploaded Images ({allUserImages.length})
 			</h4>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
 				{#each allUserImages as image}
 					{@const isSelected = images.includes(image.url)}
-					{#if !isSelected && images.length < maxImages}
+					<div class="group relative">
+						{#if !isSelected && images.length < maxImages}
+							<button
+								type="button"
+								class="relative w-full cursor-pointer"
+								onclick={() => addImage(image.url)}
+								aria-label="Add {image.filename} to item"
+							>
+								<img
+									src={getAuthenticatedImageUrl(image.url)}
+									alt={image.filename}
+									class="h-24 w-full rounded-lg border border-gray-200 object-cover opacity-60 transition-opacity duration-200 group-hover:opacity-100 dark:border-gray-700"
+								/>
+								<!-- Add Button -->
+								<div class="absolute inset-0 flex items-center justify-center">
+									<div
+										class="rounded-full bg-blue-500 p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+									>
+										<svg
+											class="h-4 w-4 text-white"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+											></path>
+										</svg>
+									</div>
+								</div>
+							</button>
+						{:else}
+							<div class="relative">
+								<img
+									src={getAuthenticatedImageUrl(image.url)}
+									alt={image.filename}
+									class="h-24 w-full rounded-lg border border-gray-200 object-cover opacity-40 dark:border-gray-700"
+								/>
+								{#if isSelected}
+									<div
+										class="absolute inset-0 flex items-center justify-center rounded-lg bg-green-500/20"
+									>
+										<div class="rounded-full bg-green-500 p-2">
+											<svg
+												class="h-4 w-4 text-white"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M5 13l4 4L19 7"
+												></path>
+											</svg>
+										</div>
+									</div>
+								{/if}
+							</div>
+						{/if}
+						<!-- Delete Button -->
 						<button
 							type="button"
-							class="group relative cursor-pointer"
-							onclick={() => addImage(image.url)}
-							aria-label="Add {image.filename} to yard sale"
+							onclick={(e) => {
+								e.stopPropagation();
+								openDeleteModal(image.key, image.url, image.filename);
+							}}
+							class="absolute -top-2 -right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-red-600"
+							aria-label="Delete {image.filename}"
+							title="Delete image"
 						>
-							<img
-								src={getAuthenticatedImageUrl(image.url)}
-								alt={image.filename}
-								class="h-24 w-full rounded-lg border border-gray-200 object-cover opacity-60 transition-opacity duration-200 group-hover:opacity-100 dark:border-gray-700"
-							/>
-							<!-- Add Button -->
-							<div class="absolute inset-0 flex items-center justify-center">
-								<div
-									class="rounded-full bg-blue-500 p-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-								>
-									<svg
-										class="h-4 w-4 text-white"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-										></path>
-									</svg>
-								</div>
-							</div>
+							<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M6 18L18 6M6 6l12 12"
+								></path>
+							</svg>
 						</button>
-					{/if}
+					</div>
 				{/each}
 			</div>
 		</div>
@@ -331,4 +422,17 @@
 			</div>
 		</div>
 	{/if}
+
+	<!-- Delete Confirmation Modal -->
+	<DeleteConfirmationModal
+		isOpen={showDeleteModal}
+		onClose={() => {
+			showDeleteModal = false;
+			imageToDelete = null;
+			error = null;
+		}}
+		onConfirm={handleDeleteImage}
+		itemName={imageToDelete ? `image "${imageToDelete.filename}"` : 'image'}
+		itemType="image"
+	/>
 </div>
