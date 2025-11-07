@@ -54,12 +54,19 @@ export function setupAuthFetch(): void {
 	window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
 		try {
 			const url = typeof input === 'string' ? input : input.toString();
-			if (url.startsWith('/api')) {
-				// Don't handle token expiration for login/register endpoints
-				if (url.includes('/api/login') || url.includes('/api/register')) {
-					return originalFetch(input, init);
-				}
 
+			// Don't add auth headers for login/register endpoints (they don't need tokens)
+			if (url.includes('/login') || url.includes('/register')) {
+				return originalFetch(input, init);
+			}
+
+			// Handle endpoints that need auth (both /api/* and new non-/api endpoints)
+			if (
+				url.startsWith('/api') ||
+				url.startsWith('/me') ||
+				url.startsWith('/user/') ||
+				url.startsWith('/users/')
+			) {
 				const token = getAccessToken();
 				if (token) {
 					const headers = new Headers(init?.headers || {});
@@ -68,9 +75,9 @@ export function setupAuthFetch(): void {
 					}
 					const response = await originalFetch(input, { ...init, headers });
 
-					// Only handle token expiration for /api/me endpoint (the definitive auth check)
+					// Only handle token expiration for /me endpoint (the definitive auth check)
 					// Other endpoints handle their own errors and don't necessarily mean token is expired
-					if (isTokenExpired(response) && url.includes('/api/me') && !isHandlingTokenExpiration) {
+					if (isTokenExpired(response) && url.includes('/me') && !isHandlingTokenExpiration) {
 						const currentPath = window.location.pathname;
 						if (currentPath !== '/login') {
 							handleTokenExpiration();
@@ -92,7 +99,7 @@ export function setupAuthFetch(): void {
 }
 
 async function tryRegister(username: string, email: string, password: string): Promise<void> {
-	const res = await fetch('/api/register', {
+	const res = await fetch('/register', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ username, email, password })
@@ -105,7 +112,7 @@ async function tryRegister(username: string, email: string, password: string): P
 }
 
 async function login(username: string, password: string): Promise<LoginResponse> {
-	const res = await fetch('/api/login', {
+	const res = await fetch('/login', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ username, password })

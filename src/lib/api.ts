@@ -486,7 +486,7 @@ export interface LoginResponse {
 }
 
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
-	const response = await fetch('/api/login', {
+	const response = await fetch('/login', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
@@ -520,7 +520,7 @@ export interface RegisterResponse {
 }
 
 export async function register(userData: RegisterRequest): Promise<RegisterResponse> {
-	const response = await fetch('/api/register', {
+	const response = await fetch('/register', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
@@ -846,7 +846,7 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 		} else {
 			// If we can't get user ID from token, try the /me endpoint
 			const token = localStorage.getItem('access_token');
-			const response = await fetch('/api/me', {
+			const response = await fetch('/me', {
 				headers: token
 					? {
 							Authorization: `Bearer ${token}`
@@ -876,7 +876,7 @@ export async function getCurrentUser(): Promise<CurrentUser> {
 
 // User Profile API functions
 export async function getUserProfile(userId: string): Promise<CurrentUser> {
-	const response = await fetch(`/api/users/${userId}`, {
+	const response = await fetch(`/users/${userId}`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
@@ -900,7 +900,7 @@ export async function getUserProfile(userId: string): Promise<CurrentUser> {
 
 // Ratings API functions
 export async function getUserRatings(userId: string): Promise<Rating[]> {
-	const response = await fetch(`/api/users/${userId}/ratings`, {
+	const response = await fetch(`/users/${userId}/ratings`, {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`
 		}
@@ -1456,7 +1456,7 @@ export async function getWatchedItems(params?: {
 	if (params?.sort_by) query.set('sort_by', params.sort_by);
 	if (params?.sort_order) query.set('sort_order', params.sort_order);
 
-	const url = `/api/user/watched-items${query.toString() ? `?${query}` : ''}`;
+	const url = `/user/watched-items${query.toString() ? `?${query}` : ''}`;
 	const res = await fetch(url, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
 	});
