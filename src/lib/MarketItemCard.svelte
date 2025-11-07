@@ -159,10 +159,10 @@
 	data-test="market-item-card"
 >
 	<!-- Image Section -->
-	<div class="relative overflow-hidden">
-		{#if item.featured_image || (item.photos && item.photos.length > 0)}
-			{@const displayPhotos = getDisplayPhotos()}
-			{@const hasMultipleImages = displayPhotos.length > 1}
+	{#if item.featured_image || (item.photos && item.photos.length > 0)}
+		{@const displayPhotos = getDisplayPhotos()}
+		{@const hasMultipleImages = displayPhotos.length > 1}
+		<div class="relative overflow-hidden">
 			<img
 				src={currentImageUrl()}
 				alt={item.name}
@@ -206,45 +206,41 @@
 					{cardImageIndex + 1} / {displayPhotos.length}
 				</div>
 			{/if}
-		{:else}
-			<div
-				class="aspect-[16/10] w-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600"
-			></div>
-		{/if}
 
-		<!-- Overlay Badges -->
-		<div class="absolute inset-0 flex items-start justify-between p-3">
-			<!-- Comment Count -->
-			<div
-				class="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-md"
-			>
-				<FontAwesomeIcon icon={faCommentDots} class="h-3 w-3" />
-				<span>{item.comment_count}</span>
-			</div>
-
-			<!-- Status Badge -->
-			{#if !hideStatusBadge}
+			<!-- Overlay Badges -->
+			<div class="absolute inset-0 flex items-start justify-between p-3">
+				<!-- Comment Count -->
 				<div
-					class="rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md {item.status ===
-					'sold'
-						? 'bg-red-600/90 text-white'
-						: item.status === 'hidden'
-							? 'bg-gray-600/90 text-white'
-							: item.status === 'pending'
-								? 'bg-yellow-600/90 text-white'
-								: 'bg-green-600/90 text-white'}"
+					class="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-md"
 				>
-					{item.status === 'sold'
-						? 'Sold'
-						: item.status === 'hidden'
-							? 'Hidden'
-							: item.status === 'pending'
-								? 'Pending'
-								: 'Available'}
+					<FontAwesomeIcon icon={faCommentDots} class="h-3 w-3" />
+					<span>{item.comment_count}</span>
 				</div>
-			{/if}
+
+				<!-- Status Badge -->
+				{#if !hideStatusBadge}
+					<div
+						class="rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md {item.status ===
+						'sold'
+							? 'bg-red-600/90 text-white'
+							: item.status === 'hidden'
+								? 'bg-gray-600/90 text-white'
+								: item.status === 'pending'
+									? 'bg-yellow-600/90 text-white'
+									: 'bg-green-600/90 text-white'}"
+					>
+						{item.status === 'sold'
+							? 'Sold'
+							: item.status === 'hidden'
+								? 'Hidden'
+								: item.status === 'pending'
+									? 'Pending'
+									: 'Available'}
+					</div>
+				{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Content Section -->
 	<div class="p-4">
@@ -294,6 +290,13 @@
 				</div>
 			{/if}
 		</div>
+
+		<!-- Location -->
+		{#if item.city || item.state || item.zip_code}
+			<p class="mb-2 text-xs text-gray-600 dark:text-gray-400">
+				{[item.city, item.state, item.zip_code].filter(Boolean).join(', ')}
+			</p>
+		{/if}
 
 		<!-- Posted Date -->
 		{#if item.created_at}

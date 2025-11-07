@@ -45,7 +45,8 @@
 		faArrowRight,
 		faCheckCircle,
 		faShieldAlt,
-		faTachometerAlt
+		faTachometerAlt,
+		faMapMarkerAlt
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
@@ -1018,10 +1019,6 @@
 											{/if}
 										{/if}
 									</div>
-								{:else}
-									<div
-										class="mb-6 h-64 w-full rounded-2xl bg-linear-to-br from-gray-100 to-gray-200 sm:h-80 dark:from-gray-700 dark:to-gray-600"
-									></div>
 								{/if}
 
 								<!-- Owner Information -->
@@ -1053,6 +1050,11 @@
 											{#if item.seller}
 												<div class="mt-1 text-xs text-gray-600 dark:text-gray-400">
 													Seller: <span class="font-medium">{item.seller}</span>
+												</div>
+											{/if}
+											{#if item.city || item.state || item.zip_code}
+												<div class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+													{[item.city, item.state, item.zip_code].filter(Boolean).join(', ')}
 												</div>
 											{/if}
 											{#if item.created_at}
@@ -1146,7 +1148,7 @@
 							{/if}
 
 							<!-- Contact Information Card -->
-							{#if item.seller || item.contact_phone || item.contact_email}
+							{#if item.seller || item.contact_phone || item.contact_email || item.city || item.state || item.zip_code}
 								<div
 									class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 								>
@@ -1179,6 +1181,14 @@
 												<FontAwesomeIcon icon={faEnvelope} class="mr-2 h-4 w-4" />
 												{item.contact_email}
 											</a>
+										{/if}
+										{#if item.city || item.state || item.zip_code}
+											<div
+												class="inline-flex items-center rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 dark:bg-gray-700/50 dark:text-gray-300"
+											>
+												<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 h-4 w-4" />
+												{[item.city, item.state, item.zip_code].filter(Boolean).join(', ')}
+											</div>
 										{/if}
 									</div>
 								</div>

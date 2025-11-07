@@ -1201,6 +1201,9 @@ export interface MarketItem {
 	is_free?: boolean; // Indicates if the item is free
 	miles?: number | null; // Mileage for automotive items (optional)
 	seller?: string | null; // Optional seller/contact name
+	city?: string | null; // Location: city
+	state?: string | null; // Location: state (2-letter code)
+	zip_code?: string | null; // Location: zip code
 }
 
 export interface MarketItemCreate {
@@ -1224,6 +1227,9 @@ export interface MarketItemCreate {
 	is_free?: boolean; // Indicates if the item is free
 	miles?: number | null; // Mileage for automotive items (optional)
 	seller?: string | null; // Optional seller/contact name
+	city?: string | null; // Location: city
+	state?: string | null; // Location: state (2-letter code)
+	zip_code?: string | null; // Location: zip code
 }
 
 // Paginated response interface
@@ -1247,6 +1253,9 @@ export async function getMarketItems(
 		price_reduced?: boolean;
 		is_free?: boolean;
 		owner_is_admin?: boolean;
+		city?: string;
+		state?: string;
+		zip_code?: string;
 		limit?: number;
 		offset?: number;
 		sort_by?: 'price' | 'created_at' | 'price_reduction_percentage' | 'name';
@@ -1265,6 +1274,9 @@ export async function getMarketItems(
 	if (params.is_free !== undefined) query.set('is_free', String(params.is_free));
 	if (params.owner_is_admin !== undefined)
 		query.set('owner_is_admin', String(params.owner_is_admin));
+	if (params.city) query.set('city', params.city);
+	if (params.state) query.set('state', params.state);
+	if (params.zip_code) query.set('zip_code', params.zip_code);
 	if (params.limit != null) query.set('limit', String(params.limit));
 	if (params.offset != null) query.set('offset', String(params.offset));
 	if (params.sort_by) query.set('sort_by', params.sort_by);

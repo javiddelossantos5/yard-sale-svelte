@@ -35,7 +35,10 @@
 		quantity: null,
 		is_free: false,
 		miles: null,
-		seller: null
+		seller: null,
+		city: null,
+		state: null,
+		zip_code: null
 	});
 
 	let loading = $state(false);
@@ -69,6 +72,59 @@
 		'Poor'
 	];
 
+	const states = [
+		'AL',
+		'AK',
+		'AZ',
+		'AR',
+		'CA',
+		'CO',
+		'CT',
+		'DE',
+		'FL',
+		'GA',
+		'HI',
+		'ID',
+		'IL',
+		'IN',
+		'IA',
+		'KS',
+		'KY',
+		'LA',
+		'ME',
+		'MD',
+		'MA',
+		'MI',
+		'MN',
+		'MS',
+		'MO',
+		'MT',
+		'NE',
+		'NV',
+		'NH',
+		'NJ',
+		'NM',
+		'NY',
+		'NC',
+		'ND',
+		'OH',
+		'OK',
+		'OR',
+		'PA',
+		'RI',
+		'SC',
+		'SD',
+		'TN',
+		'TX',
+		'UT',
+		'VT',
+		'VA',
+		'WA',
+		'WV',
+		'WI',
+		'WY'
+	];
+
 	function normalizeUrl(url: string): string {
 		if (!url?.trim()) return '';
 		return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
@@ -96,7 +152,10 @@
 				quantity: item.quantity ?? null,
 				is_free: item.is_free ?? false,
 				miles: item.miles ?? null,
-				seller: item.seller ?? null
+				seller: item.seller ?? null,
+				city: item.city ?? null,
+				state: item.state ?? null,
+				zip_code: item.zip_code ?? null
 			};
 		}
 	});
@@ -144,7 +203,11 @@
 				// Only include miles if category is Automotive
 				miles: formData.category === 'Automotive' ? formData.miles : null,
 				// Include seller field
-				seller: formData.seller || null
+				seller: formData.seller || null,
+				// Include location fields
+				city: formData.city || null,
+				state: formData.state || null,
+				zip_code: formData.zip_code || null
 			};
 
 			await updateMarketItem(item.id, payload);
@@ -332,6 +395,60 @@
 									/>
 								</div>
 							{/if}
+
+							<!-- Location Section -->
+							<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+								<!-- City -->
+								<div>
+									<label
+										for="edit-city"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>City <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<input
+										id="edit-city"
+										type="text"
+										bind:value={formData.city}
+										placeholder="Enter city"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
+
+								<!-- State -->
+								<div>
+									<label
+										for="edit-state"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>State <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<select
+										id="edit-state"
+										bind:value={formData.state}
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									>
+										<option value="">Select State</option>
+										{#each states as stateOption}
+											<option value={stateOption}>{stateOption}</option>
+										{/each}
+									</select>
+								</div>
+
+								<!-- ZIP Code -->
+								<div>
+									<label
+										for="edit-zip_code"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>Zip Code <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<input
+										id="edit-zip_code"
+										type="text"
+										bind:value={formData.zip_code}
+										placeholder="Enter zip code"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
+							</div>
 
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<div>

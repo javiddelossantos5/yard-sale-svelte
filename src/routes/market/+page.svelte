@@ -49,6 +49,9 @@
 	let priceReducedFilter = $state(false);
 	let isFreeFilter = $state(false);
 	let adminPostedFilter = $state(false);
+	let cityFilter = $state('');
+	let stateFilter = $state('');
+	let zipCodeFilter = $state('');
 	let sortBy = $state<'price' | 'created_at' | 'price_reduction_percentage' | 'name'>('created_at');
 	let sortOrder = $state<'asc' | 'desc'>('desc');
 	let sortByDisplay = $state<
@@ -75,6 +78,60 @@
 		'Other'
 	];
 
+	// US States for location filter
+	const states = [
+		'AL',
+		'AK',
+		'AZ',
+		'AR',
+		'CA',
+		'CO',
+		'CT',
+		'DE',
+		'FL',
+		'GA',
+		'HI',
+		'ID',
+		'IL',
+		'IN',
+		'IA',
+		'KS',
+		'KY',
+		'LA',
+		'ME',
+		'MD',
+		'MA',
+		'MI',
+		'MN',
+		'MS',
+		'MO',
+		'MT',
+		'NE',
+		'NV',
+		'NH',
+		'NJ',
+		'NM',
+		'NY',
+		'NC',
+		'ND',
+		'OH',
+		'OK',
+		'OR',
+		'PA',
+		'RI',
+		'SC',
+		'SD',
+		'TN',
+		'TX',
+		'UT',
+		'VT',
+		'VA',
+		'WA',
+		'WV',
+		'WI',
+		'WY'
+	];
+
 	async function load() {
 		loading = true;
 		error = null;
@@ -94,6 +151,9 @@
 				price_reduced?: boolean;
 				is_free?: boolean;
 				owner_is_admin?: boolean;
+				city?: string;
+				state?: string;
+				zip_code?: string;
 				sort_by?: 'price' | 'created_at' | 'price_reduction_percentage' | 'name';
 				sort_order?: 'asc' | 'desc';
 			} = {};
@@ -148,6 +208,19 @@
 			// Admin posted filter
 			if (adminPostedFilter) {
 				params.owner_is_admin = true;
+			}
+
+			// Location filters
+			if (cityFilter && cityFilter.trim()) {
+				params.city = cityFilter.trim();
+			}
+
+			if (stateFilter && stateFilter.trim()) {
+				params.state = stateFilter.trim();
+			}
+
+			if (zipCodeFilter && zipCodeFilter.trim()) {
+				params.zip_code = zipCodeFilter.trim();
 			}
 
 			// Sorting
@@ -285,6 +358,9 @@
 		priceReducedFilter; // Track price reduced filter
 		isFreeFilter; // Track free items filter
 		adminPostedFilter; // Track admin posted filter
+		cityFilter; // Track city filter
+		stateFilter; // Track state filter
+		zipCodeFilter; // Track zip code filter
 		sortByDisplay; // Track sort by display
 		sortOrder; // Track sort order
 		load();
@@ -299,6 +375,9 @@
 		priceReducedFilter = false;
 		isFreeFilter = false;
 		adminPostedFilter = false;
+		cityFilter = '';
+		stateFilter = '';
+		zipCodeFilter = '';
 		statusFilter = 'active';
 		sortByDisplay = 'created_at';
 		sortOrder = 'desc';
@@ -472,6 +551,63 @@
 							</div>
 						</div>
 
+						<!-- Row 2.5: Location Filters -->
+						<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+							<!-- City Filter -->
+							<div>
+								<label
+									for="cityFilter"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									City
+								</label>
+								<input
+									type="text"
+									id="cityFilter"
+									bind:value={cityFilter}
+									placeholder="Enter city"
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								/>
+							</div>
+
+							<!-- State Filter -->
+							<div>
+								<label
+									for="stateFilter"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									State
+								</label>
+								<select
+									id="stateFilter"
+									bind:value={stateFilter}
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								>
+									<option value="">All States</option>
+									{#each states as stateOption}
+										<option value={stateOption}>{stateOption}</option>
+									{/each}
+								</select>
+							</div>
+
+							<!-- Zip Code Filter -->
+							<div>
+								<label
+									for="zipCodeFilter"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Zip Code
+								</label>
+								<input
+									type="text"
+									id="zipCodeFilter"
+									bind:value={zipCodeFilter}
+									placeholder="Enter zip code"
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								/>
+							</div>
+						</div>
+
 						<!-- Row 3: Checkboxes -->
 						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 							<!-- Accepts Best Offer Filter -->
@@ -583,7 +719,7 @@
 					</div>
 
 					<!-- Active Filters Indicator and Clear Button -->
-					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || isFreeFilter || adminPostedFilter || statusFilter !== 'active' || sortByDisplay !== 'created_at' || sortOrder !== 'desc'}
+					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || isFreeFilter || adminPostedFilter || cityFilter || stateFilter || zipCodeFilter || statusFilter !== 'active' || sortByDisplay !== 'created_at' || sortOrder !== 'desc'}
 						<div
 							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
 						>
