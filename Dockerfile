@@ -32,7 +32,7 @@ COPY --from=builder /app/.svelte-kit ./.svelte-kit
 COPY --from=builder /app/package.json ./
 
 # Expose the port (default is 3000 for adapter-node)
-EXPOSE 3000
+EXPOSE 5173
 
 # Set environment variable for production
 ENV NODE_ENV=production
