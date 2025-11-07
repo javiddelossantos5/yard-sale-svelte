@@ -30,22 +30,15 @@ export default defineConfig(({ mode }) => {
 			host: true, // <-- allow network access
 			allowedHosts: ['yardsalefinders.com', 'main.yardsalefinders.com', 'localhost', '10.1.2.165'], // <-- add your hostnames
 			proxy: {
-				// Keep /api prefix for auth and user endpoints
-				'^/api/(login|register|me|user)': {
+				// Remove /api prefix for ALL endpoints (backend removed /api prefix)
+				'/api': {
 					target: API_BASE_URL,
 					changeOrigin: true,
 					secure: false,
 					ws: true,
-					rewrite: (path) => path // Keep the path as-is (including /api prefix)
+					rewrite: (path) => path.replace(/^\/api/, '') // Remove /api prefix for ALL endpoints
 				},
-				// Remove /api prefix for all other endpoints
-				'^/api/(?!login|register|me|user)': {
-					target: API_BASE_URL,
-					changeOrigin: true,
-					secure: false,
-					rewrite: (path) => path.replace(/^\/api/, '')
-				},
-				// Proxy image upload and proxy endpoints directly
+				// Proxy image upload and proxy endpoints directly (no /api prefix)
 				'^/(upload|images|image-proxy)': {
 					target: API_BASE_URL,
 					changeOrigin: true,
@@ -74,13 +67,13 @@ export default defineConfig(({ mode }) => {
 						});
 					}
 				},
-				// Proxy market-items messaging endpoints directly
+				// Proxy market-items messaging endpoints directly (no /api prefix)
 				'^/market-items/(conversations|.*/messages|messages/.*)': {
 					target: API_BASE_URL,
 					changeOrigin: true,
 					secure: false
 				},
-				// Proxy yard-sales messaging endpoints directly
+				// Proxy yard-sales messaging endpoints directly (no /api prefix)
 				'^/yard-sales/(conversations|.*/messages|messages/.*)': {
 					target: API_BASE_URL,
 					changeOrigin: true,
