@@ -1200,6 +1200,7 @@ export interface MarketItem {
 	quantity?: number | null;
 	is_free?: boolean; // Indicates if the item is free
 	miles?: number | null; // Mileage for automotive items (optional)
+	seller?: string | null; // Optional seller/contact name
 }
 
 export interface MarketItemCreate {
@@ -1222,6 +1223,7 @@ export interface MarketItemCreate {
 	quantity?: number | null;
 	is_free?: boolean; // Indicates if the item is free
 	miles?: number | null; // Mileage for automotive items (optional)
+	seller?: string | null; // Optional seller/contact name
 }
 
 // Paginated response interface

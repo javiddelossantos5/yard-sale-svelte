@@ -261,7 +261,7 @@
 		{/if}
 
 		<!-- Seller Information -->
-		<div class="mb-2">
+		<div class="mb-2 space-y-1.5">
 			<button
 				onclick={(e) => {
 					e.stopPropagation();
@@ -285,6 +285,14 @@
 					</div>
 				{/if}
 			</button>
+			{#if item.seller}
+				<div
+					class="flex items-center rounded-full bg-blue-50/60 px-2.5 py-1.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+				>
+					<FontAwesomeIcon icon={faUser} class="mr-1.5 h-3 w-3" />
+					<span class="font-medium">Seller: {item.seller}</span>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Posted Date -->

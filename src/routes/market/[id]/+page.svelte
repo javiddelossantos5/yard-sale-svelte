@@ -1050,6 +1050,11 @@
 													</div>
 												{/if}
 											</div>
+											{#if item.seller}
+												<div class="mt-1 text-xs text-gray-600 dark:text-gray-400">
+													Seller: <span class="font-medium">{item.seller}</span>
+												</div>
+											{/if}
 											{#if item.created_at}
 												<div class="text-xs text-gray-500 dark:text-gray-400">
 													Posted {getDaysAgo(item.created_at)}
@@ -1141,7 +1146,7 @@
 							{/if}
 
 							<!-- Contact Information Card -->
-							{#if item.contact_phone || item.contact_email}
+							{#if item.seller || item.contact_phone || item.contact_email}
 								<div
 									class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 								>
@@ -1149,6 +1154,14 @@
 										Contact Information
 									</h2>
 									<div class="flex flex-wrap gap-3">
+										{#if item.seller}
+											<div
+												class="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
+											>
+												<FontAwesomeIcon icon={faUser} class="mr-2 h-4 w-4" />
+												{item.seller}
+											</div>
+										{/if}
 										{#if item.contact_phone}
 											<a
 												href={`tel:${item.contact_phone}`}

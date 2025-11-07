@@ -28,7 +28,8 @@
 		condition: '',
 		quantity: null,
 		is_free: false,
-		miles: null
+		miles: null,
+		seller: null
 	});
 
 	let loading = $state(false);
@@ -110,7 +111,9 @@
 				facebook_url: normalizeUrl(formData.facebook_url || ''),
 				accepts_best_offer: formData.accepts_best_offer ?? false,
 				// Only include miles if category is Automotive
-				miles: formData.category === 'Automotive' ? formData.miles : null
+				miles: formData.category === 'Automotive' ? formData.miles : null,
+				// Include seller field
+				seller: formData.seller || null
 			};
 
 			await createMarketItem(payload);
@@ -142,7 +145,9 @@
 			contact_email: '',
 			condition: '',
 			quantity: null,
-			is_free: false
+			is_free: false,
+			miles: null,
+			seller: null
 		};
 	}
 </script>
@@ -224,6 +229,21 @@
 									placeholder="Describe the item..."
 									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								></textarea>
+							</div>
+
+							<div>
+								<label
+									for="seller"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>Seller/Contact Name <span class="font-normal text-gray-400">(Optional)</span></label
+								>
+								<input
+									id="seller"
+									type="text"
+									bind:value={formData.seller}
+									placeholder="Enter seller or contact name"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+								/>
 							</div>
 
 							<div>
