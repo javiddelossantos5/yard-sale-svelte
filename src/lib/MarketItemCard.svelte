@@ -60,13 +60,6 @@
 		}
 	});
 
-	// Debug: Log when component mounts
-	$effect(() => {
-		if (typeof window !== 'undefined' && item) {
-			console.log('[MarketItemCard] Component mounted for item:', item.id, item.name);
-		}
-	});
-
 	function nextCardImage(e: Event) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -126,7 +119,6 @@
 	function openItem(e?: Event) {
 		// Prevent double navigation
 		if (hasNavigated) {
-			console.error('[MarketItemCard] Navigation already in progress, ignoring');
 			return;
 		}
 
@@ -138,36 +130,9 @@
 		hasNavigated = true;
 		const targetUrl = `/market/${item.id}`;
 
-		// Use console.error for maximum visibility and persistence
-		// Also store in sessionStorage to persist across navigation
-		const logMessage = `[MarketItemCard] openItem CALLED - Item: ${item.id}, URL: ${targetUrl}, Event: ${e ? 'Present' : 'Not present'}`;
-		console.error('[MarketItemCard] ====== openItem CALLED ======');
-		console.error('[MarketItemCard] Opening item:', item.id, 'Target URL:', targetUrl);
-		console.error('[MarketItemCard] Event:', e ? 'Present' : 'Not present');
-
-		// Store in sessionStorage for debugging (will persist even after navigation)
-		if (typeof sessionStorage !== 'undefined') {
-			sessionStorage.setItem(
-				'last_market_card_click',
-				JSON.stringify({
-					itemId: item.id,
-					itemName: item.name,
-					targetUrl,
-					timestamp: new Date().toISOString(),
-					hasEvent: !!e
-				})
-			);
-		}
-
 		// Use hard navigation to avoid SvelteKit routing issues
-		// This ensures the correct route is loaded
-		// Add a small delay to ensure logs are visible before navigation
 		if (typeof window !== 'undefined') {
-			// Use setTimeout to allow logs to appear before navigation (for debugging)
-			// In production, you can remove the setTimeout for instant navigation
-			setTimeout(() => {
-				window.location.href = targetUrl;
-			}, 200); // 200ms delay to allow console logs to be visible before navigation
+			window.location.href = targetUrl;
 		} else {
 			goto(targetUrl);
 		}
@@ -186,29 +151,7 @@
 	role="button"
 	tabindex="0"
 	onclick={(e) => {
-		// Use console.error for maximum visibility
-		console.error('[MarketItemCard] ====== onclick FIRED ======');
-		console.error('[MarketItemCard] Event target:', e.target);
-		console.error('[MarketItemCard] Current target:', e.currentTarget);
-		console.error('[MarketItemCard] Item ID:', item.id);
-		console.error('[MarketItemCard] About to call openItem...');
-
-		// Store click info in sessionStorage
-		if (typeof sessionStorage !== 'undefined') {
-			sessionStorage.setItem(
-				'last_market_card_onclick',
-				JSON.stringify({
-					itemId: item.id,
-					timestamp: new Date().toISOString()
-				})
-			);
-		}
-
 		openItem(e);
-		console.error('[MarketItemCard] openItem call completed');
-	}}
-	onmousedown={(e) => {
-		console.log('[MarketItemCard] onmousedown fired');
 	}}
 	onkeydown={handleKeydown}
 	class="group cursor-pointer overflow-hidden rounded-3xl bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.6),0_20px_40px_rgba(0,0,0,0.06)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:shadow-[0_1px_0_rgba(255,255,255,0.7),0_30px_60px_rgba(0,0,0,0.1)] focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-blue-500/70 active:scale-[0.99] dark:bg-gray-800/80 dark:ring-gray-700"

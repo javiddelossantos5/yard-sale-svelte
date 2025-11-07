@@ -11,6 +11,8 @@
 		type Message
 	} from './api';
 	import { addMessageNotification } from './notifications';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 
 	let {
 		isOpen,
@@ -447,6 +449,20 @@
 															? 'bg-blue-600 text-white'
 															: 'bg-gray-100 text-gray-900'}"
 													>
+														{#if message.sender_id !== currentUserId && message.sender_is_admin}
+															<div class="mb-1 flex items-center gap-1.5">
+																<span class="text-xs font-medium text-gray-600">
+																	{message.sender_username}
+																</span>
+																<div
+																	class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+																	title="Admin"
+																>
+																	<FontAwesomeIcon icon={faShieldAlt} class="h-2 w-2" />
+																	<span class="hidden sm:inline">Admin</span>
+																</div>
+															</div>
+														{/if}
 														<p class="text-sm">{message.content}</p>
 														<p
 															class="mt-1 text-xs {message.sender_id === currentUserId
@@ -682,6 +698,20 @@
 														? 'bg-blue-600 text-white'
 														: 'bg-gray-100 text-gray-900'}"
 												>
+													{#if message.sender_id !== currentUserId && message.sender_is_admin}
+														<div class="mb-1 flex items-center gap-1.5">
+															<span class="text-xs font-medium text-gray-600">
+																{message.sender_username}
+															</span>
+															<div
+																class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+																title="Admin"
+															>
+																<FontAwesomeIcon icon={faShieldAlt} class="h-2 w-2" />
+																<span class="hidden sm:inline">Admin</span>
+															</div>
+														</div>
+													{/if}
 													<p class="text-sm">{message.content}</p>
 													<p
 														class="mt-1 text-xs {message.sender_id === currentUserId

@@ -11,6 +11,7 @@
 		markMessageAsRead,
 		getConversationMessages,
 		sendConversationMessage,
+		isAdmin,
 		type CurrentUser,
 		type Rating,
 		type Report,
@@ -54,7 +55,8 @@
 
 	let userId = $derived($page.params.id || '');
 	let isOwnProfile = $derived(currentUser?.id === userId);
-	let canRate = $derived(currentUser && !isOwnProfile);
+	// Only admins can rate/review users
+	let canRate = $derived(currentUser && !isOwnProfile && isAdmin(currentUser));
 
 	// Function to sort messages with unread ones at the top
 	function getSortedMessages() {
@@ -185,7 +187,8 @@
 	}
 
 	function handleReportUser() {
-		if (currentUser && !isOwnProfile) {
+		// Only admins can report users
+		if (currentUser && !isOwnProfile && isAdmin(currentUser)) {
 			showReportModal = true;
 		}
 	}
@@ -345,20 +348,9 @@
 							/>
 						</button>
 						<div>
-							<div class="flex items-center gap-2">
-								<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-									{profileUser?.full_name || 'Profile'}
-								</h1>
-								{#if profileUser?.permissions === 'admin' || (profileUser as any)?.is_admin === true}
-									<div
-										class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
-										title="Admin Verified"
-									>
-										<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
-										<span>Admin</span>
-									</div>
-								{/if}
-							</div>
+							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+								{profileUser?.full_name || 'Profile'}
+							</h1>
 							<p class="text-xs text-gray-500 dark:text-gray-400">User profile</p>
 						</div>
 					</div>
@@ -492,20 +484,9 @@
 							/>
 						</button>
 						<div>
-							<div class="flex items-center gap-2">
-								<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-									{profileUser?.full_name || 'Profile'}
-								</h1>
-								{#if profileUser?.permissions === 'admin' || (profileUser as any)?.is_admin === true}
-									<div
-										class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2.5 py-1 text-xs font-bold text-white shadow-sm"
-										title="Admin Verified"
-									>
-										<FontAwesomeIcon icon={faShieldAlt} class="h-3 w-3" />
-										<span>Admin</span>
-									</div>
-								{/if}
-							</div>
+							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+								{profileUser?.full_name || 'Profile'}
+							</h1>
 							<div class="mt-0.5 flex items-center gap-3">
 								<p class="text-sm text-gray-600 dark:text-gray-400">
 									{profileUser?.bio || 'User profile'}
@@ -625,18 +606,7 @@
 										</div>
 									{/if}
 								</div>
-								<div class="flex items-center gap-2 flex-wrap">
-									<p class="text-gray-600 dark:text-gray-300">@{profileUser.username || 'unknown'}</p>
-									{#if profileUser.permissions === 'admin' || (profileUser as any).is_admin === true}
-										<div
-											class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm"
-											title="Admin Verified"
-										>
-											<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
-											<span>Admin</span>
-										</div>
-									{/if}
-								</div>
+								<p class="text-gray-600 dark:text-gray-300">@{profileUser.username || 'unknown'}</p>
 
 								<!-- Trust Metrics -->
 								<div class="mt-3 flex flex-wrap items-center gap-4">
@@ -691,7 +661,7 @@
 								</button>
 							{/if}
 
-							{#if currentUser && !isOwnProfile}
+							{#if currentUser && !isOwnProfile && isAdmin(currentUser)}
 								<button
 									onclick={handleReportUser}
 									class="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"

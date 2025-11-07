@@ -275,7 +275,7 @@
 				>
 					<div class="flex items-center justify-between">
 						<h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
-							Post New Yard Sale
+							New Yard Sale
 						</h3>
 						<button
 							type="button"

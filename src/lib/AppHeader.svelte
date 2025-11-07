@@ -63,6 +63,22 @@
 	}
 
 	const totalUnreadCount = marketMessageUnreadCount + yardSaleMessageUnreadCount;
+
+	// Development mode indicator (only shows in dev, not production)
+	// import.meta.env.DEV is a compile-time constant in Vite
+	// Check both DEV flag and MODE to ensure we catch development mode
+	const isDev = import.meta.env.DEV === true || import.meta.env.MODE === 'development';
+
+	// Debug logging to help diagnose the issue
+	if (typeof window !== 'undefined') {
+		const envCheck = {
+			DEV: import.meta.env.DEV,
+			MODE: import.meta.env.MODE,
+			PROD: import.meta.env.PROD,
+			computedIsDev: import.meta.env.DEV === true || import.meta.env.MODE === 'development'
+		};
+		console.log('[AppHeader] Environment check:', envCheck);
+	}
 </script>
 
 <header
@@ -115,16 +131,30 @@
 
 				<!-- Right side: Menu button and Primary Action -->
 				<div class="flex items-center gap-2">
+					{#if isDev}
+						<div
+							class="flex items-center gap-1.5 rounded-full bg-yellow-500/90 px-2.5 py-1 text-xs font-bold text-white shadow-md backdrop-blur-sm"
+							title="Development Mode"
+						>
+							<span class="relative flex h-2 w-2">
+								<span
+									class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"
+								></span>
+								<span class="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
+							</span>
+							<span class="xs:inline hidden">DEV</span>
+						</div>
+					{/if}
 					{#if primaryAction}
 						<button
 							onclick={primaryAction}
-							class="flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-500/30 active:scale-95"
+							class="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 active:scale-95"
 						>
 							{#if primaryActionIcon}
 								<FontAwesomeIcon icon={primaryActionIcon} class="h-4 w-4" />
 							{/if}
 							{#if primaryActionLabel}
-								<span class="xs:inline ml-1.5 hidden">{primaryActionLabel}</span>
+								<span class="xs:inline hidden">{primaryActionLabel}</span>
 							{/if}
 						</button>
 					{/if}
@@ -250,18 +280,35 @@
 
 				<!-- Right: Actions -->
 				<div class="flex items-center gap-3">
+					{#if isDev}
+						<div
+							class="flex items-center gap-2 rounded-full bg-yellow-500/90 px-3 py-1.5 text-xs font-bold text-white shadow-md backdrop-blur-sm"
+							title="Development Mode"
+						>
+							<span class="relative flex h-2 w-2">
+								<span
+									class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"
+								></span>
+								<span class="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
+							</span>
+							<span>DEV</span>
+						</div>
+					{/if}
 					<!-- Secondary Actions -->
 					<div class="flex items-center gap-2">
 						{#each mobileMenuItems as item}
 							<button
 								onclick={item.action}
-								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+								class="group relative flex items-center gap-2 rounded-xl bg-gray-100/80 px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
 							>
-								<FontAwesomeIcon icon={item.icon} class="mr-2 h-4 w-4" />
-								{item.label}
+								<FontAwesomeIcon
+									icon={item.icon}
+									class="h-4 w-4 text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+								/>
+								<span class="whitespace-nowrap">{item.label}</span>
 								{#if item.badge && item.badge > 0}
 									<span
-										class="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white"
+										class="ml-1 flex items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm ring-1 ring-red-600/20"
 									>
 										{item.badge > 99 ? '99+' : item.badge}
 									</span>
@@ -271,13 +318,13 @@
 						{#if currentUser}
 							<button
 								onclick={goToProfile}
-								class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
+								class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100/80 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
 								aria-label="My Profile"
 							>
-								<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-700 dark:text-gray-200" />
+								<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-600 dark:text-gray-400" />
 								{#if $unreadMessageCount > 0}
 									<span
-										class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-semibold text-white dark:border-gray-900"
+										class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white shadow-lg ring-1 ring-red-600/20 dark:border-gray-900"
 									>
 										{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
 									</span>
@@ -286,7 +333,7 @@
 						{/if}
 						<button
 							onclick={handleLogout}
-							class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+							class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100/80 text-gray-600 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:text-gray-400 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
 							aria-label="Logout"
 						>
 							<FontAwesomeIcon icon={faArrowRightFromBracket} class="h-5 w-5" />
@@ -297,13 +344,16 @@
 					{#if primaryAction}
 						<button
 							onclick={primaryAction}
-							class="flex items-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-500/30 active:scale-95"
+							class="group flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-lg ring-1 shadow-blue-500/25 ring-blue-500/20 transition-all duration-200 ring-inset hover:from-blue-700 hover:via-blue-700 hover:to-blue-800 hover:shadow-xl hover:shadow-blue-500/40 hover:ring-blue-400/30 active:scale-[0.98]"
 						>
 							{#if primaryActionIcon}
-								<FontAwesomeIcon icon={primaryActionIcon} class="mr-2 h-4 w-4" />
+								<FontAwesomeIcon
+									icon={primaryActionIcon}
+									class="h-4 w-4 transition-transform group-hover:scale-110"
+								/>
 							{/if}
 							{#if primaryActionLabel}
-								{primaryActionLabel}
+								<span class="whitespace-nowrap">{primaryActionLabel}</span>
 							{/if}
 						</button>
 					{/if}

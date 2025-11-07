@@ -14,21 +14,20 @@
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
-		faChevronLeft,
 		faEnvelope,
 		faMessage,
 		faStore,
 		faArrowRight,
-		faBars,
 		faHome,
 		faHeart,
 		faUser,
-		faArrowRightFromBracket
+		faShieldAlt
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
+	import AppHeader from '$lib/AppHeader.svelte';
+	import { isAdmin } from '$lib/api';
 
-	let mobileMenuOpen = $state(false);
 	let yardSaleConversations = $state<YardSaleConversation[]>([]);
 	let marketItemConversations = $state<MarketItemConversation[]>([]);
 	let loading = $state(true);
@@ -169,235 +168,72 @@
 	function handleLogout() {
 		logout(); // logout() now handles redirect automatically
 	}
+
+	// Build mobile menu items
+	let mobileMenuItems = $derived.by(() => {
+		const items: Array<{
+			label: string;
+			icon: any;
+			action: () => void;
+			badge?: number;
+		}> = [];
+		items.push({
+			label: 'Home',
+			icon: faHome,
+			action: () => {
+				void goto('/');
+			}
+		});
+		items.push({
+			label: 'Marketplace',
+			icon: faStore,
+			action: () => {
+				void goto('/market');
+			}
+		});
+		if (currentUser && isAdmin(currentUser)) {
+			items.push({
+				label: 'Admin',
+				icon: faShieldAlt,
+				action: () => {
+					void goto('/admin');
+				}
+			});
+		}
+		if (currentUser) {
+			items.push({
+				label: 'Watched Items',
+				icon: faHeart,
+				action: () => {
+					void goto('/market/watched');
+				}
+			});
+			items.push({
+				label: 'My Profile',
+				icon: faUser,
+				action: () => {
+					goToProfile();
+				}
+			});
+		}
+		return items;
+	});
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-	<!-- Header -->
-	<header
-		class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-900/80"
-	>
-		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<!-- Mobile Layout -->
-			<div class="block sm:hidden">
-				<div class="flex h-16 items-center justify-between">
-					<!-- Logo and Title -->
-					<div class="flex items-center space-x-3">
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-full p-1.5 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-							aria-label="Back"
-						>
-							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
-						</button>
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-lg transition-opacity hover:opacity-80 active:scale-95"
-							aria-label="Go to home"
-						>
-							<img
-								src="/icon2.png"
-								alt="Yard Sale Finder Logo"
-								class="h-8 w-8 rounded-lg object-cover"
-							/>
-						</button>
-						<div>
-							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">Messages</h1>
-							{#if totalUnreadCount > 0}
-								<p class="text-xs text-gray-500 dark:text-gray-400">
-									{totalUnreadCount}
-									{totalUnreadCount === 1 ? 'unread' : 'unread'}
-								</p>
-							{:else}
-								<p class="text-xs text-gray-500 dark:text-gray-400">All conversations</p>
-							{/if}
-						</div>
-					</div>
-
-					<!-- Right side: Menu button -->
-					<div class="flex items-center gap-2">
-						<button
-							onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
-							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
-							aria-label="Menu"
-						>
-							<FontAwesomeIcon icon={faBars} class="h-5 w-5 text-gray-700 dark:text-gray-300" />
-						</button>
-					</div>
-				</div>
-
-				<!-- Mobile Menu Dropdown -->
-				{#if mobileMenuOpen}
-					<div class="border-t border-gray-200 pt-4 pb-4 dark:border-gray-800">
-						<div class="space-y-1">
-							<button
-								onclick={() => {
-									goto('/');
-									mobileMenuOpen = false;
-								}}
-								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-							>
-								<FontAwesomeIcon
-									icon={faHome}
-									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-								/>
-								Home
-							</button>
-							<button
-								onclick={() => {
-									goto('/market');
-									mobileMenuOpen = false;
-								}}
-								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-							>
-								<FontAwesomeIcon
-									icon={faStore}
-									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-								/>
-								Marketplace
-							</button>
-							{#if currentUser}
-								<button
-									onclick={() => {
-										goto('/market/watched');
-										mobileMenuOpen = false;
-									}}
-									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-								>
-									<FontAwesomeIcon
-										icon={faHeart}
-										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-									/>
-									Watched Items
-								</button>
-								<button
-									onclick={() => {
-										goToProfile();
-										mobileMenuOpen = false;
-									}}
-									class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-								>
-									<FontAwesomeIcon
-										icon={faUser}
-										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-									/>
-									My Profile
-									{#if $unreadMessageCount > 0}
-										<span
-											class="ml-auto rounded-full bg-red-500 px-2.5 py-0.5 text-sm font-semibold text-white"
-										>
-											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
-										</span>
-									{/if}
-								</button>
-							{/if}
-							<button
-								onclick={() => {
-									handleLogout();
-									mobileMenuOpen = false;
-								}}
-								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-							>
-								<FontAwesomeIcon icon={faArrowRightFromBracket} class="mr-3 h-5 w-5" />
-								Logout
-							</button>
-						</div>
-					</div>
-				{/if}
-			</div>
-
-			<!-- Desktop Layout -->
-			<div class="hidden sm:block">
-				<div class="flex h-20 items-center justify-between">
-					<!-- Left: Logo and Title -->
-					<div class="flex items-center space-x-4">
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-							aria-label="Back"
-						>
-							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
-						</button>
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-xl transition-opacity hover:opacity-80 active:scale-95"
-							aria-label="Go to home"
-						>
-							<img
-								src="/icon2.png"
-								alt="Yard Sale Finder Logo"
-								class="h-12 w-12 rounded-xl object-cover shadow-sm"
-							/>
-						</button>
-						<div>
-							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">Messages</h1>
-							<div class="mt-0.5 flex items-center gap-3">
-								<p class="text-sm text-gray-600 dark:text-gray-400">
-									All conversations from yard sales and marketplace
-								</p>
-								{#if totalUnreadCount > 0}
-									<span class="text-xs text-gray-500 dark:text-gray-500">
-										• {totalUnreadCount}
-										{totalUnreadCount === 1 ? 'unread' : 'unread'}
-									</span>
-								{/if}
-							</div>
-						</div>
-					</div>
-
-					<!-- Right: Actions -->
-					<div class="flex items-center gap-3">
-						<!-- Secondary Actions -->
-						<div class="flex items-center gap-2">
-							<button
-								onclick={() => goto('/')}
-								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-							>
-								<FontAwesomeIcon icon={faHome} class="mr-2 h-4 w-4" />
-								Home
-							</button>
-							<button
-								onclick={() => goto('/market')}
-								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-							>
-								<FontAwesomeIcon icon={faStore} class="mr-2 h-4 w-4" />
-								Marketplace
-							</button>
-							{#if currentUser}
-								<button
-									onclick={() => goto('/market/watched')}
-									class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-								>
-									<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
-									Watched
-								</button>
-								<button
-									onclick={goToProfile}
-									class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
-									aria-label="My Profile"
-								>
-									<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-700 dark:text-gray-200" />
-									{#if $unreadMessageCount > 0}
-										<span
-											class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-semibold text-white dark:border-gray-900"
-										>
-											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
-										</span>
-									{/if}
-								</button>
-							{/if}
-							<button
-								onclick={handleLogout}
-								class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-								aria-label="Logout"
-							>
-								<FontAwesomeIcon icon={faArrowRightFromBracket} class="h-5 w-5" />
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</header>
+	<AppHeader
+		title="Messages"
+		subtitle={totalUnreadCount > 0
+			? `${totalUnreadCount} ${totalUnreadCount === 1 ? 'unread' : 'unread'}`
+			: 'All conversations from yard sales and marketplace'}
+		showBackButton={true}
+		backUrl="/"
+		backLabel="Back"
+		{currentUser}
+		marketMessageUnreadCount={marketItemUnreadCount}
+		yardSaleMessageUnreadCount={yardSaleUnreadCount}
+		{mobileMenuItems}
+	/>
 
 	<!-- Tabs -->
 	<div class="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">

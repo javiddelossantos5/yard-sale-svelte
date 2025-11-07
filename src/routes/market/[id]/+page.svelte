@@ -2,51 +2,6 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 
-	// Debug: Log when component is created - this should ALWAYS fire for market item detail pages
-	// Also verify we're on the correct route
-	if (typeof window !== 'undefined') {
-		const currentPath = window.location.pathname;
-		const isMarketItemRoute =
-			currentPath.startsWith('/market/') &&
-			currentPath !== '/market' &&
-			!currentPath.startsWith('/market/messages') &&
-			!currentPath.startsWith('/market/watched');
-
-		console.log('[MarketItemDetail] ====== COMPONENT CREATED ======');
-		console.log('[MarketItemDetail] Current path:', currentPath);
-		console.log('[MarketItemDetail] Is market item route?', isMarketItemRoute);
-		console.log('[MarketItemDetail] Route params:', $page.params);
-		console.log('[MarketItemDetail] Component file: src/routes/market/[id]/+page.svelte');
-
-		// Check sessionStorage for click/touch logs from MarketItemCard
-		if (typeof sessionStorage !== 'undefined') {
-			const lastClick = sessionStorage.getItem('last_market_card_click');
-			const lastOnclick = sessionStorage.getItem('last_market_card_onclick');
-			const lastTouch = sessionStorage.getItem('last_market_card_touch');
-
-			console.log('[MarketItemDetail] ====== CLICK DEBUG INFO ======');
-			console.log(
-				'[MarketItemDetail] Last market card click:',
-				lastClick ? JSON.parse(lastClick) : 'None'
-			);
-			console.log(
-				'[MarketItemDetail] Last market card onclick:',
-				lastOnclick ? JSON.parse(lastOnclick) : 'None'
-			);
-			console.log(
-				'[MarketItemDetail] Last market card touch:',
-				lastTouch ? JSON.parse(lastTouch) : 'None'
-			);
-		}
-
-		// If we're not on a market item route, something is very wrong
-		if (!isMarketItemRoute) {
-			console.error(
-				'[MarketItemDetail] ERROR: This component is loading on the wrong route!',
-				currentPath
-			);
-		}
-	}
 	import {
 		getMarketItemById,
 		getMarketItemComments,
@@ -197,14 +152,9 @@
 	async function load() {
 		loading = true;
 		error = null;
+
 		try {
 			const id = $page.params.id || '';
-			console.log(
-				'[MarketItemDetail] Loading item with ID:',
-				id,
-				'Current URL:',
-				typeof window !== 'undefined' ? window.location.pathname : 'SSR'
-			);
 
 			if (!id) {
 				error = 'Invalid item ID';
@@ -212,30 +162,47 @@
 				return;
 			}
 
-			const [user, loadedItem] = await Promise.all([
-				getCurrentUser().catch(() => null),
-				getMarketItemById(id)
-			]);
-			currentUser = user;
-			item = loadedItem;
-
-			console.log('[MarketItemDetail] Loaded item:', item ? item.name : 'null');
-
-			if (item?.is_watched !== undefined && item?.is_watched !== null) {
-				isWatched = item.is_watched === true;
+			// Load user first (non-critical, can fail silently)
+			try {
+				currentUser = await getCurrentUser();
+			} catch (err) {
+				currentUser = null;
 			}
 
-			// Load comments
-			if (id) {
-				comments = await getMarketItemComments(id);
+			// Load the market item (critical - must succeed)
+			try {
+				item = await getMarketItemById(id);
+
+				if (item?.is_watched !== undefined && item?.is_watched !== null) {
+					isWatched = item.is_watched === true;
+				}
+			} catch (err: any) {
+				error = err?.message || 'Failed to load market item';
+				item = null;
+				loading = false;
+				return; // Don't continue if we can't load the item
+			}
+
+			// Load comments (non-critical, can fail)
+			if (id && item) {
+				try {
+					comments = await getMarketItemComments(id);
+				} catch (err) {
+					comments = []; // Set to empty array if comments fail to load
+				}
 			}
 
 			// Check for existing conversation if user is logged in and not the owner
-			if (user && item && user.id !== item.owner_id) {
-				await checkExistingConversation(id);
+			if (currentUser && item && currentUser.id !== item.owner_id) {
+				try {
+					await checkExistingConversation(id);
+				} catch (err) {
+					// Don't throw - this is not critical
+				}
 			}
 		} catch (e: any) {
 			error = e?.message || 'Failed to load item';
+			item = null;
 		} finally {
 			loading = false;
 		}
@@ -266,10 +233,17 @@
 	const itemId = $derived($page.params.id || '');
 
 	$effect(() => {
-		// Only load if we have an ID
+		// Only load if we have an ID and we're on the client side
+		if (typeof window === 'undefined') return;
+
 		if (itemId) {
-			console.log('[MarketItemDetail] Effect triggered, itemId:', itemId);
-			load();
+			load().catch((err) => {
+				error = err?.message || 'Failed to load item';
+				loading = false;
+			});
+		} else {
+			error = 'No item ID provided';
+			loading = false;
 		}
 	});
 
@@ -524,8 +498,10 @@
 		};
 	});
 
-	const isOwner = $derived(currentUser && item && currentUser.id === item.owner_id);
-	const canEdit = $derived(isOwner || (currentUser && isAdmin(currentUser)));
+	const isOwner = $derived(
+		!!(currentUser && item && currentUser.id && item.owner_id && currentUser.id === item.owner_id)
+	);
+	const canEdit = $derived(isOwner || (currentUser !== null && isAdmin(currentUser)));
 
 	function viewConversation() {
 		if (existingConversation) {
@@ -556,7 +532,7 @@
 </svelte:head>
 
 <!-- DEBUG: Market Item Detail Page - Route: /market/[id] -->
-{#if typeof window === 'undefined' || (window.location.pathname.startsWith('/market/') && !window.location.pathname.startsWith('/market/messages') && !window.location.pathname.startsWith('/market/watched') && window.location.pathname !== '/market')}
+{#if typeof window === 'undefined' || (typeof window !== 'undefined' && window.location.pathname.startsWith('/market/') && !window.location.pathname.startsWith('/market/messages') && !window.location.pathname.startsWith('/market/watched') && window.location.pathname !== '/market')}
 	<div
 		class="min-h-screen bg-gray-50 dark:bg-gray-900"
 		style="min-height: 100vh;"
@@ -565,7 +541,19 @@
 		{#if loading}
 			<div class="px-4 py-6 text-gray-600 dark:text-gray-300">Loading item...</div>
 		{:else if error}
-			<div class="px-4 py-6 text-red-600">{error}</div>
+			<div class="px-4 py-6 text-red-600">
+				<p class="font-semibold">Error loading item</p>
+				<p class="text-sm">{error}</p>
+				<button
+					onclick={() => {
+						error = null;
+						load();
+					}}
+					class="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+				>
+					Retry
+				</button>
+			</div>
 		{:else if item}
 			<!-- Header -->
 			<header
@@ -1472,11 +1460,22 @@
 													</div>
 												</div>
 												<div class="min-w-0 flex-1">
-													<div class="flex items-center space-x-2">
+													<div class="flex flex-wrap items-center gap-2 sm:gap-1">
 														<p class="text-sm font-medium text-gray-900 dark:text-white">
 															{comment.username ?? 'Anonymous'}
 														</p>
-														<span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+														{#if comment.user_is_admin}
+															<div
+																class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+																title="Admin"
+															>
+																<FontAwesomeIcon icon={faShieldAlt} class="h-2 w-2" />
+																<span class="hidden sm:inline">Admin</span>
+															</div>
+														{/if}
+														<span class="hidden text-sm text-gray-500 sm:inline dark:text-gray-400"
+															>•</span
+														>
 														<time
 															class="text-sm text-gray-500 dark:text-gray-400"
 															datetime={comment.created_at}
@@ -1597,7 +1596,13 @@
 				</button>
 
 				<!-- Image Container -->
-				<div class="relative max-h-full max-w-full" onclick={(e) => e.stopPropagation()}>
+				<div
+					class="relative max-h-full max-w-full"
+					onclick={(e) => e.stopPropagation()}
+					onkeydown={(e) => e.stopPropagation()}
+					role="presentation"
+					aria-hidden="true"
+				>
 					<img
 						src={getAuthenticatedImageUrl(displayPhotos[viewerImageIndex])}
 						alt="{item.name} - Image {viewerImageIndex + 1}"

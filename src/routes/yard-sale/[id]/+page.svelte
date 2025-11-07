@@ -1777,11 +1777,22 @@
 												</div>
 											</div>
 											<div class="min-w-0 flex-1">
-												<div class="flex items-center space-x-2">
+												<div class="flex flex-wrap items-center gap-2 sm:gap-1">
 													<p class="text-sm font-medium text-gray-900 dark:text-white">
 														{comment.username}
 													</p>
-													<span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+													{#if comment.user_is_admin}
+														<div
+															class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+															title="Admin"
+														>
+															<FontAwesomeIcon icon={faShieldAlt} class="h-2 w-2" />
+															<span class="hidden sm:inline">Admin</span>
+														</div>
+													{/if}
+													<span class="hidden text-sm text-gray-500 sm:inline dark:text-gray-400"
+														>•</span
+													>
 													<time
 														class="text-sm text-gray-500 dark:text-gray-400"
 														datetime={comment.created_at}
@@ -1853,9 +1864,15 @@
 		<div
 			class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
 			onclick={closeImageViewer}
+			onkeydown={(e) => {
+				if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+					closeImageViewer();
+				}
+			}}
 			role="dialog"
 			aria-modal="true"
 			aria-label="Image viewer"
+			tabindex="0"
 		>
 			<!-- Close Button -->
 			<button
@@ -1874,7 +1891,13 @@
 			</button>
 
 			<!-- Image Container -->
-			<div class="relative max-h-full max-w-full" onclick={(e) => e.stopPropagation()}>
+			<div
+				class="relative max-h-full max-w-full"
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+				role="presentation"
+				aria-hidden="true"
+			>
 				<img
 					src={getAuthenticatedImageUrl(displayPhotos[viewerImageIndex])}
 					alt="{yardSale.title} - Image {viewerImageIndex + 1}"

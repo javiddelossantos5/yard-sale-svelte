@@ -110,6 +110,7 @@ export interface Comment {
 	user_id: string;
 	username: string;
 	yard_sale_id: string;
+	user_is_admin?: boolean; // Indicates if the commenter has admin permissions
 }
 
 export async function getComments(yardSaleId: string): Promise<Comment[]> {
@@ -143,6 +144,7 @@ export interface Message {
 	conversation_id?: string; // For conversation-based messages
 	sender_id: string;
 	sender_username: string;
+	sender_is_admin?: boolean; // Indicates if the sender has admin permissions
 	recipient_id: string;
 	recipient_username: string;
 }
@@ -1265,38 +1267,52 @@ export async function getMarketItems(
 	if (params.sort_order) query.set('sort_order', params.sort_order);
 	const token = localStorage.getItem('access_token');
 	const url = `/api/market-items${query.toString() ? `?${query}` : ''}`;
-	// Debug logging for filter parameters
-	if (import.meta.env.DEV && (params.is_free === true || params.owner_is_admin === true)) {
-		console.log('[getMarketItems] Filter params:', {
-			is_free: params.is_free,
-			owner_is_admin: params.owner_is_admin,
-			url: url
-		});
-	}
 	const res = await fetch(url, {
 		headers: token ? { Authorization: `Bearer ${token}` } : undefined
 	});
 	if (!res.ok) {
-		// Log error details for debugging
-		const errorText = await res.text();
-		console.error('[getMarketItems] Request failed:', {
-			status: res.status,
-			statusText: res.statusText,
-			url: url,
-			error: errorText
-		});
 		throw new Error(`Failed to fetch market items: ${res.status} ${res.statusText}`);
 	}
 	return res.json();
 }
 
 export async function getMarketItemById(id: string): Promise<MarketItem> {
+	if (!id || typeof id !== 'string' || id.trim() === '') {
+		throw new Error('Invalid market item ID');
+	}
+
 	const token = localStorage.getItem('access_token');
-	const res = await fetch(`/api/market-items/${id}`, {
-		headers: token ? { Authorization: `Bearer ${token}` } : undefined
-	});
-	if (!res.ok) throw new Error('Failed to fetch market item');
-	return res.json();
+	const url = `/api/market-items/${id}`;
+
+	try {
+		const res = await fetch(url, {
+			headers: token ? { Authorization: `Bearer ${token}` } : undefined
+		});
+
+		if (!res.ok) {
+			let errorData: any = {};
+			try {
+				const text = await res.text();
+				errorData = text ? JSON.parse(text) : {};
+			} catch {
+				// If JSON parsing fails, use empty object
+			}
+
+			const errorMessage =
+				errorData.detail ||
+				errorData.message ||
+				`Failed to fetch market item: ${res.status} ${res.statusText}`;
+			throw new Error(errorMessage);
+		}
+
+		const data = await res.json();
+		return data;
+	} catch (error: any) {
+		if (error instanceof Error) {
+			throw error;
+		}
+		throw new Error(`Failed to fetch market item: ${error?.message || 'Unknown error'}`);
+	}
 }
 
 export async function createMarketItem(data: MarketItemCreate): Promise<MarketItem> {
@@ -1360,6 +1376,7 @@ export interface MarketItemComment {
 	item_id: string;
 	user_id: string;
 	username?: string;
+	user_is_admin?: boolean; // Indicates if the commenter has admin permissions
 }
 
 export async function getMarketItemComments(itemId: string): Promise<MarketItemComment[]> {
@@ -1572,6 +1589,7 @@ export interface MarketItemMessage {
 	sender_id: string;
 	recipient_id: string;
 	sender_username?: string;
+	sender_is_admin?: boolean; // Indicates if the sender has admin permissions
 	recipient_username?: string;
 }
 

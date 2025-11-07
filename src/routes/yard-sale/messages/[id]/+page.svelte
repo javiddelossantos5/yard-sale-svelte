@@ -16,7 +16,8 @@
 		faChevronLeft,
 		faPaperPlane,
 		faUser,
-		faArrowRight
+		faArrowRight,
+		faShieldAlt
 	} from '@fortawesome/free-solid-svg-icons';
 
 	const conversationId = $derived($page.params.id);
@@ -255,9 +256,20 @@
 									? 'bg-blue-600 text-white'
 									: 'bg-white text-gray-900 ring-1 ring-gray-200 dark:bg-gray-800 dark:text-white dark:ring-gray-700'}"
 							>
-								<p class="text-sm font-semibold">
-									{message.sender_username || 'Unknown'}
-								</p>
+								<div class="flex flex-wrap items-center gap-2">
+									<p class="text-sm font-semibold">
+										{message.sender_username || 'Unknown'}
+									</p>
+									{#if message.sender_is_admin}
+										<div
+											class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+											title="Admin"
+										>
+											<FontAwesomeIcon icon={faShieldAlt} class="h-2 w-2" />
+											<span class="hidden sm:inline">Admin</span>
+										</div>
+									{/if}
+								</div>
 								<p class="mt-1.5 text-[15px] leading-relaxed">{message.content}</p>
 								<p
 									class="mt-2 text-xs {isMyMessage(message)
