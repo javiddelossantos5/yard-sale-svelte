@@ -37,8 +37,26 @@ if [ ! -f "Dockerfile" ]; then
     exit 1
 fi
 
-# Step 1: Build the Docker image
-echo -e "${BLUE}[1/5] Building Docker image...${NC}"
+# Step 1: Pull latest code from git
+echo -e "${BLUE}[1/6] Pulling latest code from git...${NC}"
+if command -v git &> /dev/null; then
+    if [ -d ".git" ]; then
+        git pull origin main
+        if [ $? -eq 0 ]; then
+            echo -e "${GREEN}✓ Code updated successfully${NC}"
+        else
+            echo -e "${YELLOW}⚠ Git pull had issues, continuing anyway...${NC}"
+        fi
+    else
+        echo -e "${YELLOW}Not a git repository, skipping git pull${NC}"
+    fi
+else
+    echo -e "${YELLOW}Git not installed, skipping git pull${NC}"
+fi
+echo ""
+
+# Step 2: Build the Docker image
+echo -e "${BLUE}[2/6] Building Docker image...${NC}"
 if docker build -t ${IMAGE_NAME}:prod .; then
     echo -e "${GREEN}✓ Image built successfully${NC}"
 else
@@ -47,8 +65,8 @@ else
 fi
 echo ""
 
-# Step 2: Stop and remove old container
-echo -e "${BLUE}[2/5] Stopping old container (if exists)...${NC}"
+# Step 3: Stop and remove old container
+echo -e "${BLUE}[3/6] Stopping old container (if exists)...${NC}"
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     docker stop ${CONTAINER_NAME} 2>/dev/null || true
     docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
@@ -58,8 +76,8 @@ else
 fi
 echo ""
 
-# Step 3: Create network if it doesn't exist
-echo -e "${BLUE}[3/5] Checking Docker network...${NC}"
+# Step 4: Create network if it doesn't exist
+echo -e "${BLUE}[4/6] Checking Docker network...${NC}"
 if ! docker network ls --format '{{.Name}}' | grep -q "^${NETWORK_NAME}$"; then
     docker network create ${NETWORK_NAME} 2>/dev/null || true
     echo -e "${GREEN}✓ Network '${NETWORK_NAME}' created${NC}"
@@ -68,8 +86,8 @@ else
 fi
 echo ""
 
-# Step 4: Start new container
-echo -e "${BLUE}[4/5] Starting new container...${NC}"
+# Step 5: Start new container
+echo -e "${BLUE}[5/6] Starting new container...${NC}"
 if docker run -d \
     --name ${CONTAINER_NAME} \
     -p ${PORT}:3000 \
@@ -84,8 +102,8 @@ else
 fi
 echo ""
 
-# Step 5: Verify container is running
-echo -e "${BLUE}[5/5] Verifying container...${NC}"
+# Step 6: Verify container is running
+echo -e "${BLUE}[6/6] Verifying container...${NC}"
 sleep 2
 if docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
     echo -e "${GREEN}✓ Container is running${NC}"
