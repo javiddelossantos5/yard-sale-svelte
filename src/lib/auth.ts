@@ -56,17 +56,12 @@ export function setupAuthFetch(): void {
 			const url = typeof input === 'string' ? input : input.toString();
 
 			// Don't add auth headers for login/register endpoints (they don't need tokens)
-			if (url.includes('/login') || url.includes('/register')) {
+			if (url.includes('/api/login') || url.includes('/api/register')) {
 				return originalFetch(input, init);
 			}
 
-			// Handle endpoints that need auth (both /api/* and new non-/api endpoints)
-			if (
-				url.startsWith('/api') ||
-				url.startsWith('/me') ||
-				url.startsWith('/user/') ||
-				url.startsWith('/users/')
-			) {
+			// Handle endpoints that need auth (all /api/* endpoints)
+			if (url.startsWith('/api')) {
 				const token = getAccessToken();
 				if (token) {
 					const headers = new Headers(init?.headers || {});
@@ -75,9 +70,9 @@ export function setupAuthFetch(): void {
 					}
 					const response = await originalFetch(input, { ...init, headers });
 
-					// Only handle token expiration for /me endpoint (the definitive auth check)
+					// Only handle token expiration for /api/me endpoint (the definitive auth check)
 					// Other endpoints handle their own errors and don't necessarily mean token is expired
-					if (isTokenExpired(response) && url.includes('/me') && !isHandlingTokenExpiration) {
+					if (isTokenExpired(response) && url.includes('/api/me') && !isHandlingTokenExpiration) {
 						const currentPath = window.location.pathname;
 						if (currentPath !== '/login') {
 							handleTokenExpiration();
@@ -99,7 +94,7 @@ export function setupAuthFetch(): void {
 }
 
 async function tryRegister(username: string, email: string, password: string): Promise<void> {
-	const res = await fetch('/register', {
+	const res = await fetch('/api/register', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ username, email, password })
@@ -112,7 +107,7 @@ async function tryRegister(username: string, email: string, password: string): P
 }
 
 async function login(username: string, password: string): Promise<LoginResponse> {
-	const res = await fetch('/login', {
+	const res = await fetch('/api/login', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ username, password })
