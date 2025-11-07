@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 IMAGE_NAME="svelte-yard-sale"
 CONTAINER_NAME="svelte-prod"
 PORT="3000"
-API_BASE_URL="http://10.1.2.165:5173"
+API_BASE_URL="http://10.1.2.165:8000"
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Frontend Docker Deployment${NC}"
