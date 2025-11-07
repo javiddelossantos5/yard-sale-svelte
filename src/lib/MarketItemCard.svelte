@@ -230,9 +230,17 @@
 						? 'bg-red-600/90 text-white'
 						: item.status === 'hidden'
 							? 'bg-gray-600/90 text-white'
-							: 'bg-green-600/90 text-white'}"
+							: item.status === 'pending'
+								? 'bg-yellow-600/90 text-white'
+								: 'bg-green-600/90 text-white'}"
 				>
-					{item.status === 'sold' ? 'Sold' : item.status === 'hidden' ? 'Hidden' : 'Available'}
+					{item.status === 'sold'
+						? 'Sold'
+						: item.status === 'hidden'
+							? 'Hidden'
+							: item.status === 'pending'
+								? 'Pending'
+								: 'Available'}
 				</div>
 			{/if}
 		</div>

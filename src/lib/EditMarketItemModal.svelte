@@ -33,7 +33,8 @@
 		contact_email: '',
 		condition: '',
 		quantity: null,
-		is_free: false
+		is_free: false,
+		miles: null
 	});
 
 	let loading = $state(false);
@@ -92,7 +93,8 @@
 				contact_email: item.contact_email || '',
 				condition: item.condition || '',
 				quantity: item.quantity ?? null,
-				is_free: item.is_free ?? false
+				is_free: item.is_free ?? false,
+				miles: item.miles ?? null
 			};
 		}
 	});
@@ -101,6 +103,13 @@
 	$effect(() => {
 		if (formData.is_free) {
 			formData.price = 0;
+		}
+	});
+
+	// Clear miles when category changes from Automotive to something else
+	$effect(() => {
+		if (formData.category !== 'Automotive' && formData.miles !== null) {
+			formData.miles = null;
 		}
 	});
 
@@ -129,7 +138,9 @@
 				featured_image: photos[0] || formData.featured_image || '',
 				venmo_url: normalizeUrl(formData.venmo_url || ''),
 				facebook_url: normalizeUrl(formData.facebook_url || ''),
-				accepts_best_offer: formData.accepts_best_offer ?? false
+				accepts_best_offer: formData.accepts_best_offer ?? false,
+				// Only include miles if category is Automotive
+				miles: formData.category === 'Automotive' ? formData.miles : null
 			};
 
 			await updateMarketItem(item.id, payload);
@@ -284,6 +295,25 @@
 								</select>
 							</div>
 
+							{#if formData.category === 'Automotive'}
+								<div>
+									<label
+										for="edit-miles"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>Mileage <span class="text-gray-400 font-normal">(Optional)</span></label
+									>
+									<input
+										id="edit-miles"
+										type="number"
+										min="0"
+										step="1"
+										bind:value={formData.miles}
+										placeholder="Enter mileage"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
+							{/if}
+
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<div>
 									<label
@@ -332,6 +362,7 @@
 									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								>
 									<option value="active">Active</option>
+									<option value="pending">Pending</option>
 									<option value="sold">Sold</option>
 									<option value="hidden">Hidden</option>
 								</select>

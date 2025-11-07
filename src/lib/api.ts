@@ -1174,7 +1174,7 @@ export interface MarketItem {
 	price: number;
 	is_public: boolean;
 	is_available?: boolean;
-	status: 'active' | 'sold' | 'hidden';
+	status: 'active' | 'sold' | 'hidden' | 'pending';
 	category?: string;
 	photos: string[];
 	featured_image?: string | null;
@@ -1199,6 +1199,7 @@ export interface MarketItem {
 	condition?: string | null;
 	quantity?: number | null;
 	is_free?: boolean; // Indicates if the item is free
+	miles?: number | null; // Mileage for automotive items (optional)
 }
 
 export interface MarketItemCreate {
@@ -1206,7 +1207,7 @@ export interface MarketItemCreate {
 	description?: string;
 	price: number;
 	is_public?: boolean;
-	status?: 'active' | 'sold' | 'hidden';
+	status?: 'active' | 'sold' | 'hidden' | 'pending';
 	category?: string;
 	photos?: string[];
 	featured_image?: string | null;
@@ -1220,6 +1221,7 @@ export interface MarketItemCreate {
 	condition?: string | null;
 	quantity?: number | null;
 	is_free?: boolean; // Indicates if the item is free
+	miles?: number | null; // Mileage for automotive items (optional)
 }
 
 // Paginated response interface
@@ -1238,7 +1240,7 @@ export async function getMarketItems(
 		category?: string;
 		min_price?: number;
 		max_price?: number;
-		status?: 'active' | 'sold' | 'hidden' | 'all';
+		status?: 'active' | 'sold' | 'hidden' | 'pending' | 'all';
 		accepts_best_offer?: boolean;
 		price_reduced?: boolean;
 		is_free?: boolean;
@@ -1451,7 +1453,7 @@ export async function getWatchedItems(params?: {
 	category?: string;
 	min_price?: number;
 	max_price?: number;
-	status?: 'active' | 'sold' | 'hidden' | 'all';
+	status?: 'active' | 'sold' | 'hidden' | 'pending' | 'all';
 	accepts_best_offer?: boolean;
 	price_reduced?: boolean;
 	limit?: number;
@@ -2204,7 +2206,7 @@ export async function getAdminItems(
 	params: {
 		skip?: number;
 		limit?: number;
-		status?: 'active' | 'sold' | 'hidden';
+		status?: 'active' | 'sold' | 'hidden' | 'pending';
 	} = {}
 ): Promise<AdminItemsResponse> {
 	const token = localStorage.getItem('access_token');

@@ -409,6 +409,7 @@
 									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
 								>
 									<option value="active">Available</option>
+									<option value="pending">Pending</option>
 									<option value="sold">Sold</option>
 									<option value="hidden">Hidden</option>
 									<option value="all">All Items</option>

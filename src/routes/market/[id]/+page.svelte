@@ -44,7 +44,8 @@
 		faArrowRightFromBracket,
 		faArrowRight,
 		faCheckCircle,
-		faShieldAlt
+		faShieldAlt,
+		faTachometerAlt
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
@@ -816,6 +817,15 @@
 												<span class="font-semibold">Sold</span>
 											</div>
 										</div>
+									{:else if item.status === 'pending'}
+										<div class="mb-6 flex-shrink-0">
+											<div
+												class="inline-flex items-center rounded-full bg-yellow-50 px-4 py-2.5 text-sm font-medium text-yellow-700 dark:bg-yellow-900/10 dark:text-yellow-300"
+											>
+												<FontAwesomeIcon icon={faTag} class="mr-2 h-4 w-4" />
+												<span class="font-semibold">Pending</span>
+											</div>
+										</div>
 									{:else if item.status === 'hidden'}
 										<div class="mb-6 flex-shrink-0">
 											<div
@@ -1089,8 +1099,8 @@
 								</div>
 							{/if}
 
-							<!-- Condition and Quantity Card -->
-							{#if item.condition || (item.quantity !== null && item.quantity !== undefined)}
+							<!-- Condition, Quantity, and Mileage Card -->
+							{#if item.condition || (item.quantity !== null && item.quantity !== undefined) || (item.miles !== null && item.miles !== undefined)}
 								<div
 									class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 								>
@@ -1115,6 +1125,15 @@
 												<span
 													>{item.quantity} {item.quantity === 1 ? 'item' : 'items'} available</span
 												>
+											</span>
+										{/if}
+										{#if item.miles !== null && item.miles !== undefined}
+											<span
+												class="inline-flex items-center gap-2 rounded-xl border border-gray-200/50 bg-orange-50/60 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-orange-50 hover:shadow-md dark:border-gray-700/50 dark:bg-orange-900/20 dark:text-gray-200 dark:hover:bg-orange-900/30"
+											>
+												<FontAwesomeIcon icon={faTachometerAlt} class="h-4 w-4" />
+												<span class="font-semibold">Mileage:</span>
+												<span>{item.miles.toLocaleString()} miles</span>
 											</span>
 										{/if}
 									</div>

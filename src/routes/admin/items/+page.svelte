@@ -37,7 +37,7 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let filtersExpanded = $state(false);
-	let statusFilter = $state<'active' | 'sold' | 'hidden' | 'all'>('all');
+	let statusFilter = $state<'active' | 'sold' | 'hidden' | 'pending' | 'all'>('all');
 	let mobileMenuOpen = $state(false);
 
 	// Edit/Delete modals
@@ -367,6 +367,7 @@
 							>
 								<option value="all">All Items</option>
 								<option value="active">Active</option>
+								<option value="pending">Pending</option>
 								<option value="sold">Sold</option>
 								<option value="hidden">Hidden</option>
 							</select>

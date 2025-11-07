@@ -25,7 +25,7 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
-	let statusFilter = $state<'active' | 'sold' | 'hidden' | 'all'>('active');
+	let statusFilter = $state<'active' | 'sold' | 'hidden' | 'pending' | 'all'>('active');
 
 	// Filter states
 	let searchTerm = $state('');
@@ -579,6 +579,7 @@
 								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
 							>
 								<option value="active">Available</option>
+								<option value="pending">Pending</option>
 								<option value="sold">Sold</option>
 								<option value="hidden">Hidden</option>
 								<option value="all">All Items</option>
@@ -692,7 +693,8 @@
 						{item}
 						hideStatusBadge={(statusFilter === 'active' && item.status === 'active') ||
 							(statusFilter === 'sold' && item.status === 'sold') ||
-							(statusFilter === 'hidden' && item.status === 'hidden')}
+							(statusFilter === 'hidden' && item.status === 'hidden') ||
+							(statusFilter === 'pending' && item.status === 'pending')}
 					/>
 				{/each}
 			</div>
