@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { updateMarketItem, type MarketItemCreate, type MarketItem, getAuthenticatedImageUrl } from './api';
+	import {
+		updateMarketItem,
+		type MarketItemCreate,
+		type MarketItem,
+		getAuthenticatedImageUrl
+	} from './api';
 	import ImageUpload from './ImageUpload.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faStar } from '@fortawesome/free-solid-svg-icons';
 
-	let {
-		isOpen,
-		onClose,
-		onSuccess,
-		item
-	} = $props<{
+	let { isOpen, onClose, onSuccess, item } = $props<{
 		isOpen: boolean;
 		onClose: () => void;
 		onSuccess: () => void;
@@ -63,14 +63,7 @@
 		'Other'
 	];
 
-	const conditions = [
-		'New',
-		'Like New',
-		'Used',
-		'Good',
-		'Fair',
-		'Poor'
-	];
+	const conditions = ['New', 'Like New', 'Used', 'Good', 'Fair', 'Poor'];
 
 	const states = [
 		'AL',
@@ -224,7 +217,7 @@
 {#if isOpen && item}
 	<div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
 		<div
-			class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
+			class="flex min-h-screen items-end justify-center px-4 pt-6 pb-6 text-center sm:block sm:p-0"
 		>
 			<div
 				class="fixed inset-0 bg-black/50 backdrop-blur-sm"
@@ -233,10 +226,10 @@
 			></div>
 
 			<div
-				class="relative inline-block transform overflow-hidden rounded-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
+				class="relative inline-block w-full transform overflow-hidden rounded-t-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:rounded-2xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
 			>
 				<div
-					class="border-b border-gray-200/50 bg-white/80 px-6 py-5 dark:border-gray-700/50 dark:bg-gray-800/80"
+					class="border-b border-gray-200/50 bg-white/80 px-6 py-6 sm:py-5 dark:border-gray-700/50 dark:bg-gray-800/80"
 				>
 					<div class="flex items-center justify-between">
 						<h3 class="text-xl font-semibold text-gray-900 dark:text-white">Edit Item</h3>
@@ -258,8 +251,8 @@
 					</div>
 				</div>
 
-				<form onsubmit={handleSubmit} class="max-h-[70vh] overflow-y-auto">
-					<div class="bg-white/80 px-6 py-6 dark:bg-gray-800/80">
+				<form onsubmit={handleSubmit} class="max-h-[85vh] overflow-y-auto sm:max-h-[70vh]">
+					<div class="bg-white/80 px-6 py-8 sm:px-6 sm:py-6 dark:bg-gray-800/80">
 						{#if error}
 							<div
 								class="mb-6 rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-900/20 dark:ring-red-800"
@@ -268,11 +261,11 @@
 							</div>
 						{/if}
 
-						<div class="space-y-6">
+						<div class="space-y-8 sm:space-y-6">
 							<div>
 								<label
 									for="edit-name"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
 									>Name <span class="text-red-500">*</span></label
 								>
 								<input
@@ -281,44 +274,45 @@
 									bind:value={formData.name}
 									required
 									placeholder="e.g., Dyson Vacuum"
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
 							</div>
 
 							<div>
 								<label
 									for="edit-description"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Description <span class="text-gray-400 font-normal">(Optional)</span></label
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+									>Description <span class="font-normal text-gray-400">(Optional)</span></label
 								>
 								<textarea
 									id="edit-description"
 									rows="4"
 									bind:value={formData.description}
 									placeholder="Describe the item..."
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								></textarea>
 							</div>
 
 							<div>
 								<label
 									for="edit-seller"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Seller/Contact Name <span class="text-gray-400 font-normal">(Optional)</span></label
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+									>Seller/Contact Name <span class="font-normal text-gray-400">(Optional)</span
+									></label
 								>
 								<input
 									id="edit-seller"
 									type="text"
 									bind:value={formData.seller}
 									placeholder="Enter seller or contact name"
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
 							</div>
 
 							<div>
 								<label
 									for="edit-price"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
 									>Price <span class="text-red-500">*</span></label
 								>
 								<input
@@ -329,7 +323,7 @@
 									bind:value={formData.price}
 									required
 									disabled={formData.is_free}
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
 							</div>
 
@@ -362,13 +356,13 @@
 							<div>
 								<label
 									for="edit-category"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Category <span class="text-gray-400 font-normal">(Optional)</span></label
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+									>Category <span class="font-normal text-gray-400">(Optional)</span></label
 								>
 								<select
 									id="edit-category"
 									bind:value={formData.category}
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								>
 									<option value="">Select Category</option>
 									{#each categories as category}
@@ -381,8 +375,8 @@
 								<div>
 									<label
 										for="edit-miles"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Mileage <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Mileage <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="edit-miles"
@@ -391,7 +385,7 @@
 										step="1"
 										bind:value={formData.miles}
 										placeholder="Enter mileage"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 							{/if}
@@ -402,15 +396,15 @@
 								<div>
 									<label
 										for="edit-city"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>City <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>City <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="edit-city"
 										type="text"
 										bind:value={formData.city}
 										placeholder="Enter city"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 
@@ -418,13 +412,13 @@
 								<div>
 									<label
 										for="edit-state"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>State <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>State <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<select
 										id="edit-state"
 										bind:value={formData.state}
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 									>
 										<option value="">Select State</option>
 										{#each states as stateOption}
@@ -437,15 +431,15 @@
 								<div>
 									<label
 										for="edit-zip_code"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Zip Code <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Zip Code <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="edit-zip_code"
 										type="text"
 										bind:value={formData.zip_code}
 										placeholder="Enter zip code"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 							</div>
@@ -454,13 +448,13 @@
 								<div>
 									<label
 										for="edit-condition"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Condition <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Condition <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<select
 										id="edit-condition"
 										bind:value={formData.condition}
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 									>
 										<option value="">Select Condition</option>
 										{#each conditions as condition}
@@ -471,8 +465,8 @@
 								<div>
 									<label
 										for="edit-quantity"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Quantity <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Quantity <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="edit-quantity"
@@ -481,7 +475,7 @@
 										step="1"
 										bind:value={formData.quantity}
 										placeholder="Number of items"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 							</div>
@@ -489,13 +483,13 @@
 							<div>
 								<label
 									for="edit-status"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
 									>Status</label
 								>
 								<select
 									id="edit-status"
 									bind:value={formData.status}
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								>
 									<option value="active">Active</option>
 									<option value="pending">Pending</option>
@@ -506,7 +500,7 @@
 
 							<div>
 								<label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>Photos <span class="text-gray-400 font-normal">(Optional)</span></label
+									>Photos <span class="font-normal text-gray-400">(Optional)</span></label
 								>
 								<ImageUpload
 									images={formData.photos || []}
@@ -568,31 +562,34 @@
 								<div>
 									<label
 										for="edit-venmo"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Venmo URL <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Venmo URL <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="edit-venmo"
 										type="url"
 										bind:value={formData.venmo_url}
-										onblur={() => (formData.venmo_url = normalizeUrl(formData.venmo_url))}
+										onblur={() => (formData.venmo_url = normalizeUrl(formData.venmo_url || ''))}
 										placeholder="https://venmo.com/your-username"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 								<div>
 									<label
 										for="edit-facebook"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Facebook Marketplace URL <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Facebook Marketplace URL <span class="font-normal text-gray-400"
+											>(Optional)</span
+										></label
 									>
 									<input
 										id="edit-facebook"
 										type="url"
 										bind:value={formData.facebook_url}
-										onblur={() => (formData.facebook_url = normalizeUrl(formData.facebook_url))}
+										onblur={() =>
+											(formData.facebook_url = normalizeUrl(formData.facebook_url || ''))}
 										placeholder="https://www.facebook.com/marketplace/item/..."
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 							</div>
@@ -601,29 +598,29 @@
 								<div>
 									<label
 										for="edit-contact_phone"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Contact Phone <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Contact Phone <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="edit-contact_phone"
 										type="tel"
 										bind:value={formData.contact_phone}
 										placeholder="(555) 123-4567"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 								<div>
 									<label
 										for="edit-contact_email"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>Contact Email <span class="text-gray-400 font-normal">(Optional)</span></label
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Contact Email <span class="font-normal text-gray-400">(Optional)</span></label
 									>
 									<input
 										id="edit-contact_email"
 										type="email"
 										bind:value={formData.contact_email}
 										placeholder="seller@example.com"
-										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
 							</div>
@@ -644,12 +641,12 @@
 					</div>
 
 					<div
-						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-4 sm:flex sm:flex-row-reverse dark:border-gray-700/50 dark:bg-gray-700/80"
+						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-6 sm:flex sm:flex-row-reverse sm:py-4 dark:border-gray-700/50 dark:bg-gray-700/80"
 					>
 						<button
 							type="submit"
 							disabled={loading}
-							class="inline-flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto"
+							class="inline-flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto sm:py-3.5"
 						>
 							{#if loading}
 								<svg class="mr-3 h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"
@@ -683,4 +680,3 @@
 		</div>
 	</div>
 {/if}
-
