@@ -19,7 +19,7 @@
 		type YardSaleConversation
 	} from '$lib/api';
 	import YardSaleMessageModal from '$lib/YardSaleMessageModal.svelte';
-	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
+	import YardSaleModal from '$lib/YardSaleModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
 	import FeaturedImageModal from '$lib/FeaturedImageModal.svelte';
 	import { getAccessToken } from '$lib/auth';
@@ -1842,7 +1842,7 @@
 
 	<!-- Edit Yard Sale Modal -->
 	{#if yardSale && showEditModal}
-		<EditYardSaleModal
+		<YardSaleModal
 			isOpen={showEditModal}
 			{yardSale}
 			onClose={handleCloseEditModal}

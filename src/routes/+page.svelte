@@ -13,7 +13,7 @@
 		type CurrentUser
 	} from '$lib/api';
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
-	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
+	import YardSaleModal from '$lib/YardSaleModal.svelte';
 	import { logout } from '$lib/auth';
 	import { getYardSaleStatus, isYardSaleActive, isYardSaleActiveOnDate } from '$lib/yardSaleUtils';
 	import {
@@ -668,7 +668,7 @@
 	</div>
 
 	<!-- Create Yard Sale Modal -->
-	<EditYardSaleModal
+		<YardSaleModal
 		isOpen={showCreateModal}
 		onClose={handleCloseCreateModal}
 		onSuccess={handleCreateSuccess}

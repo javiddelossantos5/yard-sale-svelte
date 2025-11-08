@@ -11,7 +11,7 @@
 		type AdminYardSalesResponse
 	} from '$lib/api';
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
-	import EditYardSaleModal from '$lib/EditYardSaleModal.svelte';
+	import YardSaleModal from '$lib/YardSaleModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
@@ -55,7 +55,7 @@
 		error = null;
 		try {
 			currentUser = await getCurrentUser();
-			
+
 			if (!isAdmin(currentUser)) {
 				error = 'Access denied. Admin permissions required.';
 				return;
@@ -192,7 +192,10 @@
 								}}
 								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
 							>
-								<FontAwesomeIcon icon={faHome} class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" />
+								<FontAwesomeIcon
+									icon={faHome}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
 								Admin Dashboard
 							</button>
 							<button
@@ -202,7 +205,10 @@
 								}}
 								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
 							>
-								<FontAwesomeIcon icon={faHome} class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" />
+								<FontAwesomeIcon
+									icon={faHome}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
 								Home
 							</button>
 							{#if currentUser}
@@ -213,7 +219,10 @@
 									}}
 									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
 								>
-									<FontAwesomeIcon icon={faMessage} class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" />
+									<FontAwesomeIcon
+										icon={faMessage}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
 									Messages
 								</button>
 								<button
@@ -223,7 +232,10 @@
 									}}
 									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
 								>
-									<FontAwesomeIcon icon={faUser} class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" />
+									<FontAwesomeIcon
+										icon={faUser}
+										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+									/>
 									My Profile
 								</button>
 							{/if}
@@ -330,7 +342,8 @@
 			<div class="flex items-center justify-between">
 				<button
 					onclick={() => (filtersExpanded = !filtersExpanded)}
-					class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 {statusFilter !== 'all'
+					class="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 {statusFilter !==
+					'all'
 						? 'border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
 						: ''}"
 				>
@@ -413,7 +426,7 @@
 
 	<!-- Edit Modal -->
 	{#if selectedYardSale}
-		<EditYardSaleModal
+		<YardSaleModal
 			isOpen={showEditModal}
 			onClose={() => {
 				showEditModal = false;
@@ -435,4 +448,3 @@
 		onConfirm={handleConfirmDelete}
 	/>
 </div>
-

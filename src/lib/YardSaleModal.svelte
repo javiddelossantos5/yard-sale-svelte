@@ -25,7 +25,7 @@
 	const isEditing = yardSale !== null;
 
 	// Form data
-	let formData = $state<YardSaleCreate>({
+	let formData = $state<YardSaleCreate & { description: string; end_date: string }>({
 		title: '',
 		description: '',
 		start_date: '',
@@ -163,7 +163,7 @@
 		if (yardSale && isOpen) {
 			formData = {
 				title: yardSale.title,
-				description: yardSale.description,
+				description: yardSale.description || '',
 				start_date: yardSale.start_date,
 				end_date: yardSale.end_date || '',
 				start_time: yardSale.start_time,
@@ -220,12 +220,11 @@
 		event.preventDefault();
 
 		// Basic validation
-		// When creating (not editing), description and end_date are required
 		if (
 			!formData.title.trim() ||
-			(!isEditing && !formData.description.trim()) ||
+			!formData.description.trim() ||
 			!formData.start_date ||
-			(!isEditing && !formData.end_date) ||
+			!formData.end_date ||
 			!formData.start_time ||
 			!formData.end_time ||
 			!formData.address.trim() ||
@@ -421,25 +420,23 @@
 								/>
 							</div>
 
-							<!-- Description (Required when creating) -->
-							{#if !isEditing}
-								<div>
-									<label
-										for="description"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									>
-										Description <span class="text-red-500">*</span>
-									</label>
-									<textarea
-										id="description"
-										bind:value={formData.description}
-										required
-										rows="4"
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										placeholder="Describe what you're selling..."
-									></textarea>
-								</div>
-							{/if}
+							<!-- Description -->
+							<div>
+								<label
+									for="description"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Description <span class="text-red-500">*</span>
+								</label>
+								<textarea
+									id="description"
+									bind:value={formData.description}
+									required
+									rows="4"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									placeholder="Describe what you're selling..."
+								></textarea>
+							</div>
 
 							<!-- Date and Time Section -->
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -460,24 +457,22 @@
 									/>
 								</div>
 
-								<!-- End Date (Required when creating, shown in optional when editing) -->
-								{#if !isEditing}
-									<div>
-										<label
-											for="end_date"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>
-											End Date <span class="text-red-500">*</span>
-										</label>
-										<input
-											type="date"
-											id="end_date"
-											bind:value={formData.end_date}
-											required
-											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-								{/if}
+								<!-- End Date -->
+								<div>
+									<label
+										for="end_date"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										End Date <span class="text-red-500">*</span>
+									</label>
+									<input
+										type="date"
+										id="end_date"
+										bind:value={formData.end_date}
+										required
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									/>
+								</div>
 
 								<!-- Start Time -->
 								<div>
@@ -610,24 +605,26 @@
 								/>
 							</div>
 
-							<!-- Status -->
-							<div>
-								<label
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-									for="status"
-								>
-									Status <span class="text-red-500">*</span>
-								</label>
-								<select
-									id="status"
-									bind:value={formData.status}
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-								>
-									<option value="active">Active</option>
-									<option value="on_break">On Break</option>
-									<option value="closed">Closed</option>
-								</select>
-							</div>
+							<!-- Status (only shown when editing) -->
+							{#if isEditing}
+								<div>
+									<label
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										for="status"
+									>
+										Status <span class="text-red-500">*</span>
+									</label>
+									<select
+										id="status"
+										bind:value={formData.status}
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									>
+										<option value="active">Active</option>
+										<option value="on_break">On Break</option>
+										<option value="closed">Closed</option>
+									</select>
+								</div>
+							{/if}
 
 							<!-- More Options Button -->
 							<button
@@ -645,41 +642,6 @@
 							<!-- Optional Fields (Collapsible) -->
 							{#if showOptionalFields}
 								<div class="space-y-6 border-t border-gray-200 pt-6 dark:border-gray-700">
-									<!-- Description (Optional when editing) -->
-									{#if isEditing}
-										<div>
-											<label
-												for="description"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>
-												Description <span class="text-xs text-gray-400">(Optional)</span>
-											</label>
-											<textarea
-												id="description"
-												bind:value={formData.description}
-												rows="4"
-												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-												placeholder="Describe what you're selling..."
-											></textarea>
-										</div>
-
-										<!-- End Date (Optional when editing) -->
-										<div>
-											<label
-												for="end_date"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>
-												End Date <span class="text-xs text-gray-400">(Optional)</span>
-											</label>
-											<input
-												type="date"
-												id="end_date"
-												bind:value={formData.end_date}
-												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-									{/if}
-
 									<!-- Contact Information Section -->
 									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 										<!-- Contact Phone -->
@@ -877,9 +839,9 @@
 
 									<!-- Images -->
 									<div>
-										<label class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
+										<div class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300">
 											Photos <span class="text-xs text-gray-400">(Optional)</span>
-										</label>
+										</div>
 										<ImageUpload
 											images={formData.photos || []}
 											maxImages={10}
@@ -893,11 +855,11 @@
 										/>
 										{#if formData.photos && formData.photos.length > 0}
 											<div class="mt-4">
-												<label
+												<div
 													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 												>
 													Featured Image <span class="text-xs text-gray-400">(Optional)</span>
-												</label>
+												</div>
 												<p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
 													Select which photo should be featured on your yard sale card
 												</p>
@@ -1024,3 +986,4 @@
 		</div>
 	</div>
 {/if}
+
