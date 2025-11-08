@@ -238,7 +238,30 @@
 
 			// Fetch items with new paginated API
 			const response = await getMarketItems(params);
-			items = response.items;
+			
+			// Sort items: active first, ended/sold last
+			const sortedItems = [...response.items].sort((a, b) => {
+				// Status priority: active = 0, pending = 1, hidden = 2, sold = 3
+				const getStatusPriority = (status: string) => {
+					if (status === 'active') return 0;
+					if (status === 'pending') return 1;
+					if (status === 'hidden') return 2;
+					if (status === 'sold') return 3;
+					return 4; // Unknown status goes last
+				};
+
+				const priorityA = getStatusPriority(a.status);
+				const priorityB = getStatusPriority(b.status);
+
+				if (priorityA !== priorityB) {
+					return priorityA - priorityB; // Lower priority (active) comes first
+				}
+
+				// If same status, maintain original order (or sort by created_at desc)
+				return 0;
+			});
+			
+			items = sortedItems;
 			totalItems = response.total;
 
 			// Load unread message counts from both yard sales and marketplace
@@ -452,30 +475,10 @@
 			{#if filtersExpanded}
 				<div class="border-t border-gray-200 pt-4 dark:border-gray-700">
 					<div class="space-y-4">
-						<!-- Row 1: Category and Status -->
+						<!-- Status Filter - First on mobile, in row with Category on desktop -->
 						<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-							<!-- Category Filter -->
-							<div>
-								<label
-									for="category"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-								>
-									Category
-								</label>
-								<select
-									id="category"
-									bind:value={selectedCategory}
-									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
-								>
-									<option value="">All Categories</option>
-									{#each categories as category}
-										<option value={category}>{category}</option>
-									{/each}
-								</select>
-							</div>
-
-							<!-- Status Filter -->
-							<div>
+							<!-- Status Filter - First on mobile -->
+							<div class="order-first sm:order-2">
 								<label
 									for="status"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
@@ -492,6 +495,26 @@
 									<option value="sold">Sold</option>
 									<option value="hidden">Hidden</option>
 									<option value="all">All Items</option>
+								</select>
+							</div>
+
+							<!-- Category Filter - Second on mobile -->
+							<div class="order-2 sm:order-1">
+								<label
+									for="category"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+								>
+									Category
+								</label>
+								<select
+									id="category"
+									bind:value={selectedCategory}
+									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
+								>
+									<option value="">All Categories</option>
+									{#each categories as category}
+										<option value={category}>{category}</option>
+									{/each}
 								</select>
 							</div>
 						</div>

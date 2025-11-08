@@ -379,7 +379,28 @@
 				// Access visitedStateTracker to make this derived state reactive to visited changes
 				visitedStateTracker; // This makes the derived state reactive to visited changes
 
-				// First, sort by visited status: unvisited first, visited last
+				// First, sort by status: active first, ended/closed/expired last
+				const statusA = getYardSaleStatus(a);
+				const statusB = getYardSaleStatus(b);
+				
+				// Status priority: active = 0, upcoming = 1, on_break = 2, closed = 3, expired = 4
+				const getStatusPriority = (status: string) => {
+					if (status === 'active') return 0;
+					if (status === 'upcoming') return 1;
+					if (status === 'on_break') return 2;
+					if (status === 'closed') return 3;
+					if (status === 'expired') return 4;
+					return 5; // Unknown status goes last
+				};
+
+				const priorityA = getStatusPriority(statusA);
+				const priorityB = getStatusPriority(statusB);
+
+				if (priorityA !== priorityB) {
+					return priorityA - priorityB; // Lower priority (active) comes first
+				}
+
+				// If same status, sort by visited status: unvisited first, visited last
 				const aVisited = isYardSaleVisited(a.id);
 				const bVisited = isYardSaleVisited(b.id);
 
@@ -467,8 +488,30 @@
 			{#if filtersExpanded}
 				<div class="border-t border-gray-200 pt-4 dark:border-gray-700">
 					<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+						<!-- Status Filter - First on mobile, last on desktop -->
+						<div class="order-first sm:order-5">
+							<label
+								for="status"
+								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
+							>
+								Status
+							</label>
+							<select
+								id="status"
+								bind:value={statusFilter}
+								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
+							>
+								<option value="active">Active Now</option>
+								<option value="upcoming">Upcoming</option>
+								<option value="ended">Ended</option>
+								<option value="on_break">On Break</option>
+								<option value="visited">Already Visited</option>
+								<option value="all">All Statuses</option>
+							</select>
+						</div>
+
 						<!-- Zip Code Filter -->
-						<div>
+						<div class="order-2 sm:order-1">
 							<label
 								for="zipCode"
 								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
@@ -486,7 +529,7 @@
 						</div>
 
 						<!-- City Filter -->
-						<div>
+						<div class="order-3 sm:order-2">
 							<label
 								for="city"
 								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
@@ -507,7 +550,7 @@
 						</div>
 
 						<!-- Date Filter -->
-						<div>
+						<div class="order-4 sm:order-3">
 							<label
 								for="date"
 								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
@@ -524,7 +567,7 @@
 						</div>
 
 						<!-- Category Filter -->
-						<div>
+						<div class="order-5 sm:order-4">
 							<label
 								for="category"
 								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
@@ -540,28 +583,6 @@
 								{#each categories as category}
 									<option value={category}>{category}</option>
 								{/each}
-							</select>
-						</div>
-
-						<!-- Status Filter -->
-						<div>
-							<label
-								for="status"
-								class="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-400"
-							>
-								Status
-							</label>
-							<select
-								id="status"
-								bind:value={statusFilter}
-								class="w-full rounded-lg border-0 bg-gray-50 px-3 py-2 text-sm shadow-sm transition-all focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:focus:bg-gray-600 dark:focus:ring-blue-400"
-							>
-								<option value="active">Active Now</option>
-								<option value="upcoming">Upcoming</option>
-								<option value="ended">Ended</option>
-								<option value="on_break">On Break</option>
-								<option value="visited">Already Visited</option>
-								<option value="all">All Statuses</option>
 							</select>
 						</div>
 					</div>

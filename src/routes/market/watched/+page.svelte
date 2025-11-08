@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getWatchedItems, type MarketItem, getCurrentUser, type CurrentUser, type MarketItemsResponse } from '$lib/api';
+	import {
+		getWatchedItems,
+		type MarketItem,
+		getCurrentUser,
+		type CurrentUser,
+		type MarketItemsResponse
+	} from '$lib/api';
 	import { goto } from '$app/navigation';
 	import MarketItemCard from '$lib/MarketItemCard.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -123,19 +129,46 @@
 			params.sort_order = sortOrder;
 
 			const result = await getWatchedItems(params);
-			
+
 			// Handle both paginated response and array response
+			let itemsArray: MarketItem[] = [];
 			if (result && typeof result === 'object' && 'items' in result) {
 				const response = result as MarketItemsResponse;
-				items = response.items;
+				itemsArray = response.items;
 				totalItems = response.total;
 			} else {
-				items = (result as MarketItem[]) || [];
-				totalItems = items.length;
+				itemsArray = (result as MarketItem[]) || [];
+				totalItems = itemsArray.length;
 			}
+
+			// Sort items: active first, ended/sold last
+			items = itemsArray.sort((a, b) => {
+				// Status priority: active = 0, pending = 1, hidden = 2, sold = 3
+				const getStatusPriority = (status: string) => {
+					if (status === 'active') return 0;
+					if (status === 'pending') return 1;
+					if (status === 'hidden') return 2;
+					if (status === 'sold') return 3;
+					return 4; // Unknown status goes last
+				};
+
+				const priorityA = getStatusPriority(a.status);
+				const priorityB = getStatusPriority(b.status);
+
+				if (priorityA !== priorityB) {
+					return priorityA - priorityB; // Lower priority (active) comes first
+				}
+
+				// If same status, maintain original order
+				return 0;
+			});
 		} catch (e: any) {
 			console.error('Failed to load watched items:', e);
-			if (e?.message === 'Token expired' || e?.message?.includes('401') || e?.message?.includes('403')) {
+			if (
+				e?.message === 'Token expired' ||
+				e?.message?.includes('401') ||
+				e?.message?.includes('403')
+			) {
 				goto('/login');
 				return;
 			}
@@ -168,7 +201,11 @@
 			}
 		} catch (e: any) {
 			console.error('Failed to load user:', e);
-			if (e?.message === 'Token expired' || e?.message?.includes('401') || e?.message?.includes('403')) {
+			if (
+				e?.message === 'Token expired' ||
+				e?.message?.includes('401') ||
+				e?.message?.includes('403')
+			) {
 				goto('/login');
 				return;
 			}
@@ -291,7 +328,10 @@
 								}}
 								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
 							>
-								<FontAwesomeIcon icon="store" class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400" />
+								<FontAwesomeIcon
+									icon="store"
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
 								Marketplace
 							</button>
 							{#if currentUser}
@@ -701,4 +741,3 @@
 		{/if}
 	</div>
 </div>
-

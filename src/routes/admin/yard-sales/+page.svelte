@@ -13,6 +13,7 @@
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
 	import YardSaleModal from '$lib/YardSaleModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
+	import { getYardSaleStatus } from '$lib/yardSaleUtils';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
 		faChevronLeft,
@@ -85,7 +86,36 @@
 			}
 
 			const response = await getAdminYardSales(params);
-			yardSales = response.yard_sales;
+
+			// Sort yard sales: active first, ended/closed/expired last
+			const sortedYardSales = [...response.yard_sales].sort((a, b) => {
+				const statusA = getYardSaleStatus(a);
+				const statusB = getYardSaleStatus(b);
+
+				// Status priority: active = 0, upcoming = 1, on_break = 2, closed = 3, expired = 4
+				const getStatusPriority = (status: string) => {
+					if (status === 'active') return 0;
+					if (status === 'upcoming') return 1;
+					if (status === 'on_break') return 2;
+					if (status === 'closed') return 3;
+					if (status === 'expired') return 4;
+					return 5; // Unknown status goes last
+				};
+
+				const priorityA = getStatusPriority(statusA);
+				const priorityB = getStatusPriority(statusB);
+
+				if (priorityA !== priorityB) {
+					return priorityA - priorityB; // Lower priority (active) comes first
+				}
+
+				// If same status, sort by start date (ascending)
+				const dateA = new Date(a.start_date || '').getTime();
+				const dateB = new Date(b.start_date || '').getTime();
+				return dateA - dateB;
+			});
+
+			yardSales = sortedYardSales;
 			totalYardSales = response.total;
 		} catch (e: any) {
 			throw new Error(e?.message || 'Failed to load yard sales');

@@ -85,7 +85,32 @@
 			}
 
 			const response = await getAdminItems(params);
-			items = response.items;
+			
+			// Sort items: active first, ended/sold last
+			const sortedItems = [...response.items].sort((a, b) => {
+				// Status priority: active = 0, pending = 1, hidden = 2, sold = 3
+				const getStatusPriority = (status: string) => {
+					if (status === 'active') return 0;
+					if (status === 'pending') return 1;
+					if (status === 'hidden') return 2;
+					if (status === 'sold') return 3;
+					return 4; // Unknown status goes last
+				};
+
+				const priorityA = getStatusPriority(a.status);
+				const priorityB = getStatusPriority(b.status);
+
+				if (priorityA !== priorityB) {
+					return priorityA - priorityB; // Lower priority (active) comes first
+				}
+
+				// If same status, sort by created_at (descending - newest first)
+				const dateA = new Date(a.created_at || '').getTime();
+				const dateB = new Date(b.created_at || '').getTime();
+				return dateB - dateA;
+			});
+			
+			items = sortedItems;
 			totalItems = response.total;
 		} catch (e: any) {
 			throw new Error(e?.message || 'Failed to load items');
