@@ -75,7 +75,7 @@ export async function getYardSales(includeVisitedStatus: boolean = true): Promis
 		throw new Error('Failed to fetch yard sales');
 	}
 	const data = await response.json();
-	return data;
+	return Array.isArray(data) ? data : [];
 }
 
 export async function getYardSalesByCity(city: string): Promise<YardSale[]> {
@@ -151,7 +151,16 @@ export interface Message {
 
 export interface Notification {
 	id: string;
-	type: 'message' | 'rating' | 'comment' | 'visit' | 'info' | 'success' | 'warning' | 'error';
+	type:
+		| 'message'
+		| 'rating'
+		| 'comment'
+		| 'visit'
+		| 'info'
+		| 'success'
+		| 'warning'
+		| 'error'
+		| 'report';
 	title: string;
 	message: string;
 	is_read: boolean;
@@ -2348,10 +2357,7 @@ export interface UserUpdateData {
 	permissions?: 'admin' | 'user';
 }
 
-export async function updateUser(
-	userId: string,
-	userData: UserUpdateData
-): Promise<CurrentUser> {
+export async function updateUser(userId: string, userData: UserUpdateData): Promise<CurrentUser> {
 	const token = localStorage.getItem('access_token');
 	const response = await fetch(`/api/admin/users/${userId}`, {
 		method: 'PUT',

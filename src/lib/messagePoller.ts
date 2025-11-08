@@ -1,13 +1,13 @@
 import { browser } from '$app/environment';
 import { getNotificationCounts } from './api';
-import { loadNotificationCounts } from './notifications';
+import { loadNotificationCounts, loadNotifications } from './notifications';
 import { getCurrentUser } from './api';
 
 class MessagePoller {
-	private intervalId: number | null = null;
+	private intervalId: ReturnType<typeof setInterval> | null = null;
 	private lastCheckTime: Date = new Date();
 	private isPolling = false;
-	private currentUserId: number | null = null;
+	private currentUserId: string | null = null;
 
 	// Start polling for new messages
 	async startPolling() {
@@ -48,7 +48,12 @@ class MessagePoller {
 
 		try {
 			// Load notification counts to update the UI
+			// This also loads the full notifications list (see loadNotificationCounts implementation)
 			await loadNotificationCounts();
+
+			// Also explicitly load notifications to ensure they're refreshed
+			// This ensures report notifications and other types are loaded
+			await loadNotifications(1, 50);
 
 			// Update last check time
 			this.lastCheckTime = new Date();

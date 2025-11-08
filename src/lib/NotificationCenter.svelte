@@ -24,7 +24,8 @@
 		faVolumeMute,
 		faCog,
 		faMessage,
-		faTimes
+		faTimes,
+		faExclamationTriangle
 	} from '@fortawesome/free-solid-svg-icons';
 
 	let isOpen = $state(false);
@@ -61,6 +62,18 @@
 				// Navigate to user profile
 				goto(`/profile/${notification.related_user_id}`);
 			}
+		} else if (notification.type === 'report') {
+			// Navigate to the reported item or user
+			if (notification.related_yard_sale_id) {
+				// Navigate to the reported yard sale
+				goto(`/yard-sale/${notification.related_yard_sale_id}`);
+			} else if (notification.related_user_id) {
+				// Navigate to the reported user's profile
+				goto(`/profile/${notification.related_user_id}`);
+			} else {
+				// If no specific target, navigate to admin dashboard
+				goto('/admin');
+			}
 		}
 	}
 
@@ -69,8 +82,10 @@
 		isOpen = !isOpen;
 		if (isOpen) {
 			showSettings = false;
-			// Load notifications when opening
-			loadNotifications();
+			// Load notifications when opening to ensure latest notifications are shown
+			loadNotifications().catch((error) => {
+				console.warn('Failed to load notifications:', error);
+			});
 		}
 	}
 
@@ -223,7 +238,9 @@
 						onkeydown={(e) => e.key === 'Enter' && handleNotificationClick(notification)}
 						class="w-full cursor-pointer border-b border-gray-100/50 p-4 text-left transition-colors hover:bg-gray-50/50 {notification.is_read
 							? 'opacity-60'
-							: 'bg-blue-50/30'}"
+							: notification.type === 'report'
+								? 'bg-red-50/30'
+								: 'bg-blue-50/30'}"
 						aria-label="Notification: {notification.title}"
 					>
 						<div class="flex items-start gap-3">
@@ -232,10 +249,14 @@
 								class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full {notification.type ===
 								'message'
 									? 'bg-blue-100 text-blue-600'
-									: 'bg-gray-100 text-gray-600'}"
+									: notification.type === 'report'
+										? 'bg-red-100 text-red-600'
+										: 'bg-gray-100 text-gray-600'}"
 							>
 								{#if notification.type === 'message'}
 									<FontAwesomeIcon icon={faMessage} class="h-4 w-4" />
+								{:else if notification.type === 'report'}
+									<FontAwesomeIcon icon={faExclamationTriangle} class="h-4 w-4" />
 								{:else}
 									<FontAwesomeIcon icon={faBell} class="h-4 w-4" />
 								{/if}
@@ -258,7 +279,11 @@
 
 							<!-- Unread indicator -->
 							{#if !notification.is_read}
-								<div class="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></div>
+								<div
+									class="mt-2 h-2 w-2 shrink-0 rounded-full {notification.type === 'report'
+										? 'bg-red-500'
+										: 'bg-blue-500'}"
+								></div>
 							{/if}
 						</div>
 					</button>

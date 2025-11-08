@@ -228,20 +228,21 @@
 			// Load yard sales with visited status if user is authenticated
 			const includeVisited = !!currentUser;
 			const allData = await getYardSales(includeVisited);
-			yardSales = allData;
+			yardSales = allData || [];
 
 			// Extract unique cities from all data
 			// Normalize city names to prevent duplicates (e.g., "Vernal" vs "vernal")
 			const cityMap = new Map();
-			allData.forEach((sale) => {
-				const normalizedCity = sale.city.trim().toLowerCase();
-				if (!cityMap.has(normalizedCity)) {
+			(allData || []).forEach((sale) => {
+				const normalizedCity = sale.city?.trim().toLowerCase() || '';
+				if (normalizedCity && !cityMap.has(normalizedCity)) {
 					cityMap.set(normalizedCity, sale.city.trim());
 				}
 			});
 			cities = Array.from(cityMap.values()).sort();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load yard sales';
+			yardSales = []; // Ensure yardSales is always an array
 		} finally {
 			loading = false;
 		}

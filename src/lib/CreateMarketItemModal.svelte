@@ -284,6 +284,21 @@
 
 							<div>
 								<label
+									for="description"
+									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>Description <span class="font-normal text-gray-400">(Optional)</span></label
+								>
+								<textarea
+									id="description"
+									rows="4"
+									bind:value={formData.description}
+									placeholder="Describe the item..."
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+								></textarea>
+							</div>
+
+							<div>
+								<label
 									for="price"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 									>Price <span class="text-red-500">*</span></label
@@ -329,21 +344,6 @@
 							<!-- Optional Fields (Collapsible) -->
 							{#if showOptionalFields}
 								<div class="space-y-6 border-t border-gray-200 pt-6 dark:border-gray-700">
-									<div>
-										<label
-											for="description"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Description <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<textarea
-											id="description"
-											rows="4"
-											bind:value={formData.description}
-											placeholder="Describe the item..."
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										></textarea>
-									</div>
-
 									<div>
 										<label
 											for="seller"

@@ -220,9 +220,12 @@
 		event.preventDefault();
 
 		// Basic validation
+		// When creating (not editing), description and end_date are required
 		if (
 			!formData.title.trim() ||
+			(!isEditing && !formData.description.trim()) ||
 			!formData.start_date ||
+			(!isEditing && !formData.end_date) ||
 			!formData.start_time ||
 			!formData.end_time ||
 			!formData.address.trim() ||
@@ -418,6 +421,26 @@
 								/>
 							</div>
 
+							<!-- Description (Required when creating) -->
+							{#if !isEditing}
+								<div>
+									<label
+										for="description"
+										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>
+										Description <span class="text-red-500">*</span>
+									</label>
+									<textarea
+										id="description"
+										bind:value={formData.description}
+										required
+										rows="4"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										placeholder="Describe what you're selling..."
+									></textarea>
+								</div>
+							{/if}
+
 							<!-- Date and Time Section -->
 							<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 								<!-- Start Date -->
@@ -436,6 +459,25 @@
 										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 									/>
 								</div>
+
+								<!-- End Date (Required when creating, shown in optional when editing) -->
+								{#if !isEditing}
+									<div>
+										<label
+											for="end_date"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										>
+											End Date <span class="text-red-500">*</span>
+										</label>
+										<input
+											type="date"
+											id="end_date"
+											bind:value={formData.end_date}
+											required
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										/>
+									</div>
+								{/if}
 
 								<!-- Start Time -->
 								<div>
@@ -603,38 +645,40 @@
 							<!-- Optional Fields (Collapsible) -->
 							{#if showOptionalFields}
 								<div class="space-y-6 border-t border-gray-200 pt-6 dark:border-gray-700">
-									<!-- Description -->
-									<div>
-										<label
-											for="description"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>
-											Description <span class="text-xs text-gray-400">(Optional)</span>
-										</label>
-										<textarea
-											id="description"
-											bind:value={formData.description}
-											rows="4"
-											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-											placeholder="Describe what you're selling..."
-										></textarea>
-									</div>
+									<!-- Description (Optional when editing) -->
+									{#if isEditing}
+										<div>
+											<label
+												for="description"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>
+												Description <span class="text-xs text-gray-400">(Optional)</span>
+											</label>
+											<textarea
+												id="description"
+												bind:value={formData.description}
+												rows="4"
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												placeholder="Describe what you're selling..."
+											></textarea>
+										</div>
 
-									<!-- End Date -->
-									<div>
-										<label
-											for="end_date"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-										>
-											End Date <span class="text-xs text-gray-400">(Optional)</span>
-										</label>
-										<input
-											type="date"
-											id="end_date"
-											bind:value={formData.end_date}
-											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
+										<!-- End Date (Optional when editing) -->
+										<div>
+											<label
+												for="end_date"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>
+												End Date <span class="text-xs text-gray-400">(Optional)</span>
+											</label>
+											<input
+												type="date"
+												id="end_date"
+												bind:value={formData.end_date}
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
 
 									<!-- Contact Information Section -->
 									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
