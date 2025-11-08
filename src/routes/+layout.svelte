@@ -3,7 +3,6 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import { setupAuthFetch, isLoggedIn } from '$lib/auth';
 	import { darkMode, toggleDarkMode } from '$lib/darkMode';
 	import NotificationCenter from '$lib/NotificationCenter.svelte';
@@ -163,7 +162,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="/icon2.png" type="image/png" />
 </svelte:head>
 
 <!-- Top Right Controls -->

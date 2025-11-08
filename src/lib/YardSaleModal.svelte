@@ -327,7 +327,7 @@
 		aria-modal="true"
 	>
 		<div
-			class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
+			class="flex min-h-screen items-end justify-center px-4 pt-6 pb-6 text-center sm:block sm:p-0"
 		>
 			<!-- Background overlay -->
 			<div
@@ -338,11 +338,11 @@
 
 			<!-- Modal panel -->
 			<div
-				class="relative inline-block transform overflow-hidden rounded-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
+				class="relative inline-block w-full transform overflow-hidden rounded-t-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:rounded-2xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
 			>
 				<!-- Header -->
 				<div
-					class="border-b border-gray-200/50 bg-white/80 px-6 py-5 dark:border-gray-700/50 dark:bg-gray-800/80"
+					class="border-b border-gray-200/50 bg-white/80 px-6 py-6 dark:border-gray-700/50 dark:bg-gray-800/80 sm:py-5"
 				>
 					<div class="flex items-center justify-between">
 						<h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
@@ -367,8 +367,8 @@
 				</div>
 
 				<!-- Form -->
-				<form onsubmit={handleSubmit} class="max-h-[70vh] overflow-y-auto">
-					<div class="bg-white/80 px-6 py-6 dark:bg-gray-800/80">
+				<form onsubmit={handleSubmit} class="max-h-[85vh] overflow-y-auto sm:max-h-[70vh]">
+					<div class="bg-white/80 px-6 py-8 dark:bg-gray-800/80 sm:px-6 sm:py-6">
 						<!-- Error Message -->
 						{#if error}
 							<div
@@ -400,13 +400,13 @@
 							</div>
 						{/if}
 
-						<div class="space-y-6">
+						<div class="space-y-8 sm:space-y-6">
 							<!-- Required Fields -->
 							<!-- Title -->
 							<div>
 								<label
 									for="title"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 								>
 									Title <span class="text-red-500">*</span>
 								</label>
@@ -415,7 +415,7 @@
 									id="title"
 									bind:value={formData.title}
 									required
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									placeholder="e.g., Spring Cleaning Yard Sale"
 								/>
 							</div>
@@ -424,7 +424,7 @@
 							<div>
 								<label
 									for="description"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 								>
 									Description <span class="text-red-500">*</span>
 								</label>
@@ -433,7 +433,7 @@
 									bind:value={formData.description}
 									required
 									rows="4"
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									placeholder="Describe what you're selling..."
 								></textarea>
 							</div>
@@ -444,7 +444,7 @@
 								<div>
 									<label
 										for="start_date"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>
 										Start Date <span class="text-red-500">*</span>
 									</label>
@@ -453,7 +453,7 @@
 										id="start_date"
 										bind:value={formData.start_date}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									/>
 								</div>
 
@@ -461,7 +461,7 @@
 								<div>
 									<label
 										for="end_date"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>
 										End Date <span class="text-red-500">*</span>
 									</label>
@@ -470,7 +470,7 @@
 										id="end_date"
 										bind:value={formData.end_date}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									/>
 								</div>
 
@@ -478,7 +478,7 @@
 								<div>
 									<label
 										for="start_time"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>
 										Start Time <span class="text-red-500">*</span>
 									</label>
@@ -487,7 +487,7 @@
 										id="start_time"
 										bind:value={formData.start_time}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									/>
 								</div>
 
@@ -495,7 +495,7 @@
 								<div>
 									<label
 										for="end_time"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>
 										End Time <span class="text-red-500">*</span>
 									</label>
@@ -504,7 +504,7 @@
 										id="end_time"
 										bind:value={formData.end_time}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									/>
 								</div>
 							</div>
@@ -513,7 +513,7 @@
 							<div>
 								<label
 									for="address"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 								>
 									Address <span class="text-red-500">*</span>
 								</label>
@@ -522,7 +522,7 @@
 									id="address"
 									bind:value={formData.address}
 									required
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									placeholder="123 Main Street"
 								/>
 							</div>
@@ -533,7 +533,7 @@
 								<div>
 									<label
 										for="city"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>
 										City <span class="text-red-500">*</span>
 									</label>
@@ -542,7 +542,7 @@
 										id="city"
 										bind:value={formData.city}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 										placeholder="Anytown"
 									/>
 								</div>
@@ -551,7 +551,7 @@
 								<div>
 									<label
 										for="state"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>
 										State <span class="text-red-500">*</span>
 									</label>
@@ -559,7 +559,7 @@
 										id="state"
 										bind:value={formData.state}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									>
 										<option value="">Select State</option>
 										{#each states as state}
@@ -572,7 +572,7 @@
 								<div>
 									<label
 										for="zip_code"
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>
 										ZIP Code <span class="text-red-500">*</span>
 									</label>
@@ -581,7 +581,7 @@
 										id="zip_code"
 										bind:value={formData.zip_code}
 										required
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 										placeholder="12345"
 									/>
 								</div>
@@ -591,7 +591,7 @@
 							<div>
 								<label
 									for="contact_name"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 								>
 									Contact Name <span class="text-red-500">*</span>
 								</label>
@@ -600,7 +600,7 @@
 									id="contact_name"
 									bind:value={formData.contact_name}
 									required
-									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									placeholder="Your Name"
 								/>
 							</div>
@@ -609,7 +609,7 @@
 							{#if isEditing}
 								<div>
 									<label
-										class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 										for="status"
 									>
 										Status <span class="text-red-500">*</span>
@@ -617,7 +617,7 @@
 									<select
 										id="status"
 										bind:value={formData.status}
-										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+										class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 									>
 										<option value="active">Active</option>
 										<option value="on_break">On Break</option>
@@ -630,7 +630,7 @@
 							<button
 								type="button"
 								onclick={() => (showOptionalFields = !showOptionalFields)}
-								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-4 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:py-3"
 							>
 								<span>More Options</span>
 								<FontAwesomeIcon
@@ -648,7 +648,7 @@
 										<div>
 											<label
 												for="contact_phone"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 											>
 												Phone <span class="text-xs text-gray-400">(Optional)</span>
 											</label>
@@ -656,7 +656,7 @@
 												type="tel"
 												id="contact_phone"
 												bind:value={formData.contact_phone}
-												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 												placeholder="(555) 123-4567"
 											/>
 										</div>
@@ -665,7 +665,7 @@
 										<div>
 											<label
 												for="contact_email"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 											>
 												Email <span class="text-xs text-gray-400">(Optional)</span>
 											</label>
@@ -673,7 +673,7 @@
 												type="email"
 												id="contact_email"
 												bind:value={formData.contact_email}
-												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 												placeholder="your@email.com"
 											/>
 										</div>
@@ -683,7 +683,7 @@
 									{#if formData.status === 'on_break' || formData.status === 'closed'}
 										<div>
 											<label
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 												for="status-reason"
 											>
 												Status Reason <span class="text-xs text-gray-400">(Optional)</span>
@@ -693,7 +693,7 @@
 												type="text"
 												bind:value={formData.status_reason}
 												placeholder="e.g., Taking a lunch break, All items sold, etc."
-												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 											/>
 										</div>
 									{/if}
@@ -702,14 +702,14 @@
 									<div>
 										<label
 											for="price_range"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 										>
 											Price Range <span class="text-xs text-gray-400">(Optional)</span>
 										</label>
 										<select
 											id="price_range"
 											bind:value={formData.price_range}
-											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 										>
 											<option value="">Select Price Range</option>
 											{#each priceRanges as range}
@@ -780,7 +780,7 @@
 									<div>
 										<label
 											for="venmo-url"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 										>
 											Venmo URL <span class="text-xs text-gray-400">(Optional)</span>
 										</label>
@@ -801,7 +801,7 @@
 												// Venmo URL is independent of payment methods
 											}}
 											placeholder="https://venmo.com/your-username"
-											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 										/>
 										<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 											Add your Venmo profile URL to allow customers to pay directly
@@ -812,7 +812,7 @@
 									<div>
 										<label
 											for="facebook-url"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 										>
 											Facebook Marketplace URL <span class="text-xs text-gray-400">(Optional)</span>
 										</label>
@@ -830,7 +830,7 @@
 												}
 											}}
 											placeholder="https://www.facebook.com/marketplace/item/..."
-											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 										/>
 										<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 											Link to your Facebook Marketplace listing for additional advertising
@@ -856,7 +856,7 @@
 										{#if formData.photos && formData.photos.length > 0}
 											<div class="mt-4">
 												<div
-													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+													class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 												>
 													Featured Image <span class="text-xs text-gray-400">(Optional)</span>
 												</div>
@@ -945,12 +945,12 @@
 
 					<!-- Footer -->
 					<div
-						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-4 sm:flex sm:flex-row-reverse dark:border-gray-700/50 dark:bg-gray-700/80"
+						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-6 sm:flex sm:flex-row-reverse dark:border-gray-700/50 dark:bg-gray-700/80 sm:py-4"
 					>
 						<button
 							type="submit"
 							disabled={loading}
-							class="inline-flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto"
+							class="inline-flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto sm:py-3.5"
 						>
 							{#if loading}
 								<svg class="mr-3 h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">

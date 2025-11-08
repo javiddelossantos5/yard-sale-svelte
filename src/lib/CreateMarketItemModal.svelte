@@ -220,7 +220,7 @@
 {#if isOpen}
 	<div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
 		<div
-			class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
+			class="flex min-h-screen items-end justify-center px-4 pt-6 pb-6 text-center sm:block sm:p-0"
 		>
 			<div
 				class="fixed inset-0 bg-black/50 backdrop-blur-sm"
@@ -229,10 +229,10 @@
 			></div>
 
 			<div
-				class="relative inline-block transform overflow-hidden rounded-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
+				class="relative inline-block w-full transform overflow-hidden rounded-t-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:rounded-2xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
 			>
 				<div
-					class="border-b border-gray-200/50 bg-white/80 px-6 py-5 dark:border-gray-700/50 dark:bg-gray-800/80"
+					class="border-b border-gray-200/50 bg-white/80 px-6 py-6 dark:border-gray-700/50 dark:bg-gray-800/80 sm:py-5"
 				>
 					<div class="flex items-center justify-between">
 						<h3 class="text-xl font-semibold text-gray-900 dark:text-white">Post New Item</h3>
@@ -254,8 +254,8 @@
 					</div>
 				</div>
 
-				<form onsubmit={handleSubmit} class="max-h-[70vh] overflow-y-auto">
-					<div class="bg-white/80 px-6 py-6 dark:bg-gray-800/80">
+				<form onsubmit={handleSubmit} class="max-h-[85vh] overflow-y-auto sm:max-h-[70vh]">
+					<div class="bg-white/80 px-6 py-8 dark:bg-gray-800/80 sm:px-6 sm:py-6">
 						{#if error}
 							<div
 								class="mb-6 rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-900/20 dark:ring-red-800"
@@ -264,12 +264,12 @@
 							</div>
 						{/if}
 
-						<div class="space-y-6">
+						<div class="space-y-8 sm:space-y-6">
 							<!-- Required Fields -->
 							<div>
 								<label
 									for="name"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>Name <span class="text-red-500">*</span></label
 								>
 								<input
@@ -278,14 +278,14 @@
 									bind:value={formData.name}
 									required
 									placeholder="e.g., Dyson Vacuum"
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 								/>
 							</div>
 
 							<div>
 								<label
 									for="description"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>Description <span class="font-normal text-gray-400">(Optional)</span></label
 								>
 								<textarea
@@ -293,14 +293,14 @@
 									rows="4"
 									bind:value={formData.description}
 									placeholder="Describe the item..."
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 								></textarea>
 							</div>
 
 							<div>
 								<label
 									for="price"
-									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
 									>Price <span class="text-red-500">*</span></label
 								>
 								<input
@@ -311,12 +311,12 @@
 									bind:value={formData.price}
 									required
 									disabled={formData.is_free}
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
 								/>
 							</div>
 
 							<label
-								class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+								class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 sm:p-4"
 							>
 								<input
 									type="checkbox"
@@ -332,7 +332,7 @@
 							<button
 								type="button"
 								onclick={() => (showOptionalFields = !showOptionalFields)}
-								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-4 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:py-3"
 							>
 								<span>More Options</span>
 								<FontAwesomeIcon
@@ -360,7 +360,7 @@
 									</div>
 
 									<label
-										class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 sm:p-4"
 									>
 										<input
 											type="checkbox"
@@ -627,7 +627,7 @@
 									</div>
 
 									<label
-										class="flex items-center rounded-lg bg-gray-50 p-4 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 sm:p-4"
 									>
 										<input
 											type="checkbox"
@@ -644,12 +644,12 @@
 					</div>
 
 					<div
-						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-4 sm:flex sm:flex-row-reverse dark:border-gray-700/50 dark:bg-gray-700/80"
+						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-6 sm:flex sm:flex-row-reverse dark:border-gray-700/50 dark:bg-gray-700/80 sm:py-4"
 					>
 						<button
 							type="submit"
 							disabled={loading}
-							class="inline-flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto"
+							class="inline-flex w-full justify-center rounded-xl border border-transparent bg-blue-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all duration-200 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:ml-3 sm:w-auto sm:py-3.5"
 						>
 							{#if loading}
 								<svg class="mr-3 h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"

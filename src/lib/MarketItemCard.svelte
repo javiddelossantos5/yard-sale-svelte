@@ -444,20 +444,28 @@
 				</a>
 			{/if}
 			{#if item.venmo_url}
-				<span
-					class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800/50"
+				<a
+					href={item.venmo_url}
+					target="_blank"
+					rel="noopener noreferrer"
+					onclick={(e) => e.stopPropagation()}
+					class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800/50 dark:hover:bg-blue-900/50"
 				>
 					<FontAwesomeIcon icon={faMoneyBillWave} class="h-3 w-3" />
 					Venmo
-				</span>
+				</a>
 			{/if}
 			{#if item.facebook_url}
-				<span
-					class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800/50"
+				<a
+					href={item.facebook_url}
+					target="_blank"
+					rel="noopener noreferrer"
+					onclick={(e) => e.stopPropagation()}
+					class="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-200 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-800/50 dark:hover:bg-blue-900/50"
 				>
 					<FontAwesomeIcon icon={faFacebook} class="h-3 w-3" />
 					Facebook
-				</span>
+				</a>
 			{/if}
 		</div>
 	</div>
