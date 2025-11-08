@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { login, register, type LoginRequest, type RegisterRequest } from '$lib/api';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { faEye, faEyeSlash, faLock, faUnlock } from '@fortawesome/free-solid-svg-icons';
 
 	// Form mode toggle
 	let isRegisterMode = $state(false);
@@ -8,6 +10,9 @@
 	// Login form data
 	let username = $state('');
 	let password = $state('');
+	let showPassword = $state(false);
+	let showRegisterPassword = $state(false);
+	let showRegisterPasswordConfirm = $state(false);
 
 	// Register form data
 	let registerData = $state<RegisterRequest>({
@@ -177,6 +182,9 @@
 		// Clear form data when switching modes
 		username = '';
 		password = '';
+		showPassword = false;
+		showRegisterPassword = false;
+		showRegisterPasswordConfirm = false;
 		registerData = {
 			username: '',
 			email: '',
@@ -258,18 +266,31 @@
 						>
 							Password
 						</label>
-						<div>
+						<div class="relative">
 							<input
 								id="password"
 								name="password"
-								type="password"
+								type={showPassword ? 'text' : 'password'}
 								autocomplete="current-password"
 								required
 								bind:value={password}
-								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 pr-12 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your password"
 								disabled={loading}
 							/>
+							<button
+								type="button"
+								onclick={() => (showPassword = !showPassword)}
+								class="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+								aria-label={showPassword ? 'Hide password' : 'Show password'}
+								tabindex="-1"
+							>
+								{#if showPassword}
+									<FontAwesomeIcon icon={faLock} class="h-5 w-5" />
+								{:else}
+									<FontAwesomeIcon icon={faEye} class="h-5 w-5" />
+								{/if}
+							</button>
 						</div>
 					</div>
 
@@ -417,18 +438,31 @@
 						>
 							Password *
 						</label>
-						<div>
+						<div class="relative">
 							<input
 								id="reg-password"
 								name="password"
-								type="password"
+								type={showRegisterPassword ? 'text' : 'password'}
 								autocomplete="new-password"
 								required
 								bind:value={registerData.password}
-								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 pr-12 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your password"
 								disabled={loading}
 							/>
+							<button
+								type="button"
+								onclick={() => (showRegisterPassword = !showRegisterPassword)}
+								class="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+								aria-label={showRegisterPassword ? 'Hide password' : 'Show password'}
+								tabindex="-1"
+							>
+								{#if showRegisterPassword}
+									<FontAwesomeIcon icon={faLock} class="h-5 w-5" />
+								{:else}
+									<FontAwesomeIcon icon={faEye} class="h-5 w-5" />
+								{/if}
+							</button>
 						</div>
 					</div>
 
@@ -440,24 +474,39 @@
 						>
 							Confirm Password *
 						</label>
-						<div>
+						<div class="relative">
 							<input
 								id="reg-password-confirm"
 								name="password_confirm"
-								type="password"
+								type={showRegisterPasswordConfirm ? 'text' : 'password'}
 								autocomplete="new-password"
 								required
 								bind:value={registerData.password_confirm}
-								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 {registerData.password && registerData.password_confirm && registerData.password !== registerData.password_confirm ? 'ring-red-500 focus:ring-red-500' : ''}"
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 pr-12 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400 {registerData.password &&
+								registerData.password_confirm &&
+								registerData.password !== registerData.password_confirm
+									? 'ring-red-500 focus:ring-red-500'
+									: ''}"
 								placeholder="Re-enter your password"
 								disabled={loading}
 							/>
-							{#if registerData.password && registerData.password_confirm && registerData.password !== registerData.password_confirm}
-								<p class="mt-1 text-sm text-red-600 dark:text-red-400">
-									Passwords do not match
-								</p>
-							{/if}
+							<button
+								type="button"
+								onclick={() => (showRegisterPasswordConfirm = !showRegisterPasswordConfirm)}
+								class="absolute top-1/2 right-3 flex -translate-y-1/2 items-center justify-center text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+								aria-label={showRegisterPasswordConfirm ? 'Hide password' : 'Show password'}
+								tabindex="-1"
+							>
+								{#if showRegisterPasswordConfirm}
+									<FontAwesomeIcon icon={faLock} class="h-5 w-5" />
+								{:else}
+									<FontAwesomeIcon icon={faEye} class="h-5 w-5" />
+								{/if}
+							</button>
 						</div>
+						{#if registerData.password && registerData.password_confirm && registerData.password !== registerData.password_confirm}
+							<p class="mt-1 text-sm text-red-600 dark:text-red-400">Passwords do not match</p>
+						{/if}
 					</div>
 
 					<!-- Full Name Field -->
