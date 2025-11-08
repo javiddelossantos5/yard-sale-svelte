@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import type { MarketItem } from '$lib/api';
 	import { getAuthenticatedImageUrl } from '$lib/api';
@@ -58,6 +59,45 @@
 			cardImageIndex = 0;
 			hasNavigated = false; // Reset navigation flag when item changes
 		}
+	});
+
+	// Reset navigation flag on mount and when page becomes visible (user navigated back)
+	onMount(() => {
+		hasNavigated = false;
+
+		// Reset when page becomes visible (user navigated back)
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === 'visible') {
+				// Small delay to ensure we're back on the listing page
+				setTimeout(() => {
+					if (
+						window.location.pathname.startsWith('/market') &&
+						!window.location.pathname.match(/^\/market\/[^/]+$/)
+					) {
+						hasNavigated = false;
+					}
+				}, 100);
+			}
+		};
+
+		// Reset when window regains focus (user navigated back)
+		const handleFocus = () => {
+			// Check if we're on the market listing page (not a detail page)
+			if (
+				window.location.pathname === '/market' ||
+				window.location.pathname.startsWith('/market?')
+			) {
+				hasNavigated = false;
+			}
+		};
+
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+		window.addEventListener('focus', handleFocus);
+
+		return () => {
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+			window.removeEventListener('focus', handleFocus);
+		};
 	});
 
 	function nextCardImage(e: Event) {
