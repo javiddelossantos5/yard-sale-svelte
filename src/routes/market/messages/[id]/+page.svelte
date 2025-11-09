@@ -8,6 +8,7 @@
 		markMarketItemMessageRead,
 		getMarketItemConversations,
 		getCurrentUser,
+		getAuthenticatedImageUrl,
 		type MarketItemMessage,
 		type CurrentUser
 	} from '$lib/api';
@@ -468,14 +469,30 @@
 				<div class="mx-auto max-w-4xl space-y-6">
 					{#each messages as message}
 						<div class="flex gap-4 {isMyMessage(message) ? 'flex-row-reverse' : 'flex-row'}">
+							{#if message.sender_profile_picture && message.sender_profile_picture.trim() !== ''}
+								<img
+									src={getAuthenticatedImageUrl(message.sender_profile_picture)}
+									alt={message.sender_username || 'Unknown'}
+									class="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+									onerror={(e) => {
+										// Fallback to initial if image fails to load
+										const img = e.target as HTMLImageElement;
+										img.style.display = 'none';
+										const fallback = img.parentElement?.querySelector('.profile-fallback') as HTMLElement;
+										if (fallback) fallback.style.display = 'flex';
+									}}
+								/>
+							{/if}
 							<div
-								class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full {isMyMessage(
+								class="profile-fallback flex h-10 w-10 shrink-0 items-center justify-center rounded-full {isMyMessage(
 									message
 								)
 									? 'bg-blue-600 text-white'
-									: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}"
+									: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'} {message.sender_profile_picture && message.sender_profile_picture.trim() !== '' ? 'hidden' : ''}"
 							>
-								<FontAwesomeIcon icon={faUser} class="h-5 w-5" />
+								<span class="text-sm font-medium">
+									{(message.sender_username || 'U').charAt(0).toUpperCase()}
+								</span>
 							</div>
 							<div
 								class="max-w-[85%] rounded-2xl px-5 py-3 shadow-sm {isMyMessage(message)

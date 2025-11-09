@@ -305,10 +305,28 @@
 				}}
 				class="flex items-center rounded-full bg-gray-100/60 px-2.5 py-1.5 text-xs text-gray-700 transition-all duration-300 hover:bg-blue-100/60 hover:text-blue-700 dark:bg-gray-700/60 dark:text-gray-200 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
 			>
+				{#if item.owner_profile_picture && item.owner_profile_picture.trim() !== ''}
+					<img
+						src={getAuthenticatedImageUrl(item.owner_profile_picture)}
+						alt={item.owner_username}
+						class="mr-1.5 h-5 w-5 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+						onerror={(e) => {
+							const img = e.target as HTMLImageElement;
+							img.style.display = 'none';
+							const fallback = img.parentElement?.querySelector('.owner-fallback') as HTMLElement;
+							if (fallback) fallback.style.display = 'flex';
+						}}
+					/>
+				{/if}
 				<div
-					class="mr-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600"
+					class="owner-fallback mr-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 {item.owner_profile_picture &&
+					item.owner_profile_picture.trim() !== ''
+						? 'hidden'
+						: ''}"
 				>
-					<FontAwesomeIcon icon={faUser} class="h-2.5 w-2.5 text-white" />
+					<span class="text-[10px] font-bold text-white">
+						{item.owner_username.charAt(0).toUpperCase()}
+					</span>
 				</div>
 				<span class="font-semibold">by {item.owner_username}</span>
 				{#if item.owner_is_admin}

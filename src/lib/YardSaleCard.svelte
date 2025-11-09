@@ -204,10 +204,25 @@
 				}}
 				class="flex items-center rounded-full bg-gray-100/60 px-3 py-2 text-sm text-gray-700 transition-all duration-300 hover:bg-blue-100/60 hover:text-blue-700 dark:bg-gray-700/60 dark:text-gray-200 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
 			>
+				{#if yardSale.owner_profile_picture && yardSale.owner_profile_picture.trim() !== ''}
+					<img
+						src={getAuthenticatedImageUrl(yardSale.owner_profile_picture)}
+						alt={yardSale.owner_username}
+						class="mr-2 h-6 w-6 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+						onerror={(e) => {
+							const img = e.target as HTMLImageElement;
+							img.style.display = 'none';
+							const fallback = img.parentElement?.querySelector('.owner-fallback') as HTMLElement;
+							if (fallback) fallback.style.display = 'flex';
+						}}
+					/>
+				{/if}
 				<div
-					class="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600"
+					class="owner-fallback mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 {yardSale.owner_profile_picture && yardSale.owner_profile_picture.trim() !== '' ? 'hidden' : ''}"
 				>
-					<FontAwesomeIcon icon="user" class="h-3 w-3 text-white" />
+					<span class="text-xs font-bold text-white">
+						{yardSale.owner_username.charAt(0).toUpperCase()}
+					</span>
 				</div>
 				<span class="font-semibold">by {yardSale.owner_username}</span>
 				{#if yardSale.owner_is_admin}

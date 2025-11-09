@@ -12,6 +12,7 @@
 		getConversationMessages,
 		sendConversationMessage,
 		isAdmin,
+		getAuthenticatedImageUrl,
 		type CurrentUser,
 		type Rating,
 		type Report,
@@ -20,6 +21,7 @@
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import RatingModal from '$lib/RatingModal.svelte';
 	import ReportModal from '$lib/ReportModal.svelte';
+	import EditProfileModal from '$lib/EditProfileModal.svelte';
 	import { unreadMessageCount, loadNotificationCounts } from '$lib/notifications';
 	import {
 		faBars,
@@ -29,7 +31,9 @@
 		faUser,
 		faArrowRightFromBracket,
 		faChevronLeft,
-		faShieldAlt
+		faShieldAlt,
+		faPencil,
+		faTag
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 
@@ -46,6 +50,7 @@
 	let showReportModal = $state(false);
 	let showMessagesList = $state(false);
 	let showConversationModal = $state(false);
+	let showEditProfileModal = $state(false);
 
 	// Conversation state
 	let selectedConversationId = $state<number | null>(null);
@@ -55,8 +60,20 @@
 
 	let userId = $derived($page.params.id || '');
 	let isOwnProfile = $derived(currentUser?.id === userId);
-	// Only admins can rate/review users
-	let canRate = $derived(currentUser && !isOwnProfile && isAdmin(currentUser));
+	// All logged-in users can rate/review other users (not their own profile)
+	// However, if the profile user is an admin, only admins can rate them
+	let canRate = $derived(
+		currentUser && 
+		!isOwnProfile && 
+		(!isAdmin(profileUser) || isAdmin(currentUser))
+	);
+	// All logged-in users can report other users (not their own profile)
+	// However, if the profile user is an admin, only admins can report them
+	let canReport = $derived(
+		currentUser && 
+		!isOwnProfile && 
+		(!isAdmin(profileUser) || isAdmin(currentUser))
+	);
 
 	// Function to sort messages with unread ones at the top
 	function getSortedMessages() {
@@ -187,8 +204,9 @@
 	}
 
 	function handleReportUser() {
-		// Only admins can report users
-		if (currentUser && !isOwnProfile && isAdmin(currentUser)) {
+		// All logged-in users can report other users (not their own profile)
+		// However, if the profile user is an admin, only admins can report them
+		if (canReport) {
 			showReportModal = true;
 		}
 	}
@@ -310,6 +328,17 @@
 
 	function handleLogout() {
 		logout(); // logout() now handles redirect automatically
+	}
+
+	async function handleEditProfileSuccess() {
+		// Reload current user and profile user data
+		if (userId) {
+			await Promise.all([
+				loadProfileUser(userId),
+				loadCurrentUser()
+			]);
+		}
+		showEditProfileModal = false;
 	}
 </script>
 
@@ -582,11 +611,19 @@
 					<div class="flex flex-col items-center text-center sm:flex-row sm:text-left">
 						<!-- Avatar -->
 						<div class="mb-4 sm:mr-6 sm:mb-0">
-							<div
-								class="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white"
-							>
-								{profileUser.full_name?.charAt(0).toUpperCase() || '?'}
-							</div>
+							{#if profileUser.profile_picture}
+								<img
+									src={getAuthenticatedImageUrl(profileUser.profile_picture)}
+									alt={profileUser.full_name || 'Profile'}
+									class="h-20 w-20 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
+								/>
+							{:else}
+								<div
+									class="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white"
+								>
+									{profileUser.full_name?.charAt(0).toUpperCase() || '?'}
+								</div>
+							{/if}
 						</div>
 
 						<!-- Profile Info -->
@@ -610,21 +647,52 @@
 
 								<!-- Trust Metrics -->
 								<div class="mt-3 flex flex-wrap items-center gap-4">
-									{#if profileUser.average_rating !== undefined}
-										<div class="flex items-center">
-											<div class="flex items-center">
+									{#if ratings.length > 0 || (profileUser.total_ratings && profileUser.total_ratings > 0) || (profileUser.average_rating && profileUser.average_rating > 0)}
+										{@const calculatedAverageRating = ratings.length > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length : (profileUser.average_rating || 0)}
+										{@const calculatedTotalRatings = ratings.length > 0 ? ratings.length : (profileUser.total_ratings || 0)}
+										<div class="flex items-center gap-2">
+											<div class="flex items-center gap-0.5">
 												{#each Array(5) as _, i}
-													<FontAwesomeIcon
-														icon={i < Math.floor(profileUser.average_rating || 0) ? 'star' : 'star'}
-														class="h-4 w-4 {i < Math.floor(profileUser.average_rating || 0)
-															? 'text-yellow-400'
-															: 'text-gray-300 dark:text-gray-600'}"
-													/>
+													{@const starIndex = i + 1}
+													{@const floorRating = Math.floor(calculatedAverageRating)}
+													{@const hasDecimal = calculatedAverageRating % 1 !== 0}
+													{@const isFullyFilled = starIndex <= floorRating}
+													{@const isHalfFilled = starIndex === floorRating + 1 && hasDecimal}
+													{#if isFullyFilled}
+														<FontAwesomeIcon
+															icon="star"
+															class="h-4 w-4 text-yellow-400"
+														/>
+													{:else if isHalfFilled}
+														<div class="relative h-4 w-4">
+															<FontAwesomeIcon
+																icon="star"
+																class="absolute h-4 w-4 text-gray-300 dark:text-gray-600"
+															/>
+															<FontAwesomeIcon
+																icon="star"
+																class="absolute h-4 w-4 text-yellow-400"
+																style="clip-path: inset(0 50% 0 0);"
+															/>
+														</div>
+													{:else}
+														<FontAwesomeIcon
+															icon="star"
+															class="h-4 w-4 text-gray-300 dark:text-gray-600"
+														/>
+													{/if}
 												{/each}
 											</div>
-											<span class="ml-2 text-sm font-medium text-gray-900 dark:text-white">
-												{profileUser.average_rating?.toFixed(1)} ({profileUser.total_ratings || 0} reviews)
+											<span class="text-sm font-semibold text-gray-900 dark:text-white">
+												{calculatedAverageRating.toFixed(1)}
 											</span>
+											<span class="text-sm text-gray-500 dark:text-gray-400">
+												({calculatedTotalRatings} {calculatedTotalRatings === 1 ? 'review' : 'reviews'})
+											</span>
+										</div>
+									{:else}
+										<div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+											<span>No reviews yet</span>
 										</div>
 									{/if}
 								</div>
@@ -642,6 +710,13 @@
 						<!-- Action Buttons -->
 						<div class="mt-4 flex flex-col gap-2 sm:mt-0">
 							{#if isOwnProfile}
+								<button
+									onclick={() => (showEditProfileModal = true)}
+									class="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95"
+								>
+									<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4" />
+									Edit Profile
+								</button>
 								<button
 									onclick={handleViewMessages}
 									class="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-purple-700 active:scale-95"
@@ -661,13 +736,13 @@
 								</button>
 							{/if}
 
-							{#if currentUser && !isOwnProfile && isAdmin(currentUser)}
+							{#if canReport}
 								<button
 									onclick={handleReportUser}
-									class="inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+									class="inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-red-700 active:scale-95"
 								>
 									<FontAwesomeIcon icon="flag" class="mr-2 h-4 w-4" />
-									Report
+									Report User
 								</button>
 							{/if}
 						</div>
@@ -686,53 +761,110 @@
 					<div
 						class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 					>
-						<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Reviews</h2>
-						<div class="space-y-4">
+						<h2 class="mb-6 text-xl font-bold text-gray-900 dark:text-white">
+							Reviews ({ratings.length})
+						</h2>
+						<div class="space-y-6">
 							{#each ratings as rating}
 								<div
-									class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0 dark:border-gray-700"
+									class="rounded-xl border border-gray-200 bg-gray-50/50 p-5 transition-all hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50 dark:hover:border-gray-600 dark:hover:bg-gray-800"
 								>
-									<div class="flex items-start justify-between">
-										<div class="flex-1">
-											<div class="flex items-center gap-2">
-												<div class="flex items-center">
-													{#each Array(5) as _, i}
-														<FontAwesomeIcon
-															icon="star"
-															class="h-4 w-4 {i < rating.rating
-																? 'text-yellow-400'
-																: 'text-gray-300 dark:text-gray-600'}"
-														/>
-													{/each}
-												</div>
-												{#if rating.reviewer_id}
-													<button
-														onclick={(e) => {
-															e.stopPropagation();
-															goto(`/profile/${rating.reviewer_id}`);
+									<div class="flex items-start gap-4">
+										<!-- Reviewer Profile Picture -->
+										<div class="shrink-0">
+											{#if rating.reviewer_profile_picture && rating.reviewer_profile_picture.trim() !== ''}
+												<button
+													onclick={(e) => {
+														e.stopPropagation();
+														if (rating.reviewer_id) goto(`/profile/${rating.reviewer_id}`);
+													}}
+													class="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full transition-transform hover:scale-105"
+												>
+													<img
+														src={getAuthenticatedImageUrl(rating.reviewer_profile_picture)}
+														alt={rating.reviewer_username || 'Anonymous'}
+														class="h-12 w-12 rounded-full object-cover ring-2 ring-white shadow-md dark:ring-gray-700"
+														onerror={(e) => {
+															const img = e.target as HTMLImageElement;
+															img.style.display = 'none';
+															const fallback = img.parentElement?.querySelector('.reviewer-fallback') as HTMLElement;
+															if (fallback) fallback.style.display = 'flex';
 														}}
-														class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline focus:outline-none focus:underline dark:text-blue-400 dark:hover:text-blue-300"
-													>
-														{rating.reviewer_username || 'Anonymous'}
-													</button>
-												{:else}
-													<span class="text-sm font-medium text-gray-900 dark:text-white">
-														{rating.reviewer_username || 'Anonymous'}
+													/>
+												</button>
+											{/if}
+											{#if rating.reviewer_id}
+												<button
+													onclick={(e) => {
+														e.stopPropagation();
+														goto(`/profile/${rating.reviewer_id}`);
+													}}
+													class="reviewer-fallback flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-md transition-all hover:scale-105 hover:ring-2 hover:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {rating.reviewer_profile_picture && rating.reviewer_profile_picture.trim() !== '' ? 'hidden' : ''}"
+												>
+													<span class="text-base font-bold text-white">
+														{(rating.reviewer_username || 'A').charAt(0).toUpperCase()}
 													</span>
-												{/if}
-												<span class="text-xs text-gray-500 dark:text-gray-400">
+												</button>
+											{:else}
+												<div
+													class="reviewer-fallback flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-md {rating.reviewer_profile_picture && rating.reviewer_profile_picture.trim() !== '' ? 'hidden' : ''}"
+												>
+													<span class="text-base font-bold text-white">
+														{(rating.reviewer_username || 'A').charAt(0).toUpperCase()}
+													</span>
+												</div>
+											{/if}
+										</div>
+
+										<!-- Review Content -->
+										<div class="flex-1 min-w-0">
+											<!-- Header: Name, Stars, Date -->
+											<div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+												<div class="flex items-center gap-3 flex-wrap">
+													{#if rating.reviewer_id}
+														<button
+															onclick={(e) => {
+																e.stopPropagation();
+																goto(`/profile/${rating.reviewer_id}`);
+															}}
+															class="text-base font-semibold text-gray-900 hover:text-blue-600 hover:underline focus:outline-none focus:underline dark:text-white dark:hover:text-blue-400"
+														>
+															{rating.reviewer_username || 'Anonymous'}
+														</button>
+													{:else}
+														<span class="text-base font-semibold text-gray-900 dark:text-white">
+															{rating.reviewer_username || 'Anonymous'}
+														</span>
+													{/if}
+													<div class="flex items-center gap-1">
+														{#each Array(5) as _, i}
+															<FontAwesomeIcon
+																icon="star"
+																class="h-4 w-4 {i < rating.rating
+																	? 'text-yellow-400 drop-shadow-sm'
+																	: 'text-gray-300 dark:text-gray-600'}"
+															/>
+														{/each}
+													</div>
+												</div>
+												<span class="text-xs font-medium text-gray-500 dark:text-gray-400">
 													{formatDate(rating.created_at)}
 												</span>
 											</div>
+
+											<!-- Review Text -->
 											{#if rating.review_text}
-												<p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+												<p class="mb-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
 													{rating.review_text}
 												</p>
 											{/if}
+
+											<!-- Yard Sale Reference -->
 											{#if rating.yard_sale_title}
-												<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-													For: {rating.yard_sale_title}
-												</p>
+												<div class="mt-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+													<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
+													<span>For: <span class="font-medium">{rating.yard_sale_title}</span></span>
+												</div>
 											{/if}
 										</div>
 									</div>
@@ -764,6 +896,15 @@
 		reportedUserName={profileUser.full_name || 'Unknown User'}
 		onClose={() => (showReportModal = false)}
 		onSuccess={handleReportSuccess}
+	/>
+{/if}
+
+{#if showEditProfileModal && currentUser}
+	<EditProfileModal
+		isOpen={showEditProfileModal}
+		user={currentUser}
+		onClose={() => (showEditProfileModal = false)}
+		onSuccess={handleEditProfileSuccess}
 	/>
 {/if}
 

@@ -35,6 +35,7 @@ export interface YardSale {
 	updated_at: string;
 	owner_id: string;
 	owner_username: string;
+	owner_profile_picture?: string | null; // Owner's profile picture URL
 	owner_average_rating?: number;
 	owner_is_admin?: boolean; // Indicates if the owner has admin permissions
 	comment_count: number;
@@ -109,6 +110,7 @@ export interface Comment {
 	updated_at: string;
 	user_id: string;
 	username: string;
+	user_profile_picture?: string | null; // Profile picture URL
 	yard_sale_id: string;
 	user_is_admin?: boolean; // Indicates if the commenter has admin permissions
 }
@@ -144,6 +146,7 @@ export interface Message {
 	conversation_id?: string; // For conversation-based messages
 	sender_id: string;
 	sender_username: string;
+	sender_profile_picture?: string | null; // Profile picture URL
 	sender_is_admin?: boolean; // Indicates if the sender has admin permissions
 	recipient_id: string;
 	recipient_username: string;
@@ -773,6 +776,7 @@ export interface CurrentUser {
 		zip: string;
 	};
 	bio: string;
+	profile_picture?: string | null; // Profile picture URL
 	permissions?: string; // User permissions (e.g., "admin", "user")
 	// Trust metrics
 	average_rating?: number;
@@ -797,8 +801,10 @@ export interface Rating {
 	created_at: string;
 	reviewer_id: string;
 	reviewer_username: string;
+	reviewer_profile_picture?: string | null; // Profile picture of the person who wrote the rating
 	rated_user_id: string;
 	rated_user_username: string;
+	rated_user_profile_picture?: string | null; // Profile picture of the user being rated
 	yard_sale_id?: string | null;
 	yard_sale_title?: string | null;
 }
@@ -1194,6 +1200,7 @@ export interface MarketItem {
 	created_at: string;
 	owner_id: string;
 	owner_username: string;
+	owner_profile_picture?: string | null; // Owner's profile picture URL
 	owner_is_admin?: boolean; // Indicates if the owner has admin permissions
 	comment_count: number;
 	is_watched?: boolean | null;
@@ -1401,6 +1408,7 @@ export interface MarketItemComment {
 	item_id: string;
 	user_id: string;
 	username?: string;
+	user_profile_picture?: string | null; // Profile picture URL
 	user_is_admin?: boolean; // Indicates if the commenter has admin permissions
 }
 
@@ -1614,6 +1622,7 @@ export interface MarketItemMessage {
 	sender_id: string;
 	recipient_id: string;
 	sender_username?: string;
+	sender_profile_picture?: string | null; // Profile picture URL
 	sender_is_admin?: boolean; // Indicates if the sender has admin permissions
 	recipient_username?: string;
 }
@@ -2353,8 +2362,45 @@ export interface UserUpdateData {
 	state?: string;
 	zip_code?: string;
 	bio?: string;
+	profile_picture?: string | null;
 	is_active?: boolean;
 	permissions?: 'admin' | 'user';
+}
+
+// Update current user's own profile
+export interface UserSelfUpdate {
+	full_name?: string;
+	phone_number?: string;
+	city?: string;
+	state?: string;
+	zip_code?: string;
+	bio?: string;
+	profile_picture?: string | null;
+}
+
+export async function updateUserProfile(userData: UserSelfUpdate): Promise<CurrentUser> {
+	const token = localStorage.getItem('access_token');
+	const response = await fetch('/api/me', {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(userData)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to update profile: ${response.status}`);
+	}
+
+	return response.json();
 }
 
 export async function updateUser(userId: string, userData: UserUpdateData): Promise<CurrentUser> {

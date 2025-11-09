@@ -1145,10 +1145,30 @@
 									onclick={() => yardSale && goto(`/profile/${yardSale.owner_id}`)}
 									class="group flex items-center rounded-2xl bg-gray-100/60 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100/60 active:scale-95 dark:bg-gray-700/60 dark:hover:bg-blue-900/30"
 								>
+									{#if yardSale.owner_profile_picture && yardSale.owner_profile_picture.trim() !== ''}
+										<img
+											src={getAuthenticatedImageUrl(yardSale.owner_profile_picture)}
+											alt={yardSale.owner_username}
+											class="mr-3 h-8 w-8 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+											onerror={(e) => {
+												const img = e.target as HTMLImageElement;
+												img.style.display = 'none';
+												const fallback = img.parentElement?.querySelector(
+													'.owner-fallback'
+												) as HTMLElement;
+												if (fallback) fallback.style.display = 'flex';
+											}}
+										/>
+									{/if}
 									<div
-										class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600"
+										class="owner-fallback mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 {yardSale.owner_profile_picture &&
+										yardSale.owner_profile_picture.trim() !== ''
+											? 'hidden'
+											: ''}"
 									>
-										<FontAwesomeIcon icon="user" class="h-4 w-4 text-white" />
+										<span class="text-sm font-bold text-white">
+											{yardSale.owner_username.charAt(0).toUpperCase()}
+										</span>
 									</div>
 									<div class="flex-1 text-left">
 										<div class="flex items-center gap-2">
@@ -1768,8 +1788,27 @@
 									>
 										<div class="flex items-start space-x-3">
 											<div class="shrink-0">
+												{#if comment.user_profile_picture && comment.user_profile_picture.trim() !== ''}
+													<img
+														src={getAuthenticatedImageUrl(comment.user_profile_picture)}
+														alt={comment.username}
+														class="h-8 w-8 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+														onerror={(e) => {
+															// Fallback to initial if image fails to load
+															const img = e.target as HTMLImageElement;
+															img.style.display = 'none';
+															const fallback = img.parentElement?.querySelector(
+																'.profile-fallback'
+															) as HTMLElement;
+															if (fallback) fallback.style.display = 'flex';
+														}}
+													/>
+												{/if}
 												<div
-													class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20"
+													class="profile-fallback flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20 {comment.user_profile_picture &&
+													comment.user_profile_picture.trim() !== ''
+														? 'hidden'
+														: ''}"
 												>
 													<span class="text-sm font-medium text-blue-600 dark:text-blue-400">
 														{comment.username.charAt(0).toUpperCase()}
