@@ -16,7 +16,7 @@
 		description: '',
 		status: 'upcoming',
 		is_public: true,
-		is_free: true,
+		is_free: false,
 		comments_enabled: true
 	});
 
@@ -199,7 +199,7 @@
 			description: '',
 			status: 'upcoming',
 			is_public: true,
-			is_free: true,
+			is_free: false,
 			comments_enabled: true
 		};
 		showOptionalFields = false;
