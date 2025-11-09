@@ -856,50 +856,50 @@
 										</div>
 									</div>
 								{/if}
+							</div>
 
-								<!-- Owner Actions -->
-								{#if canEdit}
-									<div
-										class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
-									>
-										{#if item.status !== 'sold'}
-											<button
-												onclick={openMarkAsSoldModal}
-												disabled={markingAsSold}
-												class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
-											>
-												<FontAwesomeIcon icon={faCheckCircle} class="mr-2 h-4 w-4 shrink-0" />
-												<span>{markingAsSold ? 'Marking...' : 'Mark as Sold'}</span>
-											</button>
-										{/if}
+							<!-- Owner Actions -->
+							{#if canEdit}
+								<div
+									class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
+								>
+									{#if item.status !== 'sold'}
 										<button
-											onclick={() => (isEditOpen = true)}
+											onclick={openMarkAsSoldModal}
+											disabled={markingAsSold}
+											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+										>
+											<FontAwesomeIcon icon={faCheckCircle} class="mr-2 h-4 w-4 shrink-0" />
+											<span>{markingAsSold ? 'Marking...' : 'Mark as Sold'}</span>
+										</button>
+									{/if}
+									<button
+										onclick={() => (isEditOpen = true)}
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+									>
+										<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4 shrink-0" />
+										<span>Edit</span>
+									</button>
+									<button
+										onclick={handleDeleteItem}
+										disabled={deleting}
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
+									>
+										<FontAwesomeIcon icon={faTrash} class="mr-2 h-4 w-4 shrink-0" />
+										<span>{deleting ? 'Deleting...' : 'Delete'}</span>
+									</button>
+									{#if item.photos && item.photos.length > 0}
+										<button
+											onclick={handleSetFeaturedImage}
 											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 										>
-											<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4 shrink-0" />
-											<span>Edit</span>
+											<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4 shrink-0" />
+											<span class="hidden sm:inline">Set Featured Image</span>
+											<span class="sm:hidden">Featured</span>
 										</button>
-										<button
-											onclick={handleDeleteItem}
-											disabled={deleting}
-											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
-										>
-											<FontAwesomeIcon icon={faTrash} class="mr-2 h-4 w-4 shrink-0" />
-											<span>{deleting ? 'Deleting...' : 'Delete'}</span>
-										</button>
-										{#if item.photos && item.photos.length > 0}
-											<button
-												onclick={handleSetFeaturedImage}
-												class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-											>
-												<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4 shrink-0" />
-												<span class="hidden sm:inline">Set Featured Image</span>
-												<span class="sm:hidden">Featured</span>
-											</button>
-										{/if}
-									</div>
-								{/if}
-							</div>
+									{/if}
+								</div>
+							{/if}
 						</div>
 
 						<!-- Title and Content Section - Full Width -->

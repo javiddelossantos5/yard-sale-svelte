@@ -317,13 +317,6 @@
 				}
 			});
 		}
-		items.push({
-			label: 'Home',
-			icon: faHome,
-			action: () => {
-				void goto('/');
-			}
-		});
 		if (currentUser) {
 			items.push({
 				label: 'Watched Items',

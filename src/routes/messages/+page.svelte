@@ -177,20 +177,6 @@
 			action: () => void;
 			badge?: number;
 		}> = [];
-		items.push({
-			label: 'Home',
-			icon: faHome,
-			action: () => {
-				void goto('/');
-			}
-		});
-		items.push({
-			label: 'Marketplace',
-			icon: faStore,
-			action: () => {
-				void goto('/market');
-			}
-		});
 		if (currentUser && isAdmin(currentUser)) {
 			items.push({
 				label: 'Admin',

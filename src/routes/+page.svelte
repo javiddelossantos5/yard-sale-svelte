@@ -116,13 +116,6 @@
 				}
 			});
 		}
-		items.push({
-			label: 'Marketplace',
-			icon: faStore,
-			action: () => {
-				goToMarket();
-			}
-		});
 		if (currentUser) {
 			items.push({
 				label: 'Messages',

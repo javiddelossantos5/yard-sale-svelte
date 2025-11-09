@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
 		faBars,
@@ -9,7 +10,8 @@
 		faMessage,
 		faHeart,
 		faStore,
-		faChevronLeft
+		faChevronLeft,
+		faCalendar
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
@@ -63,6 +65,12 @@
 	}
 
 	const totalUnreadCount = marketMessageUnreadCount + yardSaleMessageUnreadCount;
+
+	// Get current pathname to conditionally show/hide navigation buttons
+	const currentPath = $derived($page.url.pathname);
+	const isHomePage = $derived(currentPath === '/');
+	const isMarketPage = $derived(currentPath === '/market' || currentPath.startsWith('/market/'));
+	const isEventsPage = $derived(currentPath === '/events' || currentPath.startsWith('/events/'));
 
 	// Development mode indicator (only shows in dev, not production)
 	// import.meta.env.DEV is a compile-time constant in Vite
@@ -174,6 +182,54 @@
 			{#if mobileMenuOpen}
 				<div class="border-t border-gray-200 pt-4 pb-4 dark:border-gray-800">
 					<div class="space-y-1">
+						<!-- Home Button -->
+						{#if !isHomePage}
+							<button
+								onclick={() => {
+									goto('/');
+									mobileMenuOpen = false;
+								}}
+								class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+							>
+								<FontAwesomeIcon
+									icon={faHome}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
+								Home
+							</button>
+						{/if}
+						<!-- Marketplace Button -->
+						{#if !isMarketPage}
+							<button
+								onclick={() => {
+									goto('/market');
+									mobileMenuOpen = false;
+								}}
+								class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+							>
+								<FontAwesomeIcon
+									icon={faStore}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
+								Marketplace
+							</button>
+						{/if}
+						<!-- Events Button -->
+						{#if !isEventsPage}
+							<button
+								onclick={() => {
+									goto('/events');
+									mobileMenuOpen = false;
+								}}
+								class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+							>
+								<FontAwesomeIcon
+									icon={faCalendar}
+									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
+								/>
+								Events
+							</button>
+						{/if}
 						{#each mobileMenuItems as item}
 							<button
 								onclick={() => {
@@ -296,16 +352,60 @@
 					{/if}
 					<!-- Secondary Actions -->
 					<div class="flex items-center gap-2">
+						<!-- Home Button -->
+						{#if !isHomePage}
+							<button
+								onclick={() => goto('/')}
+								class="group relative flex items-center gap-2 rounded-xl bg-gray-100/80 px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
+							>
+								<FontAwesomeIcon
+									icon={faHome}
+									class="h-4 w-4 text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+								/>
+								<span class="whitespace-nowrap">Home</span>
+							</button>
+						{/if}
+						<!-- Marketplace Button -->
+						{#if !isMarketPage}
+							<button
+								onclick={() => goto('/market')}
+								class="group relative flex items-center gap-2 rounded-xl bg-gray-100/80 px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
+							>
+								<FontAwesomeIcon
+									icon={faStore}
+									class="h-4 w-4 text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+								/>
+								<span class="whitespace-nowrap">Marketplace</span>
+							</button>
+						{/if}
+						<!-- Events Button -->
+						{#if !isEventsPage}
+							<button
+								onclick={() => goto('/events')}
+								class="group relative flex items-center gap-2 rounded-xl bg-gray-100/80 px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
+							>
+								<FontAwesomeIcon
+									icon={faCalendar}
+									class="h-4 w-4 text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
+								/>
+								<span class="whitespace-nowrap">Events</span>
+							</button>
+						{/if}
 						{#each mobileMenuItems as item}
 							<button
 								onclick={item.action}
-								class="group relative flex items-center gap-2 rounded-xl bg-gray-100/80 px-4 py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
+								class="group relative flex items-center gap-2 rounded-xl bg-gray-100/80 {item.label ===
+								'Messages'
+									? 'px-2.5'
+									: 'px-4'} py-2.5 text-sm font-medium text-gray-700 ring-1 ring-gray-200/50 backdrop-blur-sm transition-all duration-200 ring-inset hover:bg-gray-200/90 hover:shadow-md hover:ring-gray-300/50 active:scale-[0.98] dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700/50 dark:hover:bg-gray-700/90 dark:hover:ring-gray-600/50"
 							>
 								<FontAwesomeIcon
 									icon={item.icon}
 									class="h-4 w-4 text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100"
 								/>
-								<span class="whitespace-nowrap">{item.label}</span>
+								{#if item.label !== 'Messages'}
+									<span class="whitespace-nowrap">{item.label}</span>
+								{/if}
 								{#if item.badge && item.badge > 0}
 									<span
 										class="ml-1 flex items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm ring-1 ring-red-600/20"

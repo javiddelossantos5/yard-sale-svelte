@@ -2458,6 +2458,524 @@ export async function deleteUser(userId: string): Promise<void> {
 	}
 }
 
+// ============================================================================
+// EVENTS API
+// ============================================================================
+
+export interface Event {
+	id: string;
+	type:
+		| 'event'
+		| 'informational'
+		| 'advertisement'
+		| 'announcement'
+		| 'lost_found'
+		| 'request_help'
+		| 'offer_help'
+		| 'service_offer';
+	title: string;
+	description?: string | null;
+	category?: string | null;
+	status: 'upcoming' | 'ongoing' | 'ended' | 'cancelled';
+	is_public: boolean;
+	// Location & Time
+	address?: string | null;
+	city?: string | null;
+	state?: string | null;
+	zip?: string | null;
+	location_type?: 'indoor' | 'outdoor' | 'virtual' | null;
+	start_date?: string | null;
+	end_date?: string | null;
+	start_time?: string | null;
+	end_time?: string | null;
+	timezone?: string | null;
+	// Pricing
+	price?: number | null;
+	is_free: boolean;
+	// Filtering & Search
+	tags?: string[] | null;
+	age_restriction?: string | null;
+	// Organizer
+	organizer_id: string;
+	organizer_username: string;
+	organizer_name: string;
+	organizer_profile_picture?: string | null;
+	organizer_is_admin?: boolean;
+	company?: string | null;
+	contact_phone?: string | null;
+	contact_email?: string | null;
+	facebook_url?: string | null;
+	instagram_url?: string | null;
+	website?: string | null;
+	// Engagement
+	comments_enabled: boolean;
+	comment_count: number;
+	// Media
+	gallery_urls?: string[] | null;
+	featured_image?: string | null;
+	// Metadata
+	created_at: string;
+	last_updated: string;
+}
+
+export interface EventCreate {
+	type?:
+		| 'event'
+		| 'informational'
+		| 'advertisement'
+		| 'announcement'
+		| 'lost_found'
+		| 'request_help'
+		| 'offer_help'
+		| 'service_offer';
+	title: string;
+	description?: string;
+	category?: string;
+	status?: 'upcoming' | 'ongoing' | 'ended' | 'cancelled';
+	is_public?: boolean;
+	address?: string;
+	city?: string;
+	state?: string;
+	zip?: string;
+	location_type?: 'indoor' | 'outdoor' | 'virtual';
+	start_date?: string;
+	end_date?: string;
+	start_time?: string;
+	end_time?: string;
+	timezone?: string;
+	price?: number;
+	is_free?: boolean;
+	tags?: string[];
+	age_restriction?: string;
+	organizer_name?: string;
+	company?: string;
+	contact_phone?: string;
+	contact_email?: string;
+	facebook_url?: string;
+	instagram_url?: string;
+	website?: string;
+	comments_enabled?: boolean;
+	gallery_urls?: string[];
+	featured_image?: string;
+}
+
+export interface EventUpdate {
+	type?:
+		| 'event'
+		| 'informational'
+		| 'advertisement'
+		| 'announcement'
+		| 'lost_found'
+		| 'request_help'
+		| 'offer_help'
+		| 'service_offer';
+	title?: string;
+	description?: string;
+	category?: string;
+	status?: 'upcoming' | 'ongoing' | 'ended' | 'cancelled';
+	is_public?: boolean;
+	address?: string;
+	city?: string;
+	state?: string;
+	zip?: string;
+	location_type?: 'indoor' | 'outdoor' | 'virtual';
+	start_date?: string;
+	end_date?: string;
+	start_time?: string;
+	end_time?: string;
+	timezone?: string;
+	price?: number;
+	is_free?: boolean;
+	tags?: string[];
+	age_restriction?: string;
+	organizer_name?: string;
+	company?: string;
+	contact_phone?: string;
+	contact_email?: string;
+	facebook_url?: string;
+	instagram_url?: string;
+	website?: string;
+	comments_enabled?: boolean;
+	gallery_urls?: string[];
+	featured_image?: string;
+}
+
+export interface EventComment {
+	id: string;
+	event_id: string;
+	user_id: string;
+	username: string;
+	user_profile_picture?: string | null;
+	user_is_admin?: boolean;
+	content: string;
+	created_at: string;
+	updated_at?: string | null;
+}
+
+export interface EventCommentCreate {
+	content: string;
+}
+
+// Get all events
+export async function getEvents(
+	params: {
+		skip?: number;
+		limit?: number;
+		type?: string;
+		status?: string;
+		city?: string;
+		state?: string;
+		location_type?: string;
+		is_free?: boolean;
+		category?: string;
+		tags?: string;
+		age_restriction?: string;
+	} = {}
+): Promise<Event[]> {
+	const query = new URLSearchParams();
+	if (params.skip != null) query.set('skip', String(params.skip));
+	if (params.limit != null) query.set('limit', String(params.limit));
+	if (params.type) query.set('type', params.type);
+	if (params.status) query.set('status', params.status);
+	if (params.city) query.set('city', params.city);
+	if (params.state) query.set('state', params.state);
+	if (params.location_type) query.set('location_type', params.location_type);
+	if (params.is_free !== undefined) query.set('is_free', String(params.is_free));
+	if (params.category) query.set('category', params.category);
+	if (params.tags) query.set('tags', params.tags);
+	if (params.age_restriction) query.set('age_restriction', params.age_restriction);
+
+	const token = localStorage.getItem('access_token');
+	const url = `/api/events${query.toString() ? `?${query}` : ''}`;
+	const response = await fetch(url, {
+		headers: token ? { Authorization: `Bearer ${token}` } : {}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}`);
+	}
+
+	return response.json();
+}
+
+// Get event by ID
+export async function getEventById(eventId: string): Promise<Event> {
+	const token = localStorage.getItem('access_token');
+	const response = await fetch(`/api/events/${eventId}`, {
+		headers: token ? { Authorization: `Bearer ${token}` } : {}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		if (response.status === 404) {
+			throw new Error('Event not found');
+		}
+		const errorText = await response.text();
+		throw new Error(`Failed to fetch event: ${response.status} ${errorText}`);
+	}
+
+	return response.json();
+}
+
+// Create event
+export async function createEvent(eventData: EventCreate): Promise<Event> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch('/api/events', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(eventData)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to create event: ${response.status}`);
+	}
+
+	return response.json();
+}
+
+// Update event
+export async function updateEvent(eventId: string, eventData: EventUpdate): Promise<Event> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/events/${eventId}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(eventData)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to update event: ${response.status}`);
+	}
+
+	return response.json();
+}
+
+// Delete event
+export async function deleteEvent(eventId: string): Promise<void> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/events/${eventId}`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to delete event: ${response.status}`);
+	}
+}
+
+// Get event comments
+export async function getEventComments(
+	eventId: string,
+	params: { skip?: number; limit?: number } = {}
+): Promise<EventComment[]> {
+	const query = new URLSearchParams();
+	if (params.skip != null) query.set('skip', String(params.skip));
+	if (params.limit != null) query.set('limit', String(params.limit));
+
+	const token = localStorage.getItem('access_token');
+	const url = `/api/events/${eventId}/comments${query.toString() ? `?${query}` : ''}`;
+	const response = await fetch(url, {
+		headers: token ? { Authorization: `Bearer ${token}` } : {}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+
+	if (!response.ok) {
+		throw new Error(`Failed to fetch event comments: ${response.status} ${response.statusText}`);
+	}
+
+	return response.json();
+}
+
+// Create event comment
+export async function createEventComment(
+	eventId: string,
+	commentData: EventCommentCreate
+): Promise<EventComment> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/events/${eventId}/comments`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(commentData)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to create comment: ${response.status}`);
+	}
+
+	return response.json();
+}
+
+// Admin: Get all events
+export async function getAdminEvents(
+	params: {
+		skip?: number;
+		limit?: number;
+		type?: string;
+		status?: string;
+	} = {}
+): Promise<Event[]> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const query = new URLSearchParams();
+	if (params.skip != null) query.set('skip', String(params.skip));
+	if (params.limit != null) query.set('limit', String(params.limit));
+	if (params.type) query.set('type', params.type);
+	if (params.status) query.set('status', params.status);
+
+	const url = `/api/admin/events${query.toString() ? `?${query}` : ''}`;
+	const response = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || `Failed to fetch admin events: ${response.status}`);
+	}
+
+	return response.json();
+}
+
+// Event Featured Image Interfaces
+export interface EventImagesResponse {
+	images: Array<{
+		key: string;
+		url: string;
+		size: number;
+		last_modified: string;
+		filename: string;
+	}>;
+	total: number;
+	event_gallery_urls: string[];
+	featured_image: string | null;
+}
+
+// Get available images for an event
+export async function getEventImages(eventId: string): Promise<EventImagesResponse> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/events/${eventId}/images`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to fetch event images');
+	}
+
+	return response.json();
+}
+
+// Set featured image for an event
+export async function setEventFeaturedImage(
+	eventId: string,
+	request: SetFeaturedImageRequest
+): Promise<FeaturedImageResponse> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/events/${eventId}/featured-image`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(request)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to set featured image');
+	}
+
+	return response.json();
+}
+
+// Remove featured image from an event
+export async function removeEventFeaturedImage(eventId: string): Promise<void> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/events/${eventId}/featured-image`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to remove featured image');
+	}
+}
+
 // Helper function to check if current user is admin
 export function isAdmin(user: CurrentUser | null): boolean {
 	return user?.permissions === 'admin';
