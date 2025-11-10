@@ -89,13 +89,31 @@
 	function formatDate(dateString: string | null | undefined): string {
 		if (!dateString) return '';
 		try {
-			return new Date(dateString).toLocaleDateString('en-US', {
-				weekday: 'long',
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric',
-				timeZone: event?.timezone || 'America/Denver'
-			});
+			// Parse date-only strings (YYYY-MM-DD) as local date to avoid timezone issues
+			// For date-only strings, parse as local date and format without timezone conversion
+			// to preserve the intended date
+			if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+				// Date-only format: parse as local date to avoid timezone shifts
+				const [year, month, day] = dateString.split('-').map(Number);
+				const date = new Date(year, month - 1, day);
+				return date.toLocaleDateString('en-US', {
+					weekday: 'long',
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric'
+					// Don't use timeZone for date-only strings to avoid day shifts
+				});
+			} else {
+				// Already has time component, parse normally and use timezone
+				const date = new Date(dateString);
+				return date.toLocaleDateString('en-US', {
+					weekday: 'long',
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+					timeZone: event?.timezone || 'America/Denver'
+				});
+			}
 		} catch {
 			return '';
 		}
