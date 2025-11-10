@@ -18,6 +18,7 @@
 	let formData = $state<UserSelfUpdate>({
 		full_name: '',
 		phone_number: '',
+		company: '',
 		city: '',
 		state: '',
 		zip_code: '',
@@ -45,6 +46,7 @@
 			formData = {
 				full_name: user.full_name || '',
 				phone_number: user.phone_number || '',
+				company: user.company || '',
 				city: user.location?.city || '',
 				state: user.location?.state || '',
 				zip_code: user.location?.zip || '',
@@ -115,7 +117,17 @@
 		loading = true;
 
 		try {
-			await updateUserProfile(formData);
+			// Clean up empty strings (convert to undefined for optional fields)
+			const cleanedData: UserSelfUpdate = {
+				...formData,
+				company: formData.company?.trim() || undefined,
+				phone_number: formData.phone_number?.trim() || undefined,
+				city: formData.city?.trim() || undefined,
+				state: formData.state?.trim() || undefined,
+				zip_code: formData.zip_code?.trim() || undefined,
+				bio: formData.bio?.trim() || undefined
+			};
+			await updateUserProfile(cleanedData);
 			onSuccess();
 			onClose();
 		} catch (err) {
@@ -309,6 +321,24 @@
 									bind:value={formData.phone_number}
 									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 									placeholder="(555) 123-4567"
+								/>
+							</div>
+
+							<!-- Company -->
+							<div>
+								<label
+									for="edit-company"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+								>
+									Company <span class="font-normal text-gray-400">(Optional)</span>
+								</label>
+								<input
+									id="edit-company"
+									type="text"
+									maxlength="150"
+									bind:value={formData.company}
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+									placeholder="Enter your company name"
 								/>
 							</div>
 

@@ -33,7 +33,8 @@
 		faChevronLeft,
 		faShieldAlt,
 		faPencil,
-		faTag
+		faTag,
+		faBuilding
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 
@@ -696,6 +697,14 @@
 										</div>
 									{/if}
 								</div>
+
+								<!-- Company -->
+								{#if profileUser.company}
+									<div class="mt-2 flex items-center text-sm text-gray-600 dark:text-gray-300">
+										<FontAwesomeIcon icon={faBuilding} class="mr-1 h-4 w-4" />
+										{profileUser.company}
+									</div>
+								{/if}
 
 								<!-- Location -->
 								{#if profileUser.location && profileUser.location.city}

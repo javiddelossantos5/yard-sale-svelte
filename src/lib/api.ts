@@ -520,6 +520,7 @@ export interface RegisterRequest {
 	password: string;
 	password_confirm: string;
 	full_name: string;
+	company?: string;
 	location: {
 		city: string;
 		state: string;
@@ -770,6 +771,7 @@ export interface CurrentUser {
 	email: string;
 	full_name: string;
 	phone_number?: string;
+	company?: string | null;
 	location: {
 		city: string;
 		state: string;
@@ -2358,6 +2360,7 @@ export interface UserUpdateData {
 	full_name?: string;
 	email?: string;
 	phone_number?: string;
+	company?: string;
 	city?: string;
 	state?: string;
 	zip_code?: string;
@@ -2371,6 +2374,7 @@ export interface UserUpdateData {
 export interface UserSelfUpdate {
 	full_name?: string;
 	phone_number?: string;
+	company?: string;
 	city?: string;
 	state?: string;
 	zip_code?: string;

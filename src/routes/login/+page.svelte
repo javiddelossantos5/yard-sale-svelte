@@ -21,6 +21,7 @@
 		password: '',
 		password_confirm: '',
 		full_name: '',
+		company: '',
 		location: {
 			city: '',
 			state: '',
@@ -155,7 +156,12 @@
 		success = null;
 
 		try {
-			const response = await register(registerData);
+			// Clean up empty company field (convert to undefined)
+			const cleanedData = {
+				...registerData,
+				company: registerData.company?.trim() || undefined
+			};
+			const response = await register(cleanedData);
 			success = response.message || 'Registration successful! You can now login.';
 
 			// Switch to login mode after successful registration
@@ -527,6 +533,29 @@
 								bind:value={registerData.full_name}
 								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter your full name"
+								disabled={loading}
+							/>
+						</div>
+					</div>
+
+					<!-- Company Field -->
+					<div>
+						<label
+							for="reg-company"
+							class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+						>
+							Company <span class="font-normal text-gray-400">(Optional)</span>
+						</label>
+						<div>
+							<input
+								id="reg-company"
+								name="company"
+								type="text"
+								autocomplete="organization"
+								maxlength="150"
+								bind:value={registerData.company}
+								class="block w-full appearance-none rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+								placeholder="Enter your company name (optional)"
 								disabled={loading}
 							/>
 						</div>

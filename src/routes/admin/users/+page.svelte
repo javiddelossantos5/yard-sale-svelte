@@ -24,7 +24,8 @@
 		faEnvelope,
 		faPhone,
 		faMapMarkerAlt,
-		faPencil
+		faPencil,
+		faBuilding
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
@@ -367,6 +368,12 @@
 										<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
 											<FontAwesomeIcon icon={faPhone} class="h-3 w-3" />
 											<span>{user.phone_number}</span>
+										</div>
+									{/if}
+									{#if (user as any).company}
+										<div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+											<FontAwesomeIcon icon={faBuilding} class="h-3 w-3" />
+											<span class="truncate">{(user as any).company}</span>
 										</div>
 									{/if}
 									{#if user.location?.city || user.location?.state}

@@ -19,6 +19,7 @@
 		full_name: '',
 		email: '',
 		phone_number: '',
+		company: '',
 		city: '',
 		state: '',
 		zip_code: '',
@@ -39,6 +40,7 @@
 				full_name: user.full_name || '',
 				email: user.email || '',
 				phone_number: user.phone_number || '',
+				company: (user as any).company || '',
 				city: user.location?.city || '',
 				state: user.location?.state || '',
 				zip_code: user.location?.zip || '',
@@ -62,7 +64,17 @@
 		error = null;
 
 		try {
-			await updateUser(user.id, formData);
+			// Clean up empty strings (convert to undefined for optional fields)
+			const cleanedData: UserUpdateData = {
+				...formData,
+				company: formData.company?.trim() || undefined,
+				phone_number: formData.phone_number?.trim() || undefined,
+				city: formData.city?.trim() || undefined,
+				state: formData.state?.trim() || undefined,
+				zip_code: formData.zip_code?.trim() || undefined,
+				bio: formData.bio?.trim() || undefined
+			};
+			await updateUser(user.id, cleanedData);
 			onSuccess();
 			onClose();
 		} catch (e: any) {
@@ -216,6 +228,23 @@
 								bind:value={formData.phone_number}
 								class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								placeholder="Enter phone number"
+							/>
+						</div>
+
+						<!-- Company -->
+						<div>
+							<label
+								for="company"
+								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+							>Company <span class="font-normal text-gray-400">(Optional)</span></label
+							>
+							<input
+								id="company"
+								type="text"
+								maxlength="150"
+								bind:value={formData.company}
+								class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+								placeholder="Enter company name"
 							/>
 						</div>
 
