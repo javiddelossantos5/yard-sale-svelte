@@ -46,7 +46,8 @@
 		faCheckCircle,
 		faShieldAlt,
 		faTachometerAlt,
-		faMapMarkerAlt
+		faMapMarkerAlt,
+		faLink
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditMarketItemModal from '$lib/EditMarketItemModal.svelte';
 	import MarketItemMessageModal from '$lib/MarketItemMessageModal.svelte';
@@ -74,6 +75,7 @@
 	let showMarkAsSoldModal = $state(false);
 	let showDeleteModal = $state(false);
 	let deleting = $state(false);
+	let urlCopied = $state(false);
 
 	// Image carousel state
 	let currentImageIndex = $state(0);
@@ -361,6 +363,19 @@
 	function handleDeleteItem() {
 		if (currentUser && item && (currentUser.id === item.owner_id || isAdmin(currentUser))) {
 			showDeleteModal = true;
+		}
+	}
+
+	async function handleCopyUrl() {
+		try {
+			const url = window.location.href;
+			await navigator.clipboard.writeText(url);
+			urlCopied = true;
+			setTimeout(() => {
+				urlCopied = false;
+			}, 2000);
+		} catch (err) {
+			console.error('Failed to copy URL:', err);
 		}
 	}
 
@@ -858,11 +873,21 @@
 								{/if}
 							</div>
 
-							<!-- Owner Actions -->
-							{#if canEdit}
-								<div
-									class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
+							<!-- Actions -->
+							<div
+								class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
+							>
+								<!-- Copy URL Button (visible to everyone) -->
+								<button
+									onclick={handleCopyUrl}
+									class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 								>
+									<FontAwesomeIcon icon={faLink} class="mr-2 h-4 w-4 shrink-0" />
+									<span>{urlCopied ? 'Copied!' : 'Copy URL'}</span>
+								</button>
+
+								<!-- Owner Actions -->
+								{#if canEdit}
 									{#if item.status !== 'sold'}
 										<button
 											onclick={openMarkAsSoldModal}
@@ -898,8 +923,8 @@
 											<span class="sm:hidden">Featured</span>
 										</button>
 									{/if}
-								</div>
-							{/if}
+								{/if}
+							</div>
 						</div>
 
 						<!-- Title and Content Section - Full Width -->

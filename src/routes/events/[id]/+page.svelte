@@ -33,7 +33,8 @@
 		faPaperPlane,
 		faCommentDots,
 		faStar,
-		faMessage
+		faMessage,
+		faLink
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditEventModal from '$lib/EditEventModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
@@ -52,6 +53,7 @@
 	let showDeleteModal = $state(false);
 	let deleting = $state(false);
 	let showFeaturedImageModal = $state(false);
+	let urlCopied = $state(false);
 
 	// Image carousel state
 	let currentImageIndex = $state(0);
@@ -273,6 +275,19 @@
 	function handleDeleteEvent() {
 		if (currentUser && event && (currentUser.id === event.organizer_id || isAdmin(currentUser))) {
 			showDeleteModal = true;
+		}
+	}
+
+	async function handleCopyUrl() {
+		try {
+			const url = window.location.href;
+			await navigator.clipboard.writeText(url);
+			urlCopied = true;
+			setTimeout(() => {
+				urlCopied = false;
+			}, 2000);
+		} catch (err) {
+			console.error('Failed to copy URL:', err);
 		}
 	}
 
@@ -511,11 +526,21 @@
 							</div>
 						</div>
 
-						<!-- Owner Actions -->
-						{#if canEdit}
-							<div
-								class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
+						<!-- Actions -->
+						<div
+							class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
+						>
+							<!-- Copy URL Button (visible to everyone) -->
+							<button
+								onclick={handleCopyUrl}
+								class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 							>
+								<FontAwesomeIcon icon={faLink} class="mr-2 h-4 w-4 shrink-0" />
+								<span>{urlCopied ? 'Copied!' : 'Copy URL'}</span>
+							</button>
+
+							<!-- Owner Actions -->
+							{#if canEdit}
 								<button
 									onclick={() => (isEditOpen = true)}
 									class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
@@ -541,8 +566,8 @@
 									<FontAwesomeIcon icon={faTrash} class="mr-2 h-4 w-4 shrink-0" />
 									<span>{deleting ? 'Deleting...' : 'Delete'}</span>
 								</button>
-							</div>
-						{/if}
+							{/if}
+						</div>
 					</div>
 
 					<h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white">{event.title}</h1>
