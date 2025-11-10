@@ -44,6 +44,7 @@
 	import EventMessageModal from '$lib/EventMessageModal.svelte';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import { logout } from '$lib/auth';
+	import { openDirections, getPlatformName } from '$lib/mapsUtils';
 
 	let event = $state<Event | null>(null);
 	let comments = $state<EventComment[]>([]);
@@ -130,6 +131,70 @@
 			});
 		} catch {
 			return '';
+		}
+	}
+
+	function hasCompleteAddress(): boolean {
+		return !!(event?.address && event?.city && event?.state && event?.zip);
+	}
+
+	function handleAddressClick() {
+		if (event && hasCompleteAddress()) {
+			const fullAddress = `${event.address}, ${event.city}, ${event.state} ${event.zip}`;
+			openDirections(fullAddress);
+		}
+	}
+
+	function hasCalendarInfo(): boolean {
+		return !!(event?.start_date && event?.start_time);
+	}
+
+	function generateCalendarLink(): string {
+		if (!event || !hasCalendarInfo()) return '';
+
+		// Create start and end datetime strings in ISO format
+		const startDateTime = `${event.start_date}T${event.start_time}`;
+		const endDate = event.end_date || event.start_date;
+		const endTime = event.end_time || event.start_time;
+		const endDateTime = `${endDate}T${endTime}`;
+
+		// Format dates for calendar URL (YYYYMMDDTHHMMSSZ format)
+		const startDate = new Date(startDateTime);
+		const endDateObj = new Date(endDateTime);
+
+		const formatForCalendar = (date: Date) => {
+			return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+		};
+
+		const startFormatted = formatForCalendar(startDate);
+		const endFormatted = formatForCalendar(endDateObj);
+
+		// Create event details
+		const title = encodeURIComponent(event.title);
+		const description = encodeURIComponent(
+			`${event.description || 'Event'}\n\n` +
+				(event.address && event.city && event.state && event.zip
+					? `Location: ${event.address}, ${event.city}, ${event.state} ${event.zip}\n`
+					: '') +
+				(event.contact_phone ? `Contact: ${event.contact_phone}\n` : '') +
+				(event.contact_email ? `Email: ${event.contact_email}\n` : '') +
+				(event.website ? `Website: ${event.website}` : '')
+		);
+		const location =
+			event.address && event.city && event.state && event.zip
+				? encodeURIComponent(`${event.address}, ${event.city}, ${event.state} ${event.zip}`)
+				: '';
+
+		// Generate Google Calendar URL
+		const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startFormatted}/${endFormatted}&details=${description}${location ? `&location=${location}` : ''}`;
+
+		return googleCalendarUrl;
+	}
+
+	function addToCalendar() {
+		const calendarUrl = generateCalendarLink();
+		if (calendarUrl) {
+			window.open(calendarUrl, '_blank');
 		}
 	}
 
@@ -555,477 +620,711 @@
 			{mobileMenuItems}
 		/>
 
-		<!-- Main Content -->
-		<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-			<div class="space-y-6">
-				<!-- Event Header -->
+		<!-- Event Details -->
+		{#if event && !loading}
+			<div class="mx-auto max-w-7xl space-y-6 sm:space-y-8">
+				<!-- Hero Section -->
 				<div
-					class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:ring-1 dark:ring-gray-700"
+					class="relative overflow-hidden rounded-3xl bg-white shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 				>
-					<!-- Header with Actions -->
-					<div
-						class="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
-					>
-						<div class="min-w-0 flex-1">
-							<div class="mb-4 flex flex-wrap items-center gap-2">
-								<span
-									class="inline-flex items-center rounded-full bg-purple-100 px-3 py-1 text-sm font-semibold text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
-								>
-									{getTypeLabel(event.type)}
-								</span>
-								<span
-									class="rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-md {getStatusColor(
-										event.status
-									)}"
-								>
-									{getStatusLabel(event.status)}
-								</span>
-								{#if event.is_free}
-									<span
-										class="inline-flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white"
-									>
-										<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
-										Free
-									</span>
-								{:else if event.price !== null && event.price !== undefined}
-									<span
-										class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-									>
-										<FontAwesomeIcon icon={faDollarSign} class="h-3 w-3" />
-										${formatPrice(event.price)}
-									</span>
-								{/if}
-							</div>
-						</div>
-
-						<!-- Actions -->
+					<div class="px-4 py-8 sm:px-8 sm:py-12 lg:px-12 lg:py-16">
+						<!-- Header with Actions -->
 						<div
-							class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
+							class="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
 						>
-							<!-- Copy URL Button (visible to everyone) -->
-							<button
-								onclick={handleCopyUrl}
-								class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-							>
-								<FontAwesomeIcon icon={faLink} class="mr-2 h-4 w-4 shrink-0" />
-								<span>{urlCopied ? 'Copied!' : 'Copy URL'}</span>
-							</button>
-
-							<!-- Owner Actions -->
-							{#if canEdit}
-								<button
-									onclick={() => (isEditOpen = true)}
-									class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-								>
-									<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4 shrink-0" />
-									<span>Edit</span>
-								</button>
-								{#if event.gallery_urls && event.gallery_urls.length > 0}
-									<button
-										onclick={handleSetFeaturedImage}
-										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-									>
-										<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4 shrink-0" />
-										<span class="hidden sm:inline">Set Featured Image</span>
-										<span class="sm:hidden">Featured</span>
-									</button>
-								{/if}
-								<button
-									onclick={handleDeleteEvent}
-									disabled={deleting}
-									class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
-								>
-									<FontAwesomeIcon icon={faTrash} class="mr-2 h-4 w-4 shrink-0" />
-									<span>{deleting ? 'Deleting...' : 'Delete'}</span>
-								</button>
-							{/if}
-							{#if !isOrganizer && currentUser && event}
-								<!-- Message Organizer Button (for non-organizers, including admins) -->
-								{#if existingConversation}
-									<button
-										onclick={viewConversation}
-										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700 active:scale-95 sm:flex-none sm:px-5 sm:py-3"
-									>
-										<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4 shrink-0" />
-										<span>View Conversation</span>
-										{#if existingConversation.unread_count && existingConversation.unread_count > 0}
-											<span class="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold">
-												{existingConversation.unread_count}
+							<div class="min-w-0 flex-1">
+								<!-- Status Banner -->
+								<div class="mb-6 flex-shrink-0">
+									<div class="flex flex-wrap items-center gap-2">
+										<span
+											class="inline-flex items-center rounded-full bg-purple-100 px-4 py-2.5 text-sm font-medium text-purple-700 dark:bg-purple-900/10 dark:text-purple-300"
+										>
+											{getTypeLabel(event.type)}
+										</span>
+										<span
+											class="inline-flex items-center rounded-full px-4 py-2.5 text-sm font-medium backdrop-blur-md {getStatusColor(
+												event.status
+											)}"
+										>
+											{getStatusLabel(event.status)}
+										</span>
+										{#if event.is_free}
+											<span
+												class="inline-flex items-center gap-1 rounded-full bg-green-50 px-4 py-2.5 text-sm font-medium text-green-700 dark:bg-green-900/10 dark:text-green-300"
+											>
+												<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
+												Free
+											</span>
+										{:else if event.price !== null && event.price !== undefined}
+											<span
+												class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-700 dark:bg-blue-900/10 dark:text-blue-300"
+											>
+												<FontAwesomeIcon icon={faDollarSign} class="h-3 w-3" />
+												${formatPrice(event.price)}
 											</span>
 										{/if}
-									</button>
-								{:else}
-									<button
-										onclick={() => (showMessageModal = true)}
-										disabled={checkingConversation}
-										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3"
-									>
-										<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4 shrink-0" />
-										<span>{checkingConversation ? 'Checking...' : 'Message Organizer'}</span>
-									</button>
-								{/if}
-							{/if}
-						</div>
-					</div>
-
-					<h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white">{event.title}</h1>
-
-					<!-- Job Posting Fields -->
-					{#if event.type === 'job_posting'}
-						<div class="mb-6 space-y-2">
-							{#if event.job_title}
-								<div>
-									<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-										{event.job_title}
-									</h2>
+									</div>
 								</div>
-							{/if}
-							{#if event.employment_type}
-								<div>
-									<span
-										class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
-									>
-										{getEmploymentTypeLabel(event.employment_type)}
-									</span>
-								</div>
-							{/if}
-						</div>
-					{/if}
+							</div>
 
-					<!-- Weather Fields -->
-					{#if event.type === 'weather' && event.weather_conditions}
-						<div class="mb-6">
+							<!-- Actions -->
 							<div
-								class="inline-flex items-center rounded-full bg-yellow-100 px-4 py-2 text-base font-semibold text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+								class="mt-4 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto sm:shrink-0 sm:flex-row sm:flex-nowrap sm:gap-3"
 							>
-								{event.weather_conditions}
-							</div>
-						</div>
-					{/if}
-
-					{#if event.description}
-						<p class="mb-6 whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-							{event.description}
-						</p>
-					{/if}
-
-					<!-- Organizer Info -->
-					{#if event}
-						{@const currentEvent = event}
-						<div class="mb-6">
-							<button
-								onclick={() => goto(`/profile/${currentEvent.organizer_id}`)}
-								class="group flex items-center rounded-2xl bg-gray-100/60 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100/60 active:scale-95 dark:bg-gray-700/60 dark:hover:bg-blue-900/30"
-							>
-								{#if event && event.organizer_profile_picture && event.organizer_profile_picture.trim() !== ''}
-									<img
-										src={getAuthenticatedImageUrl(event.organizer_profile_picture)}
-										alt={event.organizer_username}
-										class="mr-3 h-8 w-8 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
-										onerror={(e) => {
-											const img = e.target as HTMLImageElement;
-											img.style.display = 'none';
-											const fallback = img.parentElement?.querySelector(
-												'.organizer-fallback'
-											) as HTMLElement;
-											if (fallback) fallback.style.display = 'flex';
-										}}
-									/>
-								{/if}
-								<div
-									class="organizer-fallback mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 {event.organizer_profile_picture &&
-									event.organizer_profile_picture.trim() !== ''
-										? 'hidden'
-										: ''}"
+								<!-- Copy URL Button (visible to everyone) -->
+								<button
+									onclick={handleCopyUrl}
+									class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 								>
-									<span class="text-sm font-bold text-white">
-										{event.organizer_username.charAt(0).toUpperCase()}
-									</span>
-								</div>
-								<div class="text-left">
-									<div class="flex items-center gap-2">
-										<span class="font-semibold text-gray-900 dark:text-white">
-											{event.organizer_username}
-										</span>
-										{#if event.organizer_is_admin}
-											<div
-												class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
-												title="Admin"
-											>
-												<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
-												<span>Admin</span>
-											</div>
-										{/if}
-									</div>
-									{#if event.company}
-										<p class="text-xs text-gray-600 dark:text-gray-400">{event.company}</p>
-									{/if}
-								</div>
-							</button>
-						</div>
-					{/if}
+									<FontAwesomeIcon icon={faLink} class="mr-2 h-4 w-4 shrink-0" />
+									<span>{urlCopied ? 'Copied!' : 'Copy URL'}</span>
+								</button>
 
-					<!-- Date & Time -->
-					{#if event.start_date || event.start_time}
-						<div class="mb-6 space-y-2">
-							{#if event.start_date}
-								<div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-									<FontAwesomeIcon
-										icon={faCalendar}
-										class="h-5 w-5 text-gray-500 dark:text-gray-400"
-									/>
-									<span class="font-medium">{formatDate(event.start_date)}</span>
-									{#if event.end_date && event.end_date !== event.start_date}
-										<span class="text-gray-500 dark:text-gray-400">-</span>
-										<span class="font-medium">{formatDate(event.end_date)}</span>
-									{/if}
-								</div>
-							{/if}
-							{#if event.start_time}
-								<div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-									<FontAwesomeIcon
-										icon={faClock}
-										class="h-5 w-5 text-gray-500 dark:text-gray-400"
-									/>
-									<span class="font-medium">
-										{formatTime(event.start_time)}
-										{#if event.end_time && event.end_time !== event.start_time}
-											- {formatTime(event.end_time)}
-										{/if}
-									</span>
-									{#if event.timezone}
-										<span class="text-sm text-gray-500 dark:text-gray-400">({event.timezone})</span>
-									{/if}
-								</div>
-							{/if}
-						</div>
-					{/if}
-
-					<!-- Location -->
-					{#if event.address || event.city || event.state}
-						<div class="mb-6 flex items-start gap-2 text-gray-700 dark:text-gray-300">
-							<FontAwesomeIcon
-								icon={faMapMarkerAlt}
-								class="mt-0.5 h-5 w-5 text-gray-500 dark:text-gray-400"
-							/>
-							<div>
-								{#if event.address}
-									<p class="font-medium">{event.address}</p>
-								{/if}
-								<p>
-									{[event.city, event.state, event.zip].filter(Boolean).join(', ')}
-								</p>
-								{#if event.location_type}
-									<p class="text-sm text-gray-500 capitalize dark:text-gray-400">
-										{event.location_type} event
-									</p>
-								{/if}
-							</div>
-						</div>
-					{/if}
-
-					<!-- Contact Information -->
-					{#if event.contact_phone || event.contact_email || event.facebook_url || event.instagram_url || event.website}
-						<div class="mb-6">
-							<h3 class="mb-3 text-sm font-semibold text-gray-900 dark:text-white">
-								Contact Information
-							</h3>
-							<div class="flex flex-wrap gap-2">
-								{#if event.contact_phone}
-									<a
-										href={`tel:${event.contact_phone}`}
-										class="inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-800 transition-colors hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-200 dark:hover:bg-blue-900/30"
+								<!-- Owner Actions -->
+								{#if canEdit}
+									<button
+										onclick={() => (isEditOpen = true)}
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 									>
-										<FontAwesomeIcon icon={faPhone} class="mr-2 h-4 w-4" />
-										{event.contact_phone}
-									</a>
-								{/if}
-								{#if event.contact_email}
-									<a
-										href={`mailto:${event.contact_email}`}
-										class="inline-flex items-center rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800 transition-colors hover:bg-purple-200 dark:bg-purple-900/20 dark:text-purple-200 dark:hover:bg-purple-900/30"
-									>
-										<FontAwesomeIcon icon={faEnvelope} class="mr-2 h-4 w-4" />
-										{event.contact_email}
-									</a>
-								{/if}
-								{#if event.facebook_url}
-									<a
-										href={event.facebook_url}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="inline-flex items-center rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-									>
-										<FontAwesomeIcon icon={faFacebook} class="mr-2 h-4 w-4" />
-										Facebook
-									</a>
-								{/if}
-								{#if event.instagram_url}
-									<a
-										href={event.instagram_url}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="inline-flex items-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-purple-600 hover:to-pink-600"
-									>
-										<FontAwesomeIcon icon={faInstagram} class="mr-2 h-4 w-4" />
-										Instagram
-									</a>
-								{/if}
-								{#if event.website}
-									<a
-										href={event.website}
-										target="_blank"
-										rel="noopener noreferrer"
-										class="inline-flex items-center rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-									>
-										Website
-									</a>
-								{/if}
-							</div>
-						</div>
-					{/if}
-
-					<!-- Tags & Category -->
-					{#if event.tags && event.tags.length > 0}
-						<div class="mb-4">
-							<h3 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Tags</h3>
-							<div class="flex flex-wrap gap-2">
-								{#each event.tags as tag}
-									<span
-										class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-									>
-										#{tag}
-									</span>
-								{/each}
-							</div>
-						</div>
-					{/if}
-
-					{#if event.category || event.age_restriction}
-						<div class="flex flex-wrap gap-2">
-							{#if event.category}
-								<span
-									class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1 text-sm font-medium text-purple-700 ring-1 ring-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-800/50"
-								>
-									<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
-									{event.category}
-								</span>
-							{/if}
-							{#if event.age_restriction}
-								<span
-									class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700 ring-1 ring-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:ring-orange-800/50"
-								>
-									{event.age_restriction}
-								</span>
-							{/if}
-						</div>
-					{/if}
-				</div>
-
-				<!-- Image Gallery -->
-				{#if event.gallery_urls && event.gallery_urls.length > 0}
-					{@const displayImages = getDisplayImages()}
-					<div
-						class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:ring-1 dark:ring-gray-700"
-					>
-						<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Gallery</h2>
-						{#if displayImages.length === 1}
-							<button
-								onclick={() => openImageViewer(0)}
-								class="w-full overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
-							>
-								<img
-									src={getAuthenticatedImageUrl(displayImages[0])}
-									alt={event.title}
-									class="h-64 w-full object-cover sm:h-80"
-									loading="lazy"
-								/>
-							</button>
-						{:else}
-							<!-- Mobile Carousel -->
-							<div class="relative block sm:hidden">
-								<div
-									class="relative overflow-hidden rounded-2xl"
-									ontouchstart={handleTouchStart}
-									ontouchmove={handleTouchMove}
-									ontouchend={handleTouchEnd}
-								>
-									<div
-										class="flex transition-transform duration-300 ease-in-out"
-										style="transform: translateX(-{currentImageIndex * 100}%)"
-									>
-										{#each displayImages as photo, index}
-											<button
-												onclick={() => openImageViewer(index)}
-												class="min-w-full transition-transform active:scale-[0.98]"
-											>
-												<img
-													src={getAuthenticatedImageUrl(photo)}
-													alt="{event.title} - Image {index + 1}"
-													class="h-64 w-full object-cover"
-													loading="lazy"
-												/>
-											</button>
-										{/each}
-									</div>
-
-									{#if displayImages.length > 1}
+										<FontAwesomeIcon icon={faPencil} class="mr-2 h-4 w-4 shrink-0" />
+										<span>Edit</span>
+									</button>
+									{#if event.gallery_urls && event.gallery_urls.length > 0}
 										<button
-											onclick={previousImage}
-											class="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
-											aria-label="Previous image"
+											onclick={handleSetFeaturedImage}
+											class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-gray-700 transition-all hover:bg-gray-50 active:scale-95 sm:flex-none sm:px-5 sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 										>
-											<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
+											<FontAwesomeIcon icon={faStar} class="mr-2 h-4 w-4 shrink-0" />
+											<span class="hidden sm:inline">Set Featured Image</span>
+											<span class="sm:hidden">Featured</span>
 										</button>
-										<button
-											onclick={nextImage}
-											class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
-											aria-label="Next image"
-										>
-											<FontAwesomeIcon icon={faChevronRight} class="h-5 w-5" />
-										</button>
-										<div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
-											{#each displayImages as _, index}
-												<button
-													onclick={() => goToImage(index)}
-													class="h-2 rounded-full transition-all {currentImageIndex === index
-														? 'w-6 bg-white'
-														: 'w-2 bg-white/50 hover:bg-white/75'}"
-													aria-label="Go to image {index + 1}"
-												></button>
-											{/each}
+									{/if}
+									<button
+										onclick={handleDeleteEvent}
+										disabled={deleting}
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-red-200 bg-white px-4 py-2.5 text-sm font-medium whitespace-nowrap text-red-700 transition-all hover:bg-red-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3 dark:border-red-600 dark:bg-red-900 dark:text-red-100 dark:hover:bg-red-900/30"
+									>
+										<FontAwesomeIcon icon={faTrash} class="mr-2 h-4 w-4 shrink-0" />
+										<span>{deleting ? 'Deleting...' : 'Delete'}</span>
+									</button>
+								{/if}
+							</div>
+						</div>
+
+						<!-- Title and Content Section -->
+						<div class="w-full">
+							<!-- Title -->
+							<h1
+								class="mb-4 text-3xl leading-tight font-bold break-words text-gray-900 sm:text-4xl dark:text-white"
+							>
+								{event.title}
+							</h1>
+
+							<!-- Job Posting Fields -->
+							{#if event.type === 'job_posting'}
+								<div class="mb-6 space-y-2">
+									{#if event.job_title}
+										<div>
+											<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+												{event.job_title}
+											</h2>
+										</div>
+									{/if}
+									{#if event.employment_type}
+										<div>
+											<span
+												class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
+											>
+												{getEmploymentTypeLabel(event.employment_type)}
+											</span>
 										</div>
 									{/if}
 								</div>
+							{/if}
+
+							<!-- Weather Fields -->
+							{#if event.type === 'weather' && event.weather_conditions}
+								<div class="mb-6">
+									<div
+										class="inline-flex items-center rounded-full bg-yellow-100 px-4 py-2 text-base font-semibold text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+									>
+										{event.weather_conditions}
+									</div>
+								</div>
+							{/if}
+
+							<!-- Image Gallery -->
+							{#if event.gallery_urls && event.gallery_urls.length > 0}
+								{@const displayImages = getDisplayImages()}
+								<div class="mb-6 w-full">
+									{#if displayImages.length === 1}
+										<button
+											onclick={() => openImageViewer(0)}
+											class="w-full overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
+										>
+											<img
+												src={getAuthenticatedImageUrl(displayImages[0])}
+												alt={event.title}
+												class="h-64 w-full object-cover sm:h-80"
+												loading="lazy"
+											/>
+										</button>
+									{:else}
+										<!-- Mobile Carousel -->
+										<div class="relative block sm:hidden">
+											<div
+												class="relative overflow-hidden rounded-2xl"
+												ontouchstart={handleTouchStart}
+												ontouchmove={handleTouchMove}
+												ontouchend={handleTouchEnd}
+											>
+												<div
+													class="flex transition-transform duration-300 ease-in-out"
+													style="transform: translateX(-{currentImageIndex * 100}%)"
+												>
+													{#each displayImages as photo, index}
+														<button
+															onclick={() => openImageViewer(index)}
+															class="min-w-full transition-transform active:scale-[0.98]"
+														>
+															<img
+																src={getAuthenticatedImageUrl(photo)}
+																alt="{event.title} - Image {index + 1}"
+																class="h-64 w-full object-cover"
+																loading="lazy"
+															/>
+														</button>
+													{/each}
+												</div>
+
+												{#if displayImages.length > 1}
+													<button
+														onclick={previousImage}
+														class="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+														aria-label="Previous image"
+													>
+														<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
+													</button>
+													<button
+														onclick={nextImage}
+														class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/70 active:scale-95 dark:bg-white/20 dark:hover:bg-white/30"
+														aria-label="Next image"
+													>
+														<FontAwesomeIcon icon={faChevronRight} class="h-5 w-5" />
+													</button>
+													<div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2">
+														{#each displayImages as _, index}
+															<button
+																onclick={() => goToImage(index)}
+																class="h-2 rounded-full transition-all {currentImageIndex === index
+																	? 'w-6 bg-white'
+																	: 'w-2 bg-white/50 hover:bg-white/75'}"
+																aria-label="Go to image {index + 1}"
+															></button>
+														{/each}
+													</div>
+												{/if}
+											</div>
+										</div>
+
+										<!-- Desktop Grid -->
+										<div class="hidden sm:grid sm:grid-cols-2 sm:gap-3">
+											{#each showAllImages ? displayImages : displayImages.slice(0, 4) as photo, index}
+												<button
+													onclick={() => openImageViewer(index)}
+													class="overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
+												>
+													<img
+														src={getAuthenticatedImageUrl(photo)}
+														alt="{event.title} - Image {index + 1}"
+														class="h-32 w-full object-cover sm:h-40"
+														loading="lazy"
+													/>
+												</button>
+											{/each}
+										</div>
+										{#if displayImages.length > 4}
+											<button
+												onclick={() => (showAllImages = !showAllImages)}
+												class="mt-2 hidden text-center text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 active:scale-95 sm:block dark:text-blue-400 dark:hover:text-blue-300"
+											>
+												{showAllImages ? 'Show Less' : `+${displayImages.length - 4} more images`}
+											</button>
+										{/if}
+									{/if}
+								</div>
+							{/if}
+
+							<!-- Organizer Information -->
+							<div class="mb-6">
+								<button
+									onclick={() => event && goto(`/profile/${event.organizer_id}`)}
+									class="group flex items-center rounded-2xl bg-gray-100/60 px-4 py-3 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-blue-100/60 active:scale-95 dark:bg-gray-700/60 dark:hover:bg-blue-900/30"
+								>
+									{#if event.organizer_profile_picture && event.organizer_profile_picture.trim() !== ''}
+										<img
+											src={getAuthenticatedImageUrl(event.organizer_profile_picture)}
+											alt={event.organizer_username}
+											class="mr-3 h-8 w-8 rounded-full object-cover ring-1 ring-gray-200 dark:ring-gray-700"
+											onerror={(e) => {
+												const img = e.target as HTMLImageElement;
+												img.style.display = 'none';
+												const fallback = img.parentElement?.querySelector(
+													'.organizer-fallback'
+												) as HTMLElement;
+												if (fallback) fallback.style.display = 'flex';
+											}}
+										/>
+									{/if}
+									<div
+										class="organizer-fallback mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 {event.organizer_profile_picture &&
+										event.organizer_profile_picture.trim() !== ''
+											? 'hidden'
+											: ''}"
+									>
+										<span class="text-sm font-bold text-white">
+											{event.organizer_username.charAt(0).toUpperCase()}
+										</span>
+									</div>
+									<div class="flex-1 text-left">
+										<div class="flex items-center gap-2">
+											<div class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+												Organized by {event.organizer_username}
+											</div>
+											{#if event.organizer_is_admin}
+												<div
+													class="flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"
+													title="Admin Verified"
+												>
+													<FontAwesomeIcon icon={faShieldAlt} class="h-2.5 w-2.5" />
+													<span>Admin</span>
+												</div>
+											{/if}
+										</div>
+										{#if event.company}
+											<p class="text-xs text-gray-600 dark:text-gray-400">{event.company}</p>
+										{/if}
+									</div>
+									<FontAwesomeIcon
+										icon={faChevronRight}
+										class="ml-2 h-4 w-4 text-gray-400 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400"
+									/>
+								</button>
 							</div>
 
-							<!-- Desktop Grid -->
-							<div class="hidden sm:grid sm:grid-cols-2 sm:gap-3">
-								{#each showAllImages ? displayImages : displayImages.slice(0, 4) as photo, index}
-									<button
-										onclick={() => openImageViewer(index)}
-										class="overflow-hidden rounded-2xl transition-transform hover:scale-[1.02] active:scale-[0.98]"
+							<!-- Location -->
+							{#if event.address || event.city || event.state}
+								<div class="flex items-center text-gray-600 dark:text-gray-300">
+									<svg
+										class="mr-3 h-5 w-5 text-gray-400"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
 									>
-										<img
-											src={getAuthenticatedImageUrl(photo)}
-											alt="{event.title} - Image {index + 1}"
-											class="h-32 w-full object-cover sm:h-40"
-											loading="lazy"
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
 										/>
-									</button>
-								{/each}
-							</div>
-							{#if displayImages.length > 4}
-								<button
-									onclick={() => (showAllImages = !showAllImages)}
-									class="mt-2 hidden text-center text-sm font-medium text-blue-600 transition-colors hover:text-blue-700 active:scale-95 sm:block dark:text-blue-400 dark:hover:text-blue-300"
-								>
-									{showAllImages ? 'Show Less' : `+${displayImages.length - 4} more images`}
-								</button>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+										/>
+									</svg>
+									{#if hasCompleteAddress()}
+										<button
+											onclick={handleAddressClick}
+											class="text-left text-lg font-medium text-blue-600 hover:text-blue-700 hover:underline focus:underline focus:outline-none dark:text-blue-400 dark:hover:text-blue-300"
+											title={`Click to open in ${getPlatformName()}`}
+										>
+											{#if event.address}
+												{event.address},
+											{/if}
+											{event.city}, {event.state}
+											{event.zip}
+										</button>
+									{:else}
+										<span class="text-lg font-medium">
+											{#if event.address}
+												{event.address},
+											{/if}
+											{event.city}, {event.state}
+											{event.zip}
+										</span>
+									{/if}
+								</div>
 							{/if}
+						</div>
+					</div>
+				</div>
+				<!-- Hero Section closes above -->
+
+				<!-- Main Content Grid -->
+				<div class="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-12">
+					<!-- Left Column - Main Info -->
+					<div class="space-y-6 sm:space-y-8 lg:col-span-8">
+						<!-- Date and Time Card -->
+						{#if event.start_date || event.start_time}
+							<div
+								class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								{#if hasCalendarInfo()}
+									<div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+										{#if event.start_date}
+											<button
+												onclick={addToCalendar}
+												class="group flex w-full items-start space-x-3 rounded-xl p-4 transition-all hover:bg-gray-50 active:bg-gray-100 sm:space-x-4 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
+												title="Add to Calendar"
+											>
+												<div
+													class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 transition-colors group-hover:bg-blue-100 sm:h-12 sm:w-12 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/30"
+												>
+													<FontAwesomeIcon
+														icon={faCalendar}
+														class="h-5 w-5 text-blue-600 sm:h-6 sm:w-6 dark:text-blue-400"
+													/>
+												</div>
+												<div class="flex-1 text-left">
+													<div class="flex items-center gap-2">
+														<h3
+															class="text-base font-semibold text-gray-900 sm:text-lg dark:text-white"
+														>
+															Date
+														</h3>
+														<svg
+															class="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600 sm:h-4 sm:w-4 dark:group-hover:text-gray-300"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path
+																stroke-linecap="round"
+																stroke-linejoin="round"
+																stroke-width="2"
+																d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+															/>
+														</svg>
+													</div>
+													<p class="mt-1 text-sm text-gray-600 sm:text-base dark:text-gray-300">
+														{formatDate(event.start_date)}
+														{#if event.end_date && event.end_date !== event.start_date}
+															- {formatDate(event.end_date)}
+														{/if}
+													</p>
+													<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+														Tap to add to calendar
+													</p>
+												</div>
+											</button>
+										{/if}
+										{#if event.start_time}
+											<button
+												onclick={addToCalendar}
+												class="group flex w-full items-start space-x-3 rounded-xl p-4 transition-all hover:bg-gray-50 active:bg-gray-100 sm:space-x-4 dark:hover:bg-gray-700/50 dark:active:bg-gray-700"
+												title="Add to Calendar"
+											>
+												<div
+													class="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 transition-colors group-hover:bg-green-100 sm:h-12 sm:w-12 dark:bg-green-900/20 dark:group-hover:bg-green-900/30"
+												>
+													<FontAwesomeIcon
+														icon={faClock}
+														class="h-5 w-5 text-green-600 sm:h-6 sm:w-6 dark:text-green-400"
+													/>
+												</div>
+												<div class="flex-1 text-left">
+													<div class="flex items-center gap-2">
+														<h3
+															class="text-base font-semibold text-gray-900 sm:text-lg dark:text-white"
+														>
+															Time
+														</h3>
+														<svg
+															class="h-3 w-3 text-gray-400 transition-colors group-hover:text-gray-600 sm:h-4 sm:w-4 dark:group-hover:text-gray-300"
+															fill="none"
+															stroke="currentColor"
+															viewBox="0 0 24 24"
+														>
+															<path
+																stroke-linecap="round"
+																stroke-linejoin="round"
+																stroke-width="2"
+																d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+															/>
+														</svg>
+													</div>
+													<p class="mt-1 text-sm text-gray-600 sm:text-base dark:text-gray-300">
+														{formatTime(event.start_time)}
+														{#if event.end_time && event.end_time !== event.start_time}
+															- {formatTime(event.end_time)}
+														{/if}
+														{#if event.timezone}
+															<span class="text-xs text-gray-500 dark:text-gray-400">
+																({event.timezone})
+															</span>
+														{/if}
+													</p>
+													<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+														Tap to add to calendar
+													</p>
+												</div>
+											</button>
+										{/if}
+									</div>
+								{:else}
+									<div class="space-y-4">
+										{#if event.start_date}
+											<div class="flex items-center gap-3">
+												<FontAwesomeIcon
+													icon={faCalendar}
+													class="h-5 w-5 text-gray-400 dark:text-gray-500"
+												/>
+												<div>
+													<p class="text-sm font-medium text-gray-900 dark:text-white">Date</p>
+													<p class="text-sm text-gray-600 dark:text-gray-300">
+														{formatDate(event.start_date)}
+														{#if event.end_date && event.end_date !== event.start_date}
+															- {formatDate(event.end_date)}
+														{/if}
+													</p>
+												</div>
+											</div>
+										{/if}
+										{#if event.start_time}
+											<div class="flex items-center gap-3">
+												<FontAwesomeIcon
+													icon={faClock}
+													class="h-5 w-5 text-gray-400 dark:text-gray-500"
+												/>
+												<div>
+													<p class="text-sm font-medium text-gray-900 dark:text-white">Time</p>
+													<p class="text-sm text-gray-600 dark:text-gray-300">
+														{formatTime(event.start_time)}
+														{#if event.end_time && event.end_time !== event.start_time}
+															- {formatTime(event.end_time)}
+														{/if}
+														{#if event.timezone}
+															<span class="text-xs text-gray-500 dark:text-gray-400">
+																({event.timezone})
+															</span>
+														{/if}
+													</p>
+												</div>
+											</div>
+										{/if}
+									</div>
+								{/if}
+							</div>
+						{/if}
+
+						<!-- Description Card -->
+						{#if event.description}
+							<div
+								class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+									Description
+								</h2>
+								<p class="leading-relaxed whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+									{event.description}
+								</p>
+							</div>
+						{/if}
+
+						<!-- Tags & Category Card -->
+						{#if (event.tags && event.tags.length > 0) || event.category || event.age_restriction}
+							<div
+								class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								{#if event.tags && event.tags.length > 0}
+									<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">Tags</h2>
+									<div class="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+										{#each event.tags as tag}
+											<span
+												class="inline-flex items-center justify-center rounded-xl border border-gray-200/50 bg-blue-50/60 px-4 py-2 text-center text-sm font-medium text-gray-700 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md dark:border-gray-700/50 dark:bg-blue-900/20 dark:text-gray-200 dark:hover:bg-blue-900/30"
+											>
+												#{tag}
+											</span>
+										{/each}
+									</div>
+								{/if}
+								{#if event.category || event.age_restriction}
+									<div class="flex flex-wrap gap-2">
+										{#if event.category}
+											<span
+												class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1 text-sm font-medium text-purple-700 ring-1 ring-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-800/50"
+											>
+												<FontAwesomeIcon icon={faTag} class="h-3 w-3" />
+												{event.category}
+											</span>
+										{/if}
+										{#if event.age_restriction}
+											<span
+												class="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-sm font-medium text-orange-700 ring-1 ring-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:ring-orange-800/50"
+											>
+												{event.age_restriction}
+											</span>
+										{/if}
+									</div>
+								{/if}
+							</div>
+						{/if}
+
+						<!-- Contact Information Card -->
+						{#if event.contact_phone || event.contact_email}
+							<div
+								class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 lg:p-8 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								<h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+									Contact Information
+								</h2>
+								<div class="flex flex-wrap gap-3">
+									{#if event.contact_phone}
+										<a
+											href={`tel:${event.contact_phone}`}
+											class="inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-800 transition-colors hover:bg-green-200 dark:bg-green-900/20 dark:text-green-200 dark:hover:bg-green-900/30"
+										>
+											<FontAwesomeIcon icon={faPhone} class="mr-2 h-4 w-4" />
+											{event.contact_phone}
+										</a>
+									{/if}
+									{#if event.contact_email}
+										<a
+											href={`mailto:${event.contact_email}`}
+											class="inline-flex items-center rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-800 transition-colors hover:bg-purple-200 dark:bg-purple-900/20 dark:text-purple-200 dark:hover:bg-purple-900/30"
+										>
+											<FontAwesomeIcon icon={faEnvelope} class="mr-2 h-4 w-4" />
+											{event.contact_email}
+										</a>
+									{/if}
+								</div>
+							</div>
 						{/if}
 					</div>
-				{/if}
+					<!-- Left Column closes above -->
+
+					<!-- Right Column - Sidebar -->
+					<div class="space-y-6 lg:col-span-4">
+						<!-- Price Card -->
+						{#if event.price !== null && event.price !== undefined && !event.is_free}
+							<div
+								class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								<div class="flex items-center space-x-3">
+									<div
+										class="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 dark:bg-green-900/20"
+									>
+										<FontAwesomeIcon
+											icon={faDollarSign}
+											class="h-5 w-5 text-green-600 dark:text-green-400"
+										/>
+									</div>
+									<div>
+										<p class="text-sm font-medium text-gray-500 dark:text-gray-400">Price</p>
+										<p class="text-2xl font-bold text-gray-900 dark:text-white">
+											${formatPrice(event.price)}
+										</p>
+									</div>
+								</div>
+							</div>
+						{/if}
+
+						<!-- Actions Section -->
+						{#if hasCompleteAddress() || event.facebook_url || event.instagram_url || event.website || (!isOrganizer && currentUser && event)}
+							<div
+								class="rounded-2xl bg-white p-4 shadow-sm sm:p-6 dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
+							>
+								<h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Actions</h3>
+								<div class="space-y-3">
+									<!-- Get Directions Button -->
+									{#if hasCompleteAddress()}
+										<button
+											onclick={handleAddressClick}
+											class="flex w-full items-center justify-center rounded-full bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-indigo-600 active:scale-95 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+										>
+											<FontAwesomeIcon icon={faMapMarkerAlt} class="mr-2 h-4 w-4" />
+											Get Directions
+										</button>
+									{/if}
+
+									<!-- Message Organizer Button -->
+									{#if !isOrganizer && currentUser && event}
+										{#if existingConversation}
+											<button
+												onclick={viewConversation}
+												class="flex w-full items-center justify-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 dark:bg-green-600 dark:hover:bg-green-700"
+											>
+												<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+												View Conversation
+												{#if existingConversation.unread_count && existingConversation.unread_count > 0}
+													<span
+														class="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold"
+														>{existingConversation.unread_count}</span
+													>
+												{/if}
+											</button>
+										{:else}
+											<button
+												onclick={() => (showMessageModal = true)}
+												disabled={checkingConversation}
+												class="flex w-full items-center justify-center rounded-full bg-green-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-600 active:scale-95 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 dark:bg-green-600 dark:hover:bg-green-700 dark:disabled:bg-gray-600"
+											>
+												<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4" />
+												{checkingConversation ? 'Checking...' : 'Message Organizer'}
+											</button>
+										{/if}
+									{/if}
+
+									<!-- Facebook Button -->
+									{#if event.facebook_url}
+										<a
+											href={event.facebook_url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700 active:scale-95 dark:bg-blue-700 dark:hover:bg-blue-800"
+											title="View on Facebook"
+										>
+											<FontAwesomeIcon icon={faFacebook} class="mr-2 h-4 w-4" />
+											Facebook
+										</a>
+									{/if}
+
+									<!-- Instagram Button -->
+									{#if event.instagram_url}
+										<a
+											href={event.instagram_url}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2.5 text-sm font-medium text-white transition-all hover:from-purple-600 hover:to-pink-600 active:scale-95"
+											title="View on Instagram"
+										>
+											<FontAwesomeIcon icon={faInstagram} class="mr-2 h-4 w-4" />
+											Instagram
+										</a>
+									{/if}
+
+									<!-- Website Button -->
+									{#if event.website}
+										<a
+											href={event.website}
+											target="_blank"
+											rel="noopener noreferrer"
+											class="inline-flex w-full items-center justify-center rounded-full bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+											title="Visit Website"
+										>
+											<FontAwesomeIcon icon={faLink} class="mr-2 h-4 w-4" />
+											Website
+										</a>
+									{/if}
+								</div>
+							</div>
+						{/if}
+					</div>
+					<!-- Right Column closes above -->
+				</div>
+				<!-- Main Content Grid closes above -->
 
 				<!-- Comments Section -->
 				{#if event.comments_enabled}
@@ -1229,130 +1528,130 @@
 					</div>
 				{/if}
 			</div>
+		{/if}
+	{/if}
+
+	<!-- Edit Modal -->
+	{#if event}
+		<EditEventModal
+			isOpen={isEditOpen}
+			onClose={() => (isEditOpen = false)}
+			onSuccess={handleEditSuccess}
+			{event}
+		/>
+	{/if}
+
+	<!-- Delete Confirmation Modal -->
+	{#if showDeleteModal && event}
+		<DeleteConfirmationModal
+			isOpen={showDeleteModal}
+			onClose={handleCloseDeleteModal}
+			onConfirm={handleConfirmDelete}
+			itemName="event"
+			itemType="item"
+		/>
+	{/if}
+
+	<!-- Featured Image Modal -->
+	{#if showFeaturedImageModal && event}
+		<EventFeaturedImageModal
+			isOpen={showFeaturedImageModal}
+			eventId={event.id}
+			onClose={handleCloseFeaturedImageModal}
+			onSuccess={handleFeaturedImageSuccess}
+		/>
+	{/if}
+
+	<!-- Message Modal -->
+	{#if event}
+		<EventMessageModal
+			isOpen={showMessageModal}
+			eventId={event.id}
+			eventTitle={event.title}
+			onClose={() => (showMessageModal = false)}
+			onSuccess={handleMessageSuccess}
+		/>
+	{/if}
+
+	<!-- Full-Screen Image Viewer -->
+	{#if imageViewerOpen && event}
+		{@const displayImages = getDisplayImages()}
+		<div
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+			onclick={closeImageViewer}
+			role="button"
+			tabindex="0"
+			onkeydown={(e) => {
+				if (e.key === 'Escape') closeImageViewer();
+				if (e.key === 'ArrowLeft') previousViewerImage();
+				if (e.key === 'ArrowRight') nextViewerImage();
+			}}
+		>
+			<button
+				onclick={(e) => {
+					e.stopPropagation();
+					closeImageViewer();
+				}}
+				class="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white transition-all hover:bg-white/20"
+				aria-label="Close"
+			>
+				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/>
+				</svg>
+			</button>
+
+			{#if displayImages.length > 1}
+				<button
+					onclick={(e) => {
+						e.stopPropagation();
+						previousViewerImage();
+					}}
+					class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20"
+					aria-label="Previous image"
+				>
+					<FontAwesomeIcon icon={faChevronLeft} class="h-6 w-6" />
+				</button>
+				<button
+					onclick={(e) => {
+						e.stopPropagation();
+						nextViewerImage();
+					}}
+					class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20"
+					aria-label="Next image"
+				>
+					<FontAwesomeIcon icon={faChevronRight} class="h-6 w-6" />
+				</button>
+			{/if}
+
+			<div class="relative max-h-[90vh] max-w-[90vw]" onclick={(e) => e.stopPropagation()}>
+				<img
+					src={getAuthenticatedImageUrl(displayImages[viewerImageIndex])}
+					alt="{event.title} - Image {viewerImageIndex + 1}"
+					class="max-h-[90vh] max-w-[90vw] object-contain"
+				/>
+			</div>
+
+			{#if displayImages.length > 1}
+				<div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
+					{#each displayImages as _, index}
+						<button
+							onclick={(e) => {
+								e.stopPropagation();
+								viewerImageIndex = index;
+							}}
+							class="h-2 rounded-full transition-all {viewerImageIndex === index
+								? 'w-6 bg-white'
+								: 'w-2 bg-white/50 hover:bg-white/75'}"
+							aria-label="Go to image {index + 1}"
+						></button>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
-
-<!-- Edit Modal -->
-{#if event}
-	<EditEventModal
-		isOpen={isEditOpen}
-		onClose={() => (isEditOpen = false)}
-		onSuccess={handleEditSuccess}
-		{event}
-	/>
-{/if}
-
-<!-- Delete Confirmation Modal -->
-{#if showDeleteModal && event}
-	<DeleteConfirmationModal
-		isOpen={showDeleteModal}
-		onClose={handleCloseDeleteModal}
-		onConfirm={handleConfirmDelete}
-		itemName="event"
-		itemType="item"
-	/>
-{/if}
-
-<!-- Featured Image Modal -->
-{#if showFeaturedImageModal && event}
-	<EventFeaturedImageModal
-		isOpen={showFeaturedImageModal}
-		eventId={event.id}
-		onClose={handleCloseFeaturedImageModal}
-		onSuccess={handleFeaturedImageSuccess}
-	/>
-{/if}
-
-<!-- Message Modal -->
-{#if event}
-	<EventMessageModal
-		isOpen={showMessageModal}
-		eventId={event.id}
-		eventTitle={event.title}
-		onClose={() => (showMessageModal = false)}
-		onSuccess={handleMessageSuccess}
-	/>
-{/if}
-
-<!-- Full-Screen Image Viewer -->
-{#if imageViewerOpen && event}
-	{@const displayImages = getDisplayImages()}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
-		onclick={closeImageViewer}
-		role="button"
-		tabindex="0"
-		onkeydown={(e) => {
-			if (e.key === 'Escape') closeImageViewer();
-			if (e.key === 'ArrowLeft') previousViewerImage();
-			if (e.key === 'ArrowRight') nextViewerImage();
-		}}
-	>
-		<button
-			onclick={(e) => {
-				e.stopPropagation();
-				closeImageViewer();
-			}}
-			class="absolute top-4 right-4 rounded-full bg-white/10 p-2 text-white transition-all hover:bg-white/20"
-			aria-label="Close"
-		>
-			<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					stroke-width="2"
-					d="M6 18L18 6M6 6l12 12"
-				/>
-			</svg>
-		</button>
-
-		{#if displayImages.length > 1}
-			<button
-				onclick={(e) => {
-					e.stopPropagation();
-					previousViewerImage();
-				}}
-				class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20"
-				aria-label="Previous image"
-			>
-				<FontAwesomeIcon icon={faChevronLeft} class="h-6 w-6" />
-			</button>
-			<button
-				onclick={(e) => {
-					e.stopPropagation();
-					nextViewerImage();
-				}}
-				class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-all hover:bg-white/20"
-				aria-label="Next image"
-			>
-				<FontAwesomeIcon icon={faChevronRight} class="h-6 w-6" />
-			</button>
-		{/if}
-
-		<div class="relative max-h-[90vh] max-w-[90vw]" onclick={(e) => e.stopPropagation()}>
-			<img
-				src={getAuthenticatedImageUrl(displayImages[viewerImageIndex])}
-				alt="{event.title} - Image {viewerImageIndex + 1}"
-				class="max-h-[90vh] max-w-[90vw] object-contain"
-			/>
-		</div>
-
-		{#if displayImages.length > 1}
-			<div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-				{#each displayImages as _, index}
-					<button
-						onclick={(e) => {
-							e.stopPropagation();
-							viewerImageIndex = index;
-						}}
-						class="h-2 rounded-full transition-all {viewerImageIndex === index
-							? 'w-6 bg-white'
-							: 'w-2 bg-white/50 hover:bg-white/75'}"
-						aria-label="Go to image {index + 1}"
-					></button>
-				{/each}
-			</div>
-		{/if}
-	</div>
-{/if}
