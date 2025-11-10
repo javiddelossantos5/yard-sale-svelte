@@ -61,6 +61,10 @@
 
 	let userId = $derived($page.params.id || '');
 	let isOwnProfile = $derived(currentUser?.id === userId);
+	// Display company name if available, otherwise full name
+	let displayName = $derived(
+		profileUser?.company ? profileUser.company : (profileUser?.full_name || 'Unknown User')
+	);
 	// All logged-in users can rate/review other users (not their own profile)
 	// However, if the profile user is an admin, only admins can rate them
 	let canRate = $derived(
@@ -344,7 +348,7 @@
 </script>
 
 <svelte:head>
-	<title>{profileUser ? `${profileUser.full_name} - Profile` : 'User Profile'}</title>
+	<title>{profileUser ? `${displayName} - Profile` : 'User Profile'}</title>
 	<meta name="description" content={profileUser?.bio || 'View user profile'} />
 </svelte:head>
 
@@ -379,7 +383,7 @@
 						</button>
 						<div>
 							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-								{profileUser?.full_name || 'Profile'}
+								{displayName || 'Profile'}
 							</h1>
 							<p class="text-xs text-gray-500 dark:text-gray-400">User profile</p>
 						</div>
@@ -515,7 +519,7 @@
 						</button>
 						<div>
 							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-								{profileUser?.full_name || 'Profile'}
+								{displayName || 'Profile'}
 							</h1>
 							<div class="mt-0.5 flex items-center gap-3">
 								<p class="text-sm text-gray-600 dark:text-gray-400">
@@ -632,7 +636,7 @@
 							<div class="flex flex-col items-center sm:items-start">
 								<div class="flex items-center gap-2 flex-wrap">
 									<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-										{profileUser.full_name || 'Unknown User'}
+										{displayName}
 									</h1>
 									{#if profileUser.permissions === 'admin' || (profileUser as any).is_admin === true}
 										<div
