@@ -374,7 +374,7 @@
 					<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
 						Recent Activity (Last 7 Days)
 					</h2>
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 						<div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-700/50">
 							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">New Items</p>
 							<p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
@@ -385,6 +385,12 @@
 							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">New Yard Sales</p>
 							<p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
 								{stats.recent_activity.yard_sales_last_7_days}
+							</p>
+						</div>
+						<div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-700/50">
+							<p class="text-sm font-medium text-gray-600 dark:text-gray-400">New Events</p>
+							<p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+								{stats.recent_activity.events_last_7_days}
 							</p>
 						</div>
 						<div class="rounded-xl bg-gray-50 p-4 dark:bg-gray-700/50">

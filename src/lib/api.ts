@@ -2320,6 +2320,7 @@ export interface AdminDashboardStats {
 		items_last_7_days: number;
 		yard_sales_last_7_days: number;
 		users_last_7_days: number;
+		events_last_7_days: number;
 	};
 }
 
