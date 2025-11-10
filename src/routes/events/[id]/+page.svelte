@@ -9,9 +9,11 @@
 		deleteEvent,
 		getAuthenticatedImageUrl,
 		getCurrentUser,
+		getEventConversations,
 		isAdmin,
 		type Event,
 		type EventComment,
+		type EventConversation,
 		type CurrentUser
 	} from '$lib/api';
 	import { goto } from '$app/navigation';
@@ -39,6 +41,7 @@
 	import EditEventModal from '$lib/EditEventModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
 	import EventFeaturedImageModal from '$lib/EventFeaturedImageModal.svelte';
+	import EventMessageModal from '$lib/EventMessageModal.svelte';
 	import AppHeader from '$lib/AppHeader.svelte';
 	import { logout } from '$lib/auth';
 
@@ -53,6 +56,9 @@
 	let showDeleteModal = $state(false);
 	let deleting = $state(false);
 	let showFeaturedImageModal = $state(false);
+	let showMessageModal = $state(false);
+	let existingConversation = $state<EventConversation | null>(null);
+	let checkingConversation = $state(false);
 	let urlCopied = $state(false);
 
 	// Image carousel state
@@ -230,11 +236,40 @@
 					comments = [];
 				}
 			}
+
+			// Check for existing conversation (non-critical, can fail)
+			if (id && currentUser) {
+				try {
+					await checkExistingConversation(id);
+				} catch (err) {
+					// Don't throw - this is not critical
+				}
+			}
 		} catch (e: any) {
 			error = e?.message || 'Failed to load event';
 			event = null;
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function checkExistingConversation(eventId: string) {
+		if (!currentUser) return;
+		checkingConversation = true;
+		try {
+			const conversations = await getEventConversations();
+			const conv = conversations.find((c) => c.event_id === eventId);
+			existingConversation = conv || null;
+		} catch {
+			// Ignore errors checking conversation
+		} finally {
+			checkingConversation = false;
+		}
+	}
+
+	function viewConversation() {
+		if (existingConversation) {
+			goto(`/events/messages/${existingConversation.id}`);
 		}
 	}
 
@@ -270,6 +305,16 @@
 	async function handleFeaturedImageSuccess() {
 		showFeaturedImageModal = false;
 		await load();
+	}
+
+	async function handleMessageSuccess() {
+		showMessageModal = false;
+		// Refresh conversation check after sending message
+		if (event) {
+			await checkExistingConversation(event.id);
+		}
+		// Navigate to messages after sending
+		goto('/messages?tab=events');
 	}
 
 	function handleDeleteEvent() {
@@ -385,6 +430,15 @@
 		}
 	}
 
+	const isOrganizer = $derived(
+		!!(
+			currentUser &&
+			event &&
+			currentUser.id &&
+			event.organizer_id &&
+			currentUser.id === event.organizer_id
+		)
+	);
 	const canEdit = $derived(
 		currentUser && event && (currentUser.id === event.organizer_id || isAdmin(currentUser))
 	);
@@ -567,6 +621,32 @@
 									<span>{deleting ? 'Deleting...' : 'Delete'}</span>
 								</button>
 							{/if}
+							{#if !isOrganizer && currentUser && event}
+								<!-- Message Organizer Button (for non-organizers, including admins) -->
+								{#if existingConversation}
+									<button
+										onclick={viewConversation}
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700 active:scale-95 sm:flex-none sm:px-5 sm:py-3"
+									>
+										<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4 shrink-0" />
+										<span>View Conversation</span>
+										{#if existingConversation.unread_count && existingConversation.unread_count > 0}
+											<span class="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold">
+												{existingConversation.unread_count}
+											</span>
+										{/if}
+									</button>
+								{:else}
+									<button
+										onclick={() => (showMessageModal = true)}
+										disabled={checkingConversation}
+										class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none sm:px-5 sm:py-3"
+									>
+										<FontAwesomeIcon icon={faMessage} class="mr-2 h-4 w-4 shrink-0" />
+										<span>{checkingConversation ? 'Checking...' : 'Message Organizer'}</span>
+									</button>
+								{/if}
+							{/if}
 						</div>
 					</div>
 
@@ -647,7 +727,7 @@
 								<div class="text-left">
 									<div class="flex items-center gap-2">
 										<span class="font-semibold text-gray-900 dark:text-white">
-											{event.organizer_name || event.organizer_username}
+											{event.organizer_username}
 										</span>
 										{#if event.organizer_is_admin}
 											<div
@@ -1163,6 +1243,17 @@
 		eventId={event.id}
 		onClose={handleCloseFeaturedImageModal}
 		onSuccess={handleFeaturedImageSuccess}
+	/>
+{/if}
+
+<!-- Message Modal -->
+{#if event}
+	<EventMessageModal
+		isOpen={showMessageModal}
+		eventId={event.id}
+		eventTitle={event.title}
+		onClose={() => (showMessageModal = false)}
+		onSuccess={handleMessageSuccess}
 	/>
 {/if}
 

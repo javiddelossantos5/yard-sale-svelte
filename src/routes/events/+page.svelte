@@ -1,6 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getEvents, type Event, getCurrentUser, type CurrentUser, isAdmin } from '$lib/api';
+	import {
+		getEvents,
+		type Event,
+		getCurrentUser,
+		type CurrentUser,
+		isAdmin,
+		getYardSaleUnreadCount,
+		getMarketItemUnreadCount,
+		getEventUnreadCount
+	} from '$lib/api';
 	import { goto } from '$app/navigation';
 	import EventCard from '$lib/EventCard.svelte';
 	import CreateEventModal from '$lib/CreateEventModal.svelte';
@@ -22,6 +31,9 @@
 	let error = $state<string | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
 	let isCreateOpen = $state(false);
+	let yardSaleMessageUnreadCount = $state(0);
+	let marketMessageUnreadCount = $state(0);
+	let eventMessageUnreadCount = $state(0);
 
 	// Filter states
 	let searchTerm = $state('');
@@ -111,9 +123,8 @@
 		loading = true;
 		error = null;
 		try {
-			getCurrentUser()
-				.then((u) => (currentUser = u))
-				.catch(() => (currentUser = null));
+			const user = await getCurrentUser().catch(() => null);
+			currentUser = user;
 
 			const params: {
 				type?: string;
@@ -180,6 +191,11 @@
 			});
 
 			events = sortedEvents;
+
+			// Refresh message counts after loading events and setting currentUser
+			if (currentUser) {
+				await refreshMessageCount();
+			}
 		} catch (err: any) {
 			error = err?.message || 'Failed to load events';
 			events = [];
@@ -214,13 +230,40 @@
 			ageRestrictionFilter.trim() !== ''
 	);
 
+	// Function to refresh message unread count
+	async function refreshMessageCount() {
+		if (!currentUser) return;
+
+		try {
+			const [yardSaleResult, marketResult, eventResult] = await Promise.all([
+				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
+				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 })),
+				getEventUnreadCount().catch(() => ({ unread_count: 0 }))
+			]);
+			yardSaleMessageUnreadCount = yardSaleResult.unread_count || 0;
+			marketMessageUnreadCount = marketResult.unread_count || 0;
+			eventMessageUnreadCount = eventResult.unread_count || 0;
+		} catch {
+			// Ignore errors loading unread count
+		}
+	}
+
 	// React to filter changes
 	$effect(() => {
 		load();
 	});
 
+	// Refresh message counts when currentUser changes
+	$effect(() => {
+		if (currentUser) {
+			refreshMessageCount();
+		}
+	});
+
 	onMount(() => {
 		load();
+		// Also refresh message counts on mount in case load() hasn't set currentUser yet
+		refreshMessageCount();
 	});
 
 	async function handleCreateSuccess() {
@@ -271,6 +314,9 @@
 		primaryActionLabel="New Event"
 		primaryActionIcon={faPlus}
 		{currentUser}
+		{marketMessageUnreadCount}
+		{yardSaleMessageUnreadCount}
+		{eventMessageUnreadCount}
 		{mobileMenuItems}
 	/>
 

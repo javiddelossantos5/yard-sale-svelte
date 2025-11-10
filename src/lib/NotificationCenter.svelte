@@ -55,9 +55,13 @@
 		isOpen = false;
 
 		if (notification.type === 'message') {
-			// Navigate to the conversation or yard sale
+			// Navigate to the conversation or related item
 			if (notification.related_yard_sale_id) {
 				goto(`/yard-sale/${notification.related_yard_sale_id}`);
+			} else if (notification.related_market_item_id) {
+				goto(`/market/${notification.related_market_item_id}`);
+			} else if (notification.related_event_id) {
+				goto(`/events/${notification.related_event_id}`);
 			} else if (notification.related_user_id) {
 				// Navigate to user profile
 				goto(`/profile/${notification.related_user_id}`);

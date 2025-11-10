@@ -5,11 +5,14 @@
 	import {
 		getYardSaleConversations,
 		getMarketItemConversations,
+		getEventConversations,
 		getYardSaleUnreadCount,
 		getMarketItemUnreadCount,
+		getEventUnreadCount,
 		getCurrentUser,
 		type YardSaleConversation,
 		type MarketItemConversation,
+		type EventConversation,
 		type CurrentUser
 	} from '$lib/api';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -21,7 +24,8 @@
 		faHome,
 		faHeart,
 		faUser,
-		faShieldAlt
+		faShieldAlt,
+		faCalendar
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
@@ -30,20 +34,27 @@
 
 	let yardSaleConversations = $state<YardSaleConversation[]>([]);
 	let marketItemConversations = $state<MarketItemConversation[]>([]);
+	let eventConversations = $state<EventConversation[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let yardSaleUnreadCount = $state(0);
 	let marketItemUnreadCount = $state(0);
+	let eventUnreadCount = $state(0);
 	let currentUser = $state<CurrentUser | null>(null);
 
 	// Initialize activeTab from URL query parameter
-	let activeTab = $state<'all' | 'yard-sales' | 'market'>('all');
+	let activeTab = $state<'all' | 'yard-sales' | 'market' | 'events'>('all');
 
 	// React to URL changes
 	$effect(() => {
 		const tabParam = $page.url.searchParams.get('tab');
-		if (tabParam === 'yard-sales' || tabParam === 'market' || tabParam === 'all') {
-			activeTab = tabParam;
+		if (
+			tabParam === 'yard-sales' ||
+			tabParam === 'market' ||
+			tabParam === 'events' ||
+			tabParam === 'all'
+		) {
+			activeTab = tabParam as 'all' | 'yard-sales' | 'market' | 'events';
 		}
 	});
 
@@ -51,17 +62,29 @@
 		loading = true;
 		error = null;
 		try {
-			const [yardSaleConvs, marketConvs, yardSaleUnread, marketUnread, user] = await Promise.all([
+			const [
+				yardSaleConvs,
+				marketConvs,
+				eventConvs,
+				yardSaleUnread,
+				marketUnread,
+				eventUnread,
+				user
+			] = await Promise.all([
 				getYardSaleConversations(),
 				getMarketItemConversations(),
+				getEventConversations(),
 				getYardSaleUnreadCount(),
 				getMarketItemUnreadCount(),
+				getEventUnreadCount(),
 				getCurrentUser()
 			]);
 			yardSaleConversations = yardSaleConvs;
 			marketItemConversations = marketConvs;
+			eventConversations = eventConvs;
 			yardSaleUnreadCount = yardSaleUnread.unread_count;
 			marketItemUnreadCount = marketUnread.unread_count;
+			eventUnreadCount = eventUnread.unread_count;
 			currentUser = user;
 		} catch (e) {
 			// Don't show error for token expiration - handleTokenExpiration() will redirect
@@ -86,8 +109,13 @@
 
 		// Set initial tab from URL
 		const tabParam = $page.url.searchParams.get('tab');
-		if (tabParam === 'yard-sales' || tabParam === 'market' || tabParam === 'all') {
-			activeTab = tabParam;
+		if (
+			tabParam === 'yard-sales' ||
+			tabParam === 'market' ||
+			tabParam === 'events' ||
+			tabParam === 'all'
+		) {
+			activeTab = tabParam as 'all' | 'yard-sales' | 'market' | 'events';
 		}
 
 		load();
@@ -133,10 +161,19 @@
 		return conv.participant1_username || 'Unknown';
 	}
 
-	const totalUnreadCount = $derived(yardSaleUnreadCount + marketItemUnreadCount);
+	function getEventOtherParticipant(conv: EventConversation): string {
+		if (!currentUser) return 'Unknown';
+		if (conv.participant1_id === currentUser.id) {
+			return conv.participant2_username || 'Unknown';
+		}
+		return conv.participant1_username || 'Unknown';
+	}
+
+	const totalUnreadCount = $derived(yardSaleUnreadCount + marketItemUnreadCount + eventUnreadCount);
 	type UnifiedConversation =
 		| (YardSaleConversation & { type: 'yard-sale' })
-		| (MarketItemConversation & { type: 'market' });
+		| (MarketItemConversation & { type: 'market' })
+		| (EventConversation & { type: 'event' });
 
 	const filteredConversations = $derived(() => {
 		if (activeTab === 'yard-sales') {
@@ -149,11 +186,17 @@
 				...c,
 				type: 'market' as const
 			})) as UnifiedConversation[];
+		} else if (activeTab === 'events') {
+			return eventConversations.map((c) => ({
+				...c,
+				type: 'event' as const
+			})) as UnifiedConversation[];
 		} else {
 			// Combine and sort by updated_at
 			const all: UnifiedConversation[] = [
 				...yardSaleConversations.map((c) => ({ ...c, type: 'yard-sale' as const })),
-				...marketItemConversations.map((c) => ({ ...c, type: 'market' as const }))
+				...marketItemConversations.map((c) => ({ ...c, type: 'market' as const })),
+				...eventConversations.map((c) => ({ ...c, type: 'event' as const }))
 			];
 			return all.sort(
 				(a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
@@ -211,13 +254,14 @@
 		title="Messages"
 		subtitle={totalUnreadCount > 0
 			? `${totalUnreadCount} ${totalUnreadCount === 1 ? 'unread' : 'unread'}`
-			: 'All conversations from yard sales and marketplace'}
+			: 'All conversations from yard sales, marketplace, and events'}
 		showBackButton={true}
 		backUrl="/"
 		backLabel="Back"
 		{currentUser}
 		marketMessageUnreadCount={marketItemUnreadCount}
 		yardSaleMessageUnreadCount={yardSaleUnreadCount}
+		eventMessageUnreadCount={eventUnreadCount}
 		{mobileMenuItems}
 	/>
 
@@ -234,7 +278,9 @@
 						? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
 						: 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'}"
 				>
-					All ({yardSaleConversations.length + marketItemConversations.length})
+					All ({yardSaleConversations.length +
+						marketItemConversations.length +
+						eventConversations.length})
 				</button>
 				<button
 					onclick={() => {
@@ -274,6 +320,25 @@
 						</span>
 					{/if}
 				</button>
+				<button
+					onclick={() => {
+						activeTab = 'events';
+						goto('/messages?tab=events', { replaceState: true, noScroll: true });
+					}}
+					class="relative border-b-2 px-4 py-3 text-sm font-semibold transition-colors {activeTab ===
+					'events'
+						? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+						: 'border-transparent text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'}"
+				>
+					Events ({eventConversations.length})
+					{#if eventUnreadCount > 0}
+						<span
+							class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white"
+						>
+							{eventUnreadCount > 99 ? '99+' : eventUnreadCount}
+						</span>
+					{/if}
+				</button>
 			</div>
 		</div>
 	</div>
@@ -302,26 +367,38 @@
 						? 'Start a conversation by messaging a seller about a yard sale.'
 						: activeTab === 'market'
 							? 'Start a conversation by messaging a seller about an item.'
-							: 'Start a conversation by messaging a seller about a yard sale or item.'}
+							: activeTab === 'events'
+								? 'Start a conversation by messaging an event organizer.'
+								: 'Start a conversation by messaging a seller or event organizer.'}
 				</p>
 			</div>
 		{:else}
 			<div class="space-y-2">
 				{#each filteredConversations() as conv}
 					{@const isYardSale = conv.type === 'yard-sale'}
+					{@const isMarket = conv.type === 'market'}
+					{@const isEvent = conv.type === 'event'}
 					{@const convId = conv.id}
 					{@const route = isYardSale
 						? `/yard-sale/messages/${convId}`
-						: `/market/messages/${convId}`}
+						: isMarket
+							? `/market/messages/${convId}`
+							: `/events/messages/${convId}`}
 					{@const otherParticipant = isYardSale
 						? getYardSaleOtherParticipant(conv as YardSaleConversation)
-						: getMarketItemOtherParticipant(conv as MarketItemConversation)}
+						: isMarket
+							? getMarketItemOtherParticipant(conv as MarketItemConversation)
+							: getEventOtherParticipant(conv as EventConversation)}
 					{@const title = isYardSale
 						? (conv as YardSaleConversation).yard_sale_title || 'Unknown Yard Sale'
-						: (conv as MarketItemConversation).item_name || 'Unknown Item'}
+						: isMarket
+							? (conv as MarketItemConversation).item_name || 'Unknown Item'
+							: (conv as EventConversation).event_title || 'Unknown Event'}
 					{@const lastMessage = isYardSale
 						? (conv as YardSaleConversation).last_message
-						: (conv as MarketItemConversation).last_message}
+						: isMarket
+							? (conv as MarketItemConversation).last_message
+							: (conv as EventConversation).last_message}
 					{@const unreadCount = conv.unread_count || 0}
 
 					<div
@@ -345,12 +422,16 @@
 							<div
 								class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full {isYardSale
 									? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-									: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'}"
+									: isMarket
+										? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
+										: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'}"
 							>
 								{#if isYardSale}
 									<FontAwesomeIcon icon={faEnvelope} class="h-6 w-6" />
-								{:else}
+								{:else if isMarket}
 									<FontAwesomeIcon icon={faStore} class="h-6 w-6" />
+								{:else}
+									<FontAwesomeIcon icon={faCalendar} class="h-6 w-6" />
 								{/if}
 							</div>
 							<div class="min-w-0 flex-1">
@@ -360,17 +441,21 @@
 											<span
 												class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {isYardSale
 													? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-													: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'}"
+													: isMarket
+														? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+														: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'}"
 											>
-												{isYardSale ? 'Yard Sale' : 'Marketplace'}
+												{isYardSale ? 'Yard Sale' : isMarket ? 'Marketplace' : 'Event'}
 											</span>
 											<span
 												onclick={(e) => {
 													e.stopPropagation();
 													if (isYardSale) {
 														goto(`/yard-sale/${(conv as YardSaleConversation).yard_sale_id}`);
-													} else {
+													} else if (isMarket) {
 														goto(`/market/${(conv as MarketItemConversation).item_id}`);
+													} else {
+														goto(`/events/${(conv as EventConversation).event_id}`);
 													}
 												}}
 												class="cursor-pointer truncate font-semibold text-gray-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
@@ -382,8 +467,10 @@
 														e.stopPropagation();
 														if (isYardSale) {
 															goto(`/yard-sale/${(conv as YardSaleConversation).yard_sale_id}`);
-														} else {
+														} else if (isMarket) {
 															goto(`/market/${(conv as MarketItemConversation).item_id}`);
+														} else {
+															goto(`/events/${(conv as EventConversation).event_id}`);
 														}
 													}
 												}}
@@ -404,13 +491,22 @@
 																: ysConv.participant1_id
 														}`
 													);
-												} else {
+												} else if (isMarket) {
 													const miConv = conv as MarketItemConversation;
 													goto(
 														`/profile/${
 															currentUser?.id === miConv.participant1_id
 																? miConv.participant2_id
 																: miConv.participant1_id
+														}`
+													);
+												} else {
+													const evConv = conv as EventConversation;
+													goto(
+														`/profile/${
+															currentUser?.id === evConv.participant1_id
+																? evConv.participant2_id
+																: evConv.participant1_id
 														}`
 													);
 												}
@@ -431,13 +527,22 @@
 																	: ysConv.participant1_id
 															}`
 														);
-													} else {
+													} else if (isMarket) {
 														const miConv = conv as MarketItemConversation;
 														goto(
 															`/profile/${
 																currentUser?.id === miConv.participant1_id
 																	? miConv.participant2_id
 																	: miConv.participant1_id
+															}`
+														);
+													} else {
+														const evConv = conv as EventConversation;
+														goto(
+															`/profile/${
+																currentUser?.id === evConv.participant1_id
+																	? evConv.participant2_id
+																	: evConv.participant1_id
 															}`
 														);
 													}

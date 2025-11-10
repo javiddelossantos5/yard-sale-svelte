@@ -78,6 +78,12 @@ export default defineConfig(({ mode }) => {
 					target: API_BASE_URL,
 					changeOrigin: true,
 					secure: false
+				},
+				// Proxy events messaging endpoints directly (no /api prefix)
+				'^/events/(conversations|.*/messages|messages/.*)': {
+					target: API_BASE_URL,
+					changeOrigin: true,
+					secure: false
 				}
 			}
 		}

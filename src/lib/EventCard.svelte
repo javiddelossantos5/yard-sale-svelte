@@ -337,7 +337,7 @@
 						{event.organizer_username.charAt(0).toUpperCase()}
 					</span>
 				</div>
-				<span class="font-semibold">by {event.organizer_name || event.organizer_username}</span>
+				<span class="font-semibold">by {event.organizer_username}</span>
 				{#if event.organizer_is_admin}
 					<div
 						class="ml-1.5 flex items-center gap-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm"

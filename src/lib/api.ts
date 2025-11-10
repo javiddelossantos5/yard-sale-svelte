@@ -171,6 +171,8 @@ export interface Notification {
 	user_id: string;
 	related_user_id?: string;
 	related_yard_sale_id?: string;
+	related_market_item_id?: string;
+	related_event_id?: string;
 	related_message_id?: string;
 	metadata?: Record<string, any>;
 }
@@ -1865,6 +1867,136 @@ export async function markYardSaleMessageRead(messageId: string): Promise<void> 
 // Get unread yard sale message count
 export async function getYardSaleUnreadCount(): Promise<{ unread_count: number }> {
 	const res = await fetch(`/yard-sales/messages/unread-count`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch unread count');
+	return res.json();
+}
+
+// ===== EVENT CONVERSATIONS AND MESSAGES =====
+
+export interface EventMessage {
+	id: string;
+	content: string;
+	is_read: boolean;
+	created_at: string;
+	conversation_id: string;
+	event_id: string;
+	sender_id: string;
+	sender_username: string;
+	sender_profile_picture?: string | null;
+	sender_is_admin?: boolean;
+	recipient_id: string;
+	recipient_username: string;
+}
+
+export interface EventConversation {
+	id: string;
+	event_id: string;
+	event_title?: string;
+	participant1_id: string;
+	participant1_username?: string;
+	participant2_id: string;
+	participant2_username?: string;
+	created_at: string;
+	updated_at: string;
+	last_message?: EventMessage | null;
+	unread_count?: number;
+}
+
+// Send initial message to event organizer (creates conversation)
+export async function sendEventMessage(eventId: string, content: string): Promise<EventMessage> {
+	const res = await fetch(`/events/${eventId}/messages`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({ content })
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to send message');
+	return res.json();
+}
+
+// Send message in existing event conversation
+export async function sendEventConversationMessage(
+	conversationId: string,
+	content: string
+): Promise<EventMessage> {
+	const res = await fetch(`/events/conversations/${conversationId}/messages`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${localStorage.getItem('access_token')}`
+		},
+		body: JSON.stringify({ content })
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to send message');
+	return res.json();
+}
+
+// Get messages for an event conversation
+export async function getEventConversationMessages(
+	conversationId: string
+): Promise<EventMessage[]> {
+	const res = await fetch(`/events/conversations/${conversationId}/messages`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch messages');
+	return res.json();
+}
+
+// Get all event conversations for current user
+export async function getEventConversations(): Promise<EventConversation[]> {
+	const res = await fetch(`/events/conversations`, {
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to fetch conversations');
+	return res.json();
+}
+
+// Mark event message as read
+export async function markEventMessageRead(messageId: string): Promise<void> {
+	const res = await fetch(`/events/messages/${messageId}/read`, {
+		method: 'PUT',
+		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+	});
+	if (res.status === 401 || res.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired');
+	}
+	if (!res.ok) throw new Error('Failed to mark message as read');
+}
+
+// Get unread event message count
+export async function getEventUnreadCount(): Promise<{ unread_count: number }> {
+	const res = await fetch(`/events/messages/unread-count`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
 	});
 	if (res.status === 401 || res.status === 403) {

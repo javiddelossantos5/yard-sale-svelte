@@ -8,6 +8,7 @@
 		getCurrentUser,
 		getYardSaleUnreadCount,
 		getMarketItemUnreadCount,
+		getEventUnreadCount,
 		isAdmin,
 		type YardSale,
 		type CurrentUser
@@ -81,19 +82,23 @@
 
 	let yardSaleMessageUnreadCount = $state(0);
 	let marketMessageUnreadCount = $state(0);
+	let eventMessageUnreadCount = $state(0);
 
 	// Function to refresh message unread count
 	async function refreshMessageCount() {
 		if (!currentUser) return;
 
 		try {
-			const [yardSaleResult, marketResult] = await Promise.all([
+			const [yardSaleResult, marketResult, eventResult] = await Promise.all([
 				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
-				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
+				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 })),
+				getEventUnreadCount().catch(() => ({ unread_count: 0 }))
 			]);
 			yardSaleMessageUnreadCount = yardSaleResult.unread_count || 0;
 			marketMessageUnreadCount = marketResult.unread_count || 0;
-			messageUnreadCount = yardSaleMessageUnreadCount + marketMessageUnreadCount;
+			eventMessageUnreadCount = eventResult.unread_count || 0;
+			messageUnreadCount =
+				yardSaleMessageUnreadCount + marketMessageUnreadCount + eventMessageUnreadCount;
 		} catch {
 			// Ignore errors loading unread count
 		}
@@ -375,7 +380,7 @@
 				// First, sort by status: active first, ended/closed/expired last
 				const statusA = getYardSaleStatus(a);
 				const statusB = getYardSaleStatus(b);
-				
+
 				// Status priority: active = 0, upcoming = 1, on_break = 2, closed = 3, expired = 4
 				const getStatusPriority = (status: string) => {
 					if (status === 'active') return 0;
@@ -440,6 +445,7 @@
 		{currentUser}
 		{marketMessageUnreadCount}
 		{yardSaleMessageUnreadCount}
+		{eventMessageUnreadCount}
 		{mobileMenuItems}
 	/>
 
@@ -682,7 +688,7 @@
 	</div>
 
 	<!-- Create Yard Sale Modal -->
-		<YardSaleModal
+	<YardSaleModal
 		isOpen={showCreateModal}
 		onClose={handleCloseCreateModal}
 		onSuccess={handleCreateSuccess}

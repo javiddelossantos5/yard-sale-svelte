@@ -14,7 +14,6 @@
 		faCalendar
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
-	import { unreadMessageCount } from '$lib/notifications';
 	import type { CurrentUser } from '$lib/api';
 
 	let {
@@ -31,6 +30,7 @@
 		currentUser,
 		marketMessageUnreadCount = 0,
 		yardSaleMessageUnreadCount = 0,
+		eventMessageUnreadCount = 0,
 		mobileMenuItems = []
 	}: {
 		title: string;
@@ -46,6 +46,7 @@
 		currentUser: CurrentUser | null;
 		marketMessageUnreadCount?: number;
 		yardSaleMessageUnreadCount?: number;
+		eventMessageUnreadCount?: number;
 		mobileMenuItems?: Array<{
 			label: string;
 			icon: any;
@@ -64,7 +65,8 @@
 		logout(); // logout() now handles redirect automatically
 	}
 
-	const totalUnreadCount = marketMessageUnreadCount + yardSaleMessageUnreadCount;
+	const totalUnreadCount =
+		marketMessageUnreadCount + yardSaleMessageUnreadCount + eventMessageUnreadCount;
 
 	// Get current pathname to conditionally show/hide navigation buttons
 	const currentPath = $derived($page.url.pathname);
@@ -265,11 +267,11 @@
 									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
 								/>
 								My Profile
-								{#if $unreadMessageCount > 0}
+								{#if totalUnreadCount > 0}
 									<span
 										class="ml-auto rounded-full bg-red-500 px-2.5 py-0.5 text-sm font-semibold text-white"
 									>
-										{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
+										{totalUnreadCount > 99 ? '99+' : totalUnreadCount}
 									</span>
 								{/if}
 							</button>
@@ -422,11 +424,11 @@
 								aria-label="My Profile"
 							>
 								<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-600 dark:text-gray-400" />
-								{#if $unreadMessageCount > 0}
+								{#if totalUnreadCount > 0}
 									<span
 										class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white shadow-lg ring-1 ring-red-600/20 dark:border-gray-900"
 									>
-										{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
+										{totalUnreadCount > 99 ? '99+' : totalUnreadCount}
 									</span>
 								{/if}
 							</button>

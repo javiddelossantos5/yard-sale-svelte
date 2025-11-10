@@ -24,7 +24,7 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
-	import { getMarketItemUnreadCount, getYardSaleUnreadCount } from '$lib/api';
+	import { getMarketItemUnreadCount, getYardSaleUnreadCount, getEventUnreadCount } from '$lib/api';
 	import AppHeader from '$lib/AppHeader.svelte';
 
 	let filtersExpanded = $state(false);
@@ -39,6 +39,7 @@
 	let messageUnreadCount = $state(0);
 	let yardSaleMessageUnreadCount = $state(0);
 	let marketMessageUnreadCount = $state(0);
+	let eventMessageUnreadCount = $state(0);
 
 	// Filter states
 	let searchTerm = $state('');
@@ -238,7 +239,7 @@
 
 			// Fetch items with new paginated API
 			const response = await getMarketItems(params);
-			
+
 			// Sort items: active first, ended/sold last
 			const sortedItems = [...response.items].sort((a, b) => {
 				// Status priority: active = 0, pending = 1, hidden = 2, sold = 3
@@ -260,7 +261,7 @@
 				// If same status, maintain original order (or sort by created_at desc)
 				return 0;
 			});
-			
+
 			items = sortedItems;
 			totalItems = response.total;
 
@@ -288,13 +289,16 @@
 		if (!currentUser) return;
 
 		try {
-			const [yardSaleResult, marketResult] = await Promise.all([
+			const [yardSaleResult, marketResult, eventResult] = await Promise.all([
 				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
-				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
+				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 })),
+				getEventUnreadCount().catch(() => ({ unread_count: 0 }))
 			]);
 			yardSaleMessageUnreadCount = yardSaleResult.unread_count || 0;
 			marketMessageUnreadCount = marketResult.unread_count || 0;
-			messageUnreadCount = yardSaleMessageUnreadCount + marketMessageUnreadCount;
+			eventMessageUnreadCount = eventResult.unread_count || 0;
+			messageUnreadCount =
+				yardSaleMessageUnreadCount + marketMessageUnreadCount + eventMessageUnreadCount;
 		} catch {
 			// Ignore errors loading unread count
 		}
@@ -421,6 +425,7 @@
 		{currentUser}
 		{marketMessageUnreadCount}
 		{yardSaleMessageUnreadCount}
+		{eventMessageUnreadCount}
 		{mobileMenuItems}
 	/>
 
