@@ -2472,7 +2472,9 @@ export interface Event {
 		| 'lost_found'
 		| 'request_help'
 		| 'offer_help'
-		| 'service_offer';
+		| 'service_offer'
+		| 'weather'
+		| 'job_posting';
 	title: string;
 	description?: string | null;
 	category?: string | null;
@@ -2495,6 +2497,18 @@ export interface Event {
 	// Filtering & Search
 	tags?: string[] | null;
 	age_restriction?: string | null;
+	// Job Posting Fields (for job_posting type)
+	job_title?: string | null;
+	employment_type?:
+		| 'full_time'
+		| 'part_time'
+		| 'contract'
+		| 'temporary'
+		| 'seasonal'
+		| 'internship'
+		| null;
+	// Weather Fields (for weather type)
+	weather_conditions?: string | null;
 	// Organizer
 	organizer_id: string;
 	organizer_username: string;
@@ -2527,7 +2541,9 @@ export interface EventCreate {
 		| 'lost_found'
 		| 'request_help'
 		| 'offer_help'
-		| 'service_offer';
+		| 'service_offer'
+		| 'weather'
+		| 'job_posting';
 	title: string;
 	description?: string;
 	category?: string;
@@ -2547,6 +2563,17 @@ export interface EventCreate {
 	is_free?: boolean;
 	tags?: string[];
 	age_restriction?: string;
+	// Job Posting Fields (for job_posting type)
+	job_title?: string;
+	employment_type?:
+		| 'full_time'
+		| 'part_time'
+		| 'contract'
+		| 'temporary'
+		| 'seasonal'
+		| 'internship';
+	// Weather Fields (for weather type)
+	weather_conditions?: string;
 	organizer_name?: string;
 	company?: string;
 	contact_phone?: string;
@@ -2568,7 +2595,9 @@ export interface EventUpdate {
 		| 'lost_found'
 		| 'request_help'
 		| 'offer_help'
-		| 'service_offer';
+		| 'service_offer'
+		| 'weather'
+		| 'job_posting';
 	title?: string;
 	description?: string;
 	category?: string;
@@ -2588,6 +2617,17 @@ export interface EventUpdate {
 	is_free?: boolean;
 	tags?: string[];
 	age_restriction?: string;
+	// Job Posting Fields (for job_posting type)
+	job_title?: string;
+	employment_type?:
+		| 'full_time'
+		| 'part_time'
+		| 'contract'
+		| 'temporary'
+		| 'seasonal'
+		| 'internship';
+	// Weather Fields (for weather type)
+	weather_conditions?: string;
 	organizer_name?: string;
 	company?: string;
 	contact_phone?: string;

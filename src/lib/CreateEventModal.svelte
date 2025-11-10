@@ -32,7 +32,18 @@
 		{ value: 'lost_found', label: 'Lost & Found' },
 		{ value: 'request_help', label: 'Request Help' },
 		{ value: 'offer_help', label: 'Offer Help' },
-		{ value: 'service_offer', label: 'Service Offer' }
+		{ value: 'service_offer', label: 'Service Offer' },
+		{ value: 'weather', label: 'Weather' },
+		{ value: 'job_posting', label: 'Job Posting' }
+	];
+
+	const employmentTypes = [
+		{ value: 'full_time', label: 'Full Time' },
+		{ value: 'part_time', label: 'Part Time' },
+		{ value: 'contract', label: 'Contract' },
+		{ value: 'temporary', label: 'Temporary' },
+		{ value: 'seasonal', label: 'Seasonal' },
+		{ value: 'internship', label: 'Internship' }
 	];
 
 	const eventStatuses = [
@@ -167,6 +178,18 @@
 				category: cleanValue(formData.category),
 				tags: tags.length > 0 ? tags : undefined,
 				age_restriction: cleanValue(formData.age_restriction),
+				// Job Posting Fields
+				job_title: cleanValue(formData.job_title),
+				employment_type: cleanValue(formData.employment_type) as
+					| 'full_time'
+					| 'part_time'
+					| 'contract'
+					| 'temporary'
+					| 'seasonal'
+					| 'internship'
+					| undefined,
+				// Weather Fields
+				weather_conditions: cleanValue(formData.weather_conditions),
 				// Organizer Info
 				organizer_name: cleanValue(formData.organizer_name),
 				company: cleanValue(formData.company),
@@ -731,6 +754,75 @@
 											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 										/>
 									</div>
+
+									<!-- Job Posting Fields (for job_posting type) -->
+									{#if formData.type === 'job_posting'}
+										<div class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
+											<h4 class="text-base font-semibold text-gray-900 dark:text-white">
+												Job Posting Details
+											</h4>
+											<div>
+												<label
+													for="job_title"
+													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+													>Job Title <span class="font-normal text-gray-400">(Optional)</span
+													></label
+												>
+												<input
+													id="job_title"
+													type="text"
+													bind:value={formData.job_title}
+													placeholder="e.g., Software Engineer, Marketing Manager"
+													maxlength="150"
+													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												/>
+											</div>
+											<div>
+												<label
+													for="employment_type"
+													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+													>Employment Type <span class="font-normal text-gray-400">(Optional)</span
+													></label
+												>
+												<select
+													id="employment_type"
+													bind:value={formData.employment_type}
+													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+												>
+													<option value="">Select employment type</option>
+													{#each employmentTypes as empType}
+														<option value={empType.value}>{empType.label}</option>
+													{/each}
+												</select>
+											</div>
+										</div>
+									{/if}
+
+									<!-- Weather Fields (for weather type) -->
+									{#if formData.type === 'weather'}
+										<div class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
+											<h4 class="text-base font-semibold text-gray-900 dark:text-white">
+												Weather Details
+											</h4>
+											<div>
+												<label
+													for="weather_conditions"
+													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+													>Weather Conditions <span class="font-normal text-gray-400"
+														>(Optional)</span
+													></label
+												>
+												<input
+													id="weather_conditions"
+													type="text"
+													bind:value={formData.weather_conditions}
+													placeholder="e.g., Sunny, 75°F or Rainy, 60°F with light winds"
+													maxlength="255"
+													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												/>
+											</div>
+										</div>
+									{/if}
 
 									<!-- Image Upload -->
 									<div>

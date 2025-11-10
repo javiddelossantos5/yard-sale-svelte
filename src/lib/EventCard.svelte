@@ -44,7 +44,7 @@
 		}
 	});
 
-	function nextCardImage(e: Event) {
+	function nextCardImage(e: MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 		const images = getDisplayImages();
@@ -53,7 +53,7 @@
 		}
 	}
 
-	function previousCardImage(e: Event) {
+	function previousCardImage(e: MouseEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 		const images = getDisplayImages();
@@ -133,12 +133,27 @@
 			lost_found: 'Lost & Found',
 			request_help: 'Request Help',
 			offer_help: 'Offer Help',
-			service_offer: 'Service'
+			service_offer: 'Service',
+			weather: 'Weather',
+			job_posting: 'Job Posting'
 		};
 		return labels[type] || type;
 	}
 
-	function openEvent(e?: Event) {
+	function getEmploymentTypeLabel(type: string | null | undefined): string {
+		if (!type) return '';
+		const labels: Record<string, string> = {
+			full_time: 'Full Time',
+			part_time: 'Part Time',
+			contract: 'Contract',
+			temporary: 'Temporary',
+			seasonal: 'Seasonal',
+			internship: 'Internship'
+		};
+		return labels[type] || type;
+	}
+
+	function openEvent(e?: MouseEvent | KeyboardEvent) {
 		if (e) {
 			e.preventDefault();
 			e.stopPropagation();
@@ -256,6 +271,32 @@
 		>
 			{event.title}
 		</h3>
+
+		<!-- Job Posting Fields -->
+		{#if event.type === 'job_posting'}
+			<div class="mb-2 space-y-1">
+				{#if event.job_title}
+					<p class="text-sm font-semibold text-gray-900 dark:text-white">
+						{event.job_title}
+					</p>
+				{/if}
+				{#if event.employment_type}
+					<p class="text-xs text-gray-600 dark:text-gray-400">
+						{getEmploymentTypeLabel(event.employment_type)}
+					</p>
+				{/if}
+			</div>
+		{/if}
+
+		<!-- Weather Fields -->
+		{#if event.type === 'weather' && event.weather_conditions}
+			<div class="mb-2">
+				<p class="text-sm font-medium text-gray-700 dark:text-gray-300">
+					{event.weather_conditions}
+				</p>
+			</div>
+		{/if}
+
 		{#if event.description}
 			<p class="mb-2 line-clamp-2 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
 				{event.description}

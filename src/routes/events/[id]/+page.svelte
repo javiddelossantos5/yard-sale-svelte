@@ -150,7 +150,22 @@
 			lost_found: 'Lost & Found',
 			request_help: 'Request Help',
 			offer_help: 'Offer Help',
-			service_offer: 'Service Offer'
+			service_offer: 'Service Offer',
+			weather: 'Weather',
+			job_posting: 'Job Posting'
+		};
+		return labels[type] || type;
+	}
+
+	function getEmploymentTypeLabel(type: string | null | undefined): string {
+		if (!type) return '';
+		const labels: Record<string, string> = {
+			full_time: 'Full Time',
+			part_time: 'Part Time',
+			contract: 'Contract',
+			temporary: 'Temporary',
+			seasonal: 'Seasonal',
+			internship: 'Internship'
 		};
 		return labels[type] || type;
 	}
@@ -531,6 +546,39 @@
 					</div>
 
 					<h1 class="mb-4 text-3xl font-bold text-gray-900 dark:text-white">{event.title}</h1>
+
+					<!-- Job Posting Fields -->
+					{#if event.type === 'job_posting'}
+						<div class="mb-6 space-y-2">
+							{#if event.job_title}
+								<div>
+									<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+										{event.job_title}
+									</h2>
+								</div>
+							{/if}
+							{#if event.employment_type}
+								<div>
+									<span
+										class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-200"
+									>
+										{getEmploymentTypeLabel(event.employment_type)}
+									</span>
+								</div>
+							{/if}
+						</div>
+					{/if}
+
+					<!-- Weather Fields -->
+					{#if event.type === 'weather' && event.weather_conditions}
+						<div class="mb-6">
+							<div
+								class="inline-flex items-center rounded-full bg-yellow-100 px-4 py-2 text-base font-semibold text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200"
+							>
+								{event.weather_conditions}
+							</div>
+						</div>
+					{/if}
 
 					{#if event.description}
 						<p class="mb-6 whitespace-pre-wrap text-gray-700 dark:text-gray-300">
