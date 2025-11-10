@@ -2347,6 +2347,14 @@ export interface AdminUsersResponse {
 	has_more: boolean;
 }
 
+export interface AdminEventsResponse {
+	events: Event[];
+	total: number;
+	limit: number;
+	offset: number;
+	has_more: boolean;
+}
+
 // Get admin dashboard statistics
 export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
 	const token = localStorage.getItem('access_token');
@@ -3019,7 +3027,7 @@ export async function getAdminEvents(
 		type?: string;
 		status?: string;
 	} = {}
-): Promise<Event[]> {
+): Promise<AdminEventsResponse> {
 	const token = localStorage.getItem('access_token');
 	if (!token) {
 		throw new Error('Authentication required');

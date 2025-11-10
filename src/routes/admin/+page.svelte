@@ -20,7 +20,8 @@
 		faUser,
 		faArrowRightFromBracket,
 		faMessage,
-		faHeart
+		faHeart,
+		faCalendar
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
@@ -400,7 +401,7 @@
 					class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800 dark:shadow-none dark:ring-1 dark:ring-gray-700"
 				>
 					<h2 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 						<button
 							onclick={() => goto('/admin/items')}
 							class="group flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 transition-all hover:border-blue-500 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:border-blue-500 dark:hover:bg-blue-900/20"
@@ -473,24 +474,29 @@
 							/>
 						</button>
 
-						<div
-							class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50"
+						<button
+							onclick={() => goto('/admin/events')}
+							class="group flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 transition-all hover:border-purple-500 hover:bg-purple-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:border-purple-500 dark:hover:bg-purple-900/20"
 						>
 							<div class="flex items-center gap-3">
 								<div
-									class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-600"
+									class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/20"
 								>
 									<FontAwesomeIcon
-										icon={faChartBar}
-										class="h-5 w-5 text-gray-600 dark:text-gray-400"
+										icon={faCalendar}
+										class="h-5 w-5 text-purple-600 dark:text-purple-400"
 									/>
 								</div>
 								<div class="text-left">
-									<p class="font-semibold text-gray-900 dark:text-white">Free Items</p>
-									<p class="text-xs text-gray-500 dark:text-gray-400">{stats.free_items} total</p>
+									<p class="font-semibold text-gray-900 dark:text-white">Manage Events</p>
+									<p class="text-xs text-gray-500 dark:text-gray-400">View & edit all events</p>
 								</div>
 							</div>
-						</div>
+							<FontAwesomeIcon
+								icon={faArrowRight}
+								class="h-5 w-5 text-gray-400 transition-colors group-hover:text-purple-600 dark:group-hover:text-purple-400"
+							/>
+						</button>
 					</div>
 				</div>
 			</div>
