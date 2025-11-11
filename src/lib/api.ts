@@ -785,6 +785,7 @@ export interface CurrentUser {
 	bio: string;
 	profile_picture?: string | null; // Profile picture URL
 	permissions?: string; // User permissions (e.g., "admin", "user")
+	is_active?: boolean; // Account active status
 	// Trust metrics
 	average_rating?: number;
 	total_ratings?: number;

@@ -108,12 +108,25 @@
 
 			const response = await login(credentials);
 
-			// Store the token
+			// Store the token temporarily
 			localStorage.setItem('access_token', response.access_token);
+
+			// Check if user account is active
+			const { getCurrentUser } = await import('$lib/api');
+			const currentUser = await getCurrentUser();
+
+			if (currentUser.is_active === false) {
+				// Clear the token since account is inactive
+				localStorage.removeItem('access_token');
+				error = 'Your account has been deactivated. Please contact support for assistance.';
+				return;
+			}
 
 			// Redirect to main page
 			goto('/');
 		} catch (err) {
+			// Clear token on any error
+			localStorage.removeItem('access_token');
 			error = err instanceof Error ? err.message : 'Login failed. Please try again.';
 		} finally {
 			loading = false;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import {
 		getNotifications,
 		getCurrentUser,
@@ -66,9 +67,17 @@
 			const response = await getNotifications(1, 100, unreadFilter === 'unread');
 			
 			// Filter notifications to only show reports
-			const reportNotifications = response.notifications.filter(
+			let reportNotifications = response.notifications.filter(
 				(notif) => notif.type === 'report'
 			);
+			
+			// Filter by user ID if provided in URL
+			const userId = $page.url.searchParams.get('user');
+			if (userId) {
+				reportNotifications = reportNotifications.filter(
+					(notif) => notif.related_user_id === userId
+				);
+			}
 			
 			// Sort by created_at descending (newest first)
 			reportNotifications.sort((a, b) => {
@@ -118,6 +127,7 @@
 	$effect(() => {
 		if (currentUser && isAdmin(currentUser)) {
 			unreadFilter; // Track filter changes
+			$page.url.searchParams.get('user'); // Track user parameter changes
 			loadReports();
 		}
 	});
@@ -151,12 +161,12 @@
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<AppHeader
-		title="Reported Users"
-		subtitle="View and manage user reports"
+		title={$page.url.searchParams.get('user') ? 'User Reports' : 'Reported Users'}
+		subtitle={$page.url.searchParams.get('user') ? 'Reports for this user' : 'View and manage user reports'}
 		currentUser={currentUser}
 		showBackButton={true}
-		backUrl="/admin"
-		backLabel="Admin Dashboard"
+		backUrl={$page.url.searchParams.get('user') ? '/admin/users' : '/admin'}
+		backLabel={$page.url.searchParams.get('user') ? 'Back to Users' : 'Admin Dashboard'}
 		{mobileMenuItems}
 	/>
 

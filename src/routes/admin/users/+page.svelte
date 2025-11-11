@@ -25,7 +25,13 @@
 		faPhone,
 		faMapMarkerAlt,
 		faPencil,
-		faBuilding
+		faBuilding,
+		faFilter,
+		faCheckCircle,
+		faTimesCircle,
+		faFlag,
+		faChevronDown,
+		faChevronUp
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
@@ -39,6 +45,15 @@
 	let mobileMenuOpen = $state(false);
 	let selectedUser = $state<CurrentUser | null>(null);
 	let showEditModal = $state(false);
+	
+	// Filters
+	let filtersExpanded = $state(false);
+	let isActiveFilter = $state<'all' | 'active' | 'inactive'>('all');
+	let searchTerm = $state('');
+	let zipFilter = $state('');
+	let cityFilter = $state('');
+	let stateFilter = $state('');
+	let permissionsFilter = $state<'all' | 'admin' | 'user'>('all');
 
 	onMount(async () => {
 		await loadData();
@@ -70,11 +85,51 @@
 		try {
 			console.log('Loading admin users...');
 			const response = await getAdminUsers({
-				limit: 100
+				limit: 100,
+				search: searchTerm.trim() || undefined
 			});
 			console.log('Admin users response:', response);
-			users = response.users || [];
-			totalUsers = response.total || 0;
+			
+			// Apply client-side filters
+			let filteredUsers = response.users || [];
+			
+			// Filter by is_active
+			if (isActiveFilter === 'active') {
+				filteredUsers = filteredUsers.filter((u) => u.is_active !== false);
+			} else if (isActiveFilter === 'inactive') {
+				filteredUsers = filteredUsers.filter((u) => u.is_active === false);
+			}
+			
+			// Filter by zip code
+			if (zipFilter.trim()) {
+				filteredUsers = filteredUsers.filter((u) => 
+					u.location?.zip?.toLowerCase().includes(zipFilter.trim().toLowerCase())
+				);
+			}
+			
+			// Filter by city
+			if (cityFilter.trim()) {
+				filteredUsers = filteredUsers.filter((u) => 
+					u.location?.city?.toLowerCase().includes(cityFilter.trim().toLowerCase())
+				);
+			}
+			
+			// Filter by state
+			if (stateFilter.trim()) {
+				filteredUsers = filteredUsers.filter((u) => 
+					u.location?.state?.toLowerCase().includes(stateFilter.trim().toLowerCase())
+				);
+			}
+			
+			// Filter by permissions
+			if (permissionsFilter === 'admin') {
+				filteredUsers = filteredUsers.filter((u) => u.permissions === 'admin');
+			} else if (permissionsFilter === 'user') {
+				filteredUsers = filteredUsers.filter((u) => u.permissions !== 'admin');
+			}
+			
+			users = filteredUsers;
+			totalUsers = filteredUsers.length;
 		} catch (e: any) {
 			console.error('Error in loadUsers:', e);
 			throw new Error(e?.message || 'Failed to load users');
@@ -100,6 +155,23 @@
 		// Reload users after successful update
 		loadUsers();
 	}
+
+	function viewReportsForUser(userId: string) {
+		goto(`/admin/reports?user=${userId}`);
+	}
+
+	// React to filter changes
+	$effect(() => {
+		if (currentUser && isAdmin(currentUser)) {
+			isActiveFilter;
+			searchTerm;
+			zipFilter;
+			cityFilter;
+			stateFilter;
+			permissionsFilter;
+			loadUsers();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -304,13 +376,117 @@
 			<div class="rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
 				{error}
 			</div>
-		{:else if users.length === 0}
-			<div
-				class="flex flex-col items-center justify-center rounded-3xl bg-white/90 p-12 shadow-sm ring-1 ring-black/5 dark:bg-gray-800/90 dark:ring-gray-700"
-			>
-				<p class="text-sm text-gray-500 dark:text-gray-400">No users found.</p>
-			</div>
 		{:else}
+			<!-- Filters Section -->
+			<div class="mb-6 rounded-2xl bg-white p-4 shadow-sm dark:bg-gray-800 dark:ring-1 dark:ring-gray-700">
+				<button
+					onclick={() => (filtersExpanded = !filtersExpanded)}
+					class="flex w-full items-center justify-between rounded-lg bg-gray-50 px-4 py-3 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600"
+				>
+					<div class="flex items-center gap-2">
+						<FontAwesomeIcon icon={faFilter} class="h-4 w-4 text-gray-600 dark:text-gray-400" />
+						<span class="font-medium text-gray-900 dark:text-white">Filters</span>
+					</div>
+					<FontAwesomeIcon
+						icon={filtersExpanded ? faChevronUp : faChevronDown}
+						class="h-4 w-4 text-gray-600 dark:text-gray-400"
+					/>
+				</button>
+
+				{#if filtersExpanded}
+					<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+						<!-- Search -->
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+								Search
+							</label>
+							<input
+								type="text"
+								bind:value={searchTerm}
+								placeholder="Username, name, email..."
+								class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+							/>
+						</div>
+
+						<!-- Active Status Filter -->
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+								Account Status
+							</label>
+							<select
+								bind:value={isActiveFilter}
+								class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+							>
+								<option value="all">All Users</option>
+								<option value="active">Active Only</option>
+								<option value="inactive">Inactive Only</option>
+							</select>
+						</div>
+
+						<!-- Permissions Filter -->
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+								Permissions
+							</label>
+							<select
+								bind:value={permissionsFilter}
+								class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+							>
+								<option value="all">All</option>
+								<option value="admin">Admin</option>
+								<option value="user">User</option>
+							</select>
+						</div>
+
+						<!-- City Filter -->
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+								City
+							</label>
+							<input
+								type="text"
+								bind:value={cityFilter}
+								placeholder="Filter by city..."
+								class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+							/>
+						</div>
+
+						<!-- State Filter -->
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+								State
+							</label>
+							<input
+								type="text"
+								bind:value={stateFilter}
+								placeholder="Filter by state..."
+								class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+							/>
+						</div>
+
+						<!-- Zip Code Filter -->
+						<div>
+							<label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+								Zip Code
+							</label>
+							<input
+								type="text"
+								bind:value={zipFilter}
+								placeholder="Filter by zip..."
+								class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+							/>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			{#if users.length === 0}
+				<div
+					class="flex flex-col items-center justify-center rounded-3xl bg-white/90 p-12 shadow-sm ring-1 ring-black/5 dark:bg-gray-800/90 dark:ring-gray-700"
+				>
+					<p class="text-sm text-gray-500 dark:text-gray-400">No users found matching your filters.</p>
+				</div>
+			{:else}
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				{#each users as user}
 					<div
@@ -353,6 +529,24 @@
 											<span>Admin</span>
 										</div>
 									{/if}
+									<!-- Active Status Badge -->
+									{#if user.is_active === false}
+										<div
+											class="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800 dark:bg-red-900/30 dark:text-red-200"
+											title="Account Inactive"
+										>
+											<FontAwesomeIcon icon={faTimesCircle} class="h-3 w-3" />
+											<span>Inactive</span>
+										</div>
+									{:else if user.is_active === true}
+										<div
+											class="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800 dark:bg-green-900/30 dark:text-green-200"
+											title="Account Active"
+										>
+											<FontAwesomeIcon icon={faCheckCircle} class="h-3 w-3" />
+											<span>Active</span>
+										</div>
+									{/if}
 								</div>
 								<p class="mt-1 truncate text-sm text-gray-600 dark:text-gray-400">@{user.username}</p>
 
@@ -387,10 +581,29 @@
 												{#if user.location.state}
 													{user.location.state}
 												{/if}
+												{#if user.location.zip}
+													{' '}{user.location.zip}
+												{/if}
 											</span>
 										</div>
 									{/if}
 								</div>
+
+								<!-- Inactive User Actions -->
+								{#if user.is_active === false}
+									<div class="mt-3">
+										<button
+											onclick={(e) => {
+												e.stopPropagation();
+												viewReportsForUser(user.id);
+											}}
+											class="flex w-full items-center justify-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700 transition-colors hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/30"
+										>
+											<FontAwesomeIcon icon={faFlag} class="h-3 w-3" />
+											<span>View Reports</span>
+										</button>
+									</div>
+								{/if}
 
 								<!-- Rating -->
 								{#if user.average_rating !== undefined && user.average_rating !== null}
@@ -419,6 +632,7 @@
 					</div>
 				{/each}
 			</div>
+			{/if}
 		{/if}
 	</div>
 
