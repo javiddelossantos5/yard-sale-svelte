@@ -236,16 +236,47 @@
 
 	// React to changes in the route parameter
 	const itemId = $derived($page.params.id || '');
+	let previousItemId = $state('');
 
+	// Initial load on mount
+	onMount(() => {
+		const id = $page.params.id || '';
+		if (id) {
+			previousItemId = id;
+			load().catch((err) => {
+				error = err?.message || 'Failed to load item';
+				loading = false;
+			});
+		} else {
+			error = 'Invalid item ID';
+			loading = false;
+		}
+	});
+
+	// React to route parameter changes (only when ID actually changes)
 	$effect(() => {
 		// Only load if we have an ID and we're on the client side
 		if (typeof window === 'undefined') return;
 
+		// Check if we're still on the market item detail route
+		const currentPath = $page.url.pathname;
+		// Don't run if we've navigated away (to /market, /market/watched, /market/messages, etc.)
+		const isMarketDetailRoute =
+			currentPath.startsWith('/market/') &&
+			!currentPath.startsWith('/market/watched') &&
+			!currentPath.startsWith('/market/messages');
+
+		if (!isMarketDetailRoute) {
+			// We've navigated away from the detail page, don't run the effect
+			return;
+		}
+
 		// Track the page params to make this reactive to navigation changes
 		const currentId = $page.params.id || '';
 
-		// Reset state when navigating to a new item
-		if (currentId) {
+		// Only reload if the ID actually changed (not when navigating away)
+		if (currentId && currentId !== previousItemId) {
+			previousItemId = currentId;
 			loading = true;
 			error = null;
 			item = null;
@@ -257,9 +288,6 @@
 				error = err?.message || 'Failed to load item';
 				loading = false;
 			});
-		} else {
-			error = 'No item ID provided';
-			loading = false;
 		}
 	});
 
