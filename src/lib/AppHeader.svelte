@@ -108,11 +108,11 @@
 		<div class="block sm:hidden">
 			<div class="flex h-16 items-center justify-between">
 				<!-- Logo and Title -->
-				<div class="flex items-center space-x-3">
+				<div class="flex min-w-0 flex-1 items-center space-x-3">
 					{#if showBackButton}
 						<button
 							onclick={() => goto(backUrl)}
-							class="rounded-full p-1.5 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+							class="shrink-0 rounded-full p-1.5 transition hover:bg-gray-100 dark:hover:bg-gray-700"
 							aria-label={backLabel}
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
@@ -120,7 +120,7 @@
 					{/if}
 					<button
 						onclick={() => goto('/')}
-						class="rounded-lg transition-opacity hover:opacity-80 active:scale-95"
+						class="shrink-0 rounded-lg transition-opacity hover:opacity-80 active:scale-95"
 						aria-label="Go to home"
 					>
 						<img
@@ -129,10 +129,12 @@
 							class="h-8 w-8 rounded-lg object-cover"
 						/>
 					</button>
-					<div>
-						<h1 class="text-lg font-semibold text-gray-900 dark:text-white">{title}</h1>
+					<div class="min-w-0 flex-1 overflow-hidden">
+						<h1 class="min-w-0 truncate text-lg font-semibold text-gray-900 dark:text-white">
+							{title}
+						</h1>
 						{#if subtitle || (count !== undefined && countLabel)}
-							<p class="text-xs text-gray-500 dark:text-gray-400">
+							<p class="truncate text-xs text-gray-500 dark:text-gray-400">
 								{#if subtitle}
 									{subtitle}
 								{/if}
@@ -297,11 +299,11 @@
 		<div class="hidden sm:block">
 			<div class="flex h-20 items-center justify-between">
 				<!-- Left: Logo and Title -->
-				<div class="flex items-center space-x-4">
+				<div class="flex min-w-0 flex-1 items-center space-x-4">
 					{#if showBackButton}
 						<button
 							onclick={() => goto(backUrl)}
-							class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+							class="shrink-0 rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
 							aria-label={backLabel}
 						>
 							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
@@ -309,7 +311,7 @@
 					{/if}
 					<button
 						onclick={() => goto('/')}
-						class="rounded-xl transition-opacity hover:opacity-80 active:scale-95"
+						class="shrink-0 rounded-xl transition-opacity hover:opacity-80 active:scale-95"
 						aria-label="Go to home"
 					>
 						<img
@@ -318,15 +320,17 @@
 							class="h-12 w-12 rounded-xl object-cover shadow-sm"
 						/>
 					</button>
-					<div>
-						<h1 class="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
+					<div class="min-w-0 flex-1 overflow-hidden">
+						<h1 class="min-w-0 truncate text-2xl font-bold text-gray-900 dark:text-white">
+							{title}
+						</h1>
 						{#if subtitle || (count !== undefined && countLabel)}
 							<div class="mt-0.5 flex items-center gap-3">
 								{#if subtitle}
-									<p class="text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>
+									<p class="truncate text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>
 								{/if}
 								{#if count !== undefined && countLabel}
-									<span class="text-xs text-gray-500 dark:text-gray-500">
+									<span class="shrink-0 text-xs text-gray-500 dark:text-gray-500">
 										{#if subtitle}•
 										{/if}
 										{count}

@@ -218,7 +218,7 @@
 									class="h-8 w-8 rounded-lg object-cover"
 								/>
 							</button>
-							<div class="min-w-0 flex-1">
+							<div class="min-w-0 flex-1 overflow-hidden">
 								{#if conversation?.item_id}
 									<button
 										onclick={() => {
@@ -226,9 +226,11 @@
 												goto(`/market/${conversation.item_id}`);
 											}
 										}}
-										class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+										class="group flex min-w-0 items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
 									>
-										<h1 class="truncate text-lg font-semibold text-gray-900 dark:text-white">
+										<h1
+											class="min-w-0 truncate text-lg font-semibold text-gray-900 dark:text-white"
+										>
 											{conversation.item_name || 'Conversation'}
 										</h1>
 										<FontAwesomeIcon
@@ -237,7 +239,7 @@
 										/>
 									</button>
 								{:else}
-									<h1 class="truncate text-lg font-semibold text-gray-900 dark:text-white">
+									<h1 class="min-w-0 truncate text-lg font-semibold text-gray-900 dark:text-white">
 										{conversation?.item_name || 'Conversation'}
 									</h1>
 								{/if}
@@ -364,7 +366,7 @@
 									class="h-12 w-12 rounded-xl object-cover shadow-sm"
 								/>
 							</button>
-							<div class="min-w-0 flex-1">
+							<div class="min-w-0 flex-1 overflow-hidden">
 								{#if conversation?.item_id}
 									<button
 										onclick={() => {
@@ -372,9 +374,9 @@
 												goto(`/market/${conversation.item_id}`);
 											}
 										}}
-										class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+										class="group flex min-w-0 items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
 									>
-										<h1 class="truncate text-2xl font-bold text-gray-900 dark:text-white">
+										<h1 class="min-w-0 truncate text-2xl font-bold text-gray-900 dark:text-white">
 											{conversation.item_name || 'Conversation'}
 										</h1>
 										<FontAwesomeIcon
@@ -383,7 +385,7 @@
 										/>
 									</button>
 								{:else}
-									<h1 class="truncate text-2xl font-bold text-gray-900 dark:text-white">
+									<h1 class="min-w-0 truncate text-2xl font-bold text-gray-900 dark:text-white">
 										{conversation?.item_name || 'Conversation'}
 									</h1>
 								{/if}
@@ -478,7 +480,9 @@
 										// Fallback to initial if image fails to load
 										const img = e.target as HTMLImageElement;
 										img.style.display = 'none';
-										const fallback = img.parentElement?.querySelector('.profile-fallback') as HTMLElement;
+										const fallback = img.parentElement?.querySelector(
+											'.profile-fallback'
+										) as HTMLElement;
 										if (fallback) fallback.style.display = 'flex';
 									}}
 								/>
@@ -488,7 +492,10 @@
 									message
 								)
 									? 'bg-blue-600 text-white'
-									: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'} {message.sender_profile_picture && message.sender_profile_picture.trim() !== '' ? 'hidden' : ''}"
+									: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'} {message.sender_profile_picture &&
+								message.sender_profile_picture.trim() !== ''
+									? 'hidden'
+									: ''}"
 							>
 								<span class="text-sm font-medium">
 									{(message.sender_username || 'U').charAt(0).toUpperCase()}

@@ -193,27 +193,27 @@
 				<div class="flex items-center gap-3">
 					<button
 						onclick={() => goto(backUrl)}
-						class="rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
+						class="shrink-0 rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
 						aria-label="Back to messages"
 					>
 						<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
 					</button>
-					<div class="flex-1">
+					<div class="min-w-0 flex-1 overflow-hidden">
 						{#if conversation?.yard_sale_id}
 							<button
 								onclick={() => conversation && goto(`/yard-sale/${conversation.yard_sale_id}`)}
-								class="group inline-flex items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
+								class="group flex min-w-0 items-center gap-2 text-left transition hover:text-blue-600 dark:hover:text-blue-400"
 							>
-								<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+								<h1 class="min-w-0 truncate text-lg font-semibold text-gray-900 dark:text-white">
 									{conversation.yard_sale_title || 'Conversation'}
 								</h1>
 								<FontAwesomeIcon
 									icon={faArrowRight}
-									class="h-3 w-3 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
+									class="h-3 w-3 shrink-0 text-gray-400 transition group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-400"
 								/>
 							</button>
 						{:else}
-							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
+							<h1 class="min-w-0 truncate text-lg font-semibold text-gray-900 dark:text-white">
 								{conversation?.yard_sale_title || 'Conversation'}
 							</h1>
 						{/if}
@@ -252,7 +252,9 @@
 										// Fallback to initial if image fails to load
 										const img = e.target as HTMLImageElement;
 										img.style.display = 'none';
-										const fallback = img.parentElement?.querySelector('.profile-fallback') as HTMLElement;
+										const fallback = img.parentElement?.querySelector(
+											'.profile-fallback'
+										) as HTMLElement;
 										if (fallback) fallback.style.display = 'flex';
 									}}
 								/>
@@ -262,7 +264,10 @@
 									message
 								)
 									? 'bg-blue-600 text-white'
-									: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'} {message.sender_profile_picture && message.sender_profile_picture.trim() !== '' ? 'hidden' : ''}"
+									: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'} {message.sender_profile_picture &&
+								message.sender_profile_picture.trim() !== ''
+									? 'hidden'
+									: ''}"
 							>
 								<span class="text-sm font-medium">
 									{(message.sender_username || 'U').charAt(0).toUpperCase()}
