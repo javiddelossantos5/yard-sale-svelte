@@ -10,6 +10,7 @@
 	import { goto } from '$app/navigation';
 	import MarketItemCard from '$lib/MarketItemCard.svelte';
 	import CreateMarketItemModal from '$lib/CreateMarketItemModal.svelte';
+	import SavedFilters from '$lib/SavedFilters.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
 		faHeart,
@@ -244,8 +245,95 @@
 			// Fetch items with new paginated API
 			const response = await getMarketItems(params);
 
+			// Client-side filtering (fallback if backend doesn't filter properly)
+			let filteredItems = response.items;
+
+			// Search term filter (client-side fallback)
+			if (searchTerm && searchTerm.trim() !== '') {
+				const search = searchTerm.toLowerCase().trim();
+				filteredItems = filteredItems.filter(
+					(item) =>
+						item.name.toLowerCase().includes(search) ||
+						item.description?.toLowerCase().includes(search) ||
+						item.category?.toLowerCase().includes(search) ||
+						item.owner_username?.toLowerCase().includes(search)
+				);
+			}
+
+			// Category filter (client-side fallback)
+			if (selectedCategory && selectedCategory.trim() !== '') {
+				filteredItems = filteredItems.filter(
+					(item) => item.category?.toLowerCase() === selectedCategory.toLowerCase()
+				);
+			}
+
+			// Price filters (client-side fallback)
+			if (minPrice && minPrice.trim() !== '') {
+				const min = parseFloat(minPrice);
+				if (!isNaN(min) && min >= 0) {
+					filteredItems = filteredItems.filter((item) => item.price >= min);
+				}
+			}
+
+			if (maxPrice && maxPrice.trim() !== '') {
+				const max = parseFloat(maxPrice);
+				if (!isNaN(max) && max >= 0) {
+					filteredItems = filteredItems.filter((item) => item.price <= max);
+				}
+			}
+
+			// Accepts Best Offer filter (client-side fallback)
+			if (acceptsBestOfferFilter) {
+				filteredItems = filteredItems.filter((item) => item.accepts_best_offer === true);
+			}
+
+			// Price Reduced filter (client-side fallback)
+			if (priceReducedFilter) {
+				filteredItems = filteredItems.filter((item) => item.price_reduced === true);
+			}
+
+			// Free items filter (client-side fallback)
+			if (isFreeFilter) {
+				filteredItems = filteredItems.filter((item) => item.is_free === true);
+			}
+
+			// Admin posted filter (client-side fallback)
+			if (adminPostedFilter) {
+				filteredItems = filteredItems.filter((item) => item.owner_is_admin === true);
+			}
+
+			// City filter (client-side fallback)
+			if (cityFilter && cityFilter.trim() !== '') {
+				const city = cityFilter.toLowerCase().trim();
+				filteredItems = filteredItems.filter((item) => item.city?.toLowerCase().includes(city));
+			}
+
+			// State filter (client-side fallback)
+			if (stateFilter && stateFilter.trim() !== '') {
+				filteredItems = filteredItems.filter(
+					(item) => item.state?.toLowerCase() === stateFilter.toLowerCase()
+				);
+			}
+
+			// Zip code filter (client-side fallback)
+			if (zipCodeFilter && zipCodeFilter.trim() !== '') {
+				const zipCode = zipCodeFilter.trim();
+				filteredItems = filteredItems.filter((item) => {
+					// Match if zip code is included in the item's zip_code field
+					return item.zip_code && item.zip_code.includes(zipCode);
+				});
+			}
+
+			// Status filter (client-side fallback - only if not 'active' since that's the default)
+			if (statusFilter && statusFilter !== 'active') {
+				filteredItems = filteredItems.filter((item) => {
+					if (statusFilter === 'all') return true;
+					return item.status === statusFilter;
+				});
+			}
+
 			// Sort items: active first, ended/sold last
-			const sortedItems = [...response.items].sort((a, b) => {
+			const sortedItems = [...filteredItems].sort((a, b) => {
 				// Status priority: active = 0, pending = 1, hidden = 2, sold = 3
 				const getStatusPriority = (status: string) => {
 					if (status === 'active') return 0;
@@ -267,7 +355,23 @@
 			});
 
 			items = sortedItems;
-			totalItems = response.total;
+			// If we applied any client-side filtering, use the filtered count
+			// Otherwise, use the backend's total count
+			const hasClientSideFiltering =
+				(searchTerm && searchTerm.trim() !== '') ||
+				(selectedCategory && selectedCategory.trim() !== '') ||
+				(minPrice && minPrice.trim() !== '') ||
+				(maxPrice && maxPrice.trim() !== '') ||
+				acceptsBestOfferFilter ||
+				priceReducedFilter ||
+				isFreeFilter ||
+				adminPostedFilter ||
+				(cityFilter && cityFilter.trim() !== '') ||
+				(stateFilter && stateFilter.trim() !== '') ||
+				(zipCodeFilter && zipCodeFilter.trim() !== '') ||
+				(statusFilter && statusFilter !== 'active');
+
+			totalItems = hasClientSideFiltering ? filteredItems.length : response.total;
 
 			// Load unread message counts using unified endpoint after user is loaded
 			// This will populate the stores that AppHeader reads from
@@ -327,7 +431,8 @@
 				}
 			});
 			// Use stores directly for reactive updates
-			const totalMessages = $unreadYardSaleMessages + $unreadMarketItemMessages + $unreadEventMessages;
+			const totalMessages =
+				$unreadYardSaleMessages + $unreadMarketItemMessages + $unreadEventMessages;
 			items.push({
 				label: 'Messages',
 				icon: faMessage,
@@ -409,6 +514,63 @@
 		statusFilter = 'active';
 		sortByDisplay = 'created_at';
 		sortOrder = 'desc';
+		// load() will be triggered by $effect when these values change
+	}
+
+	// Get current filter state as an object
+	function getCurrentFilters(): Record<string, any> {
+		const filters: Record<string, any> = {};
+		if (searchTerm) filters.search = searchTerm;
+		if (selectedCategory) filters.category = selectedCategory;
+		if (minPrice) filters.min_price = parseFloat(minPrice) || undefined;
+		if (maxPrice) filters.max_price = parseFloat(maxPrice) || undefined;
+		if (acceptsBestOfferFilter) filters.accepts_best_offer = true;
+		if (priceReducedFilter) filters.price_reduced = true;
+		if (isFreeFilter) filters.is_free = true;
+		if (adminPostedFilter) filters.owner_is_admin = true;
+		if (cityFilter) filters.city = cityFilter;
+		if (stateFilter) filters.state = stateFilter;
+		if (zipCodeFilter) filters.zip_code = zipCodeFilter;
+		if (statusFilter !== 'active') filters.status = statusFilter;
+		if (sortByDisplay !== 'created_at') {
+			if (sortByDisplay === 'price_asc') {
+				filters.sort_by = 'price';
+				filters.sort_order = 'asc';
+			} else if (sortByDisplay === 'price_desc') {
+				filters.sort_by = 'price';
+				filters.sort_order = 'desc';
+			} else {
+				filters.sort_by = sortByDisplay;
+				filters.sort_order = sortOrder;
+			}
+		}
+		return filters;
+	}
+
+	// Load a saved filter
+	function loadSavedFilter(filters: Record<string, any>) {
+		searchTerm = filters.search || '';
+		selectedCategory = filters.category || '';
+		minPrice = filters.min_price ? String(filters.min_price) : '';
+		maxPrice = filters.max_price ? String(filters.max_price) : '';
+		acceptsBestOfferFilter = filters.accepts_best_offer || false;
+		priceReducedFilter = filters.price_reduced || false;
+		isFreeFilter = filters.is_free || false;
+		adminPostedFilter = filters.owner_is_admin || false;
+		cityFilter = filters.city || '';
+		stateFilter = filters.state || '';
+		zipCodeFilter = filters.zip_code || '';
+		statusFilter = filters.status || 'active';
+		if (filters.sort_by === 'price' && filters.sort_order === 'asc') {
+			sortByDisplay = 'price_asc';
+		} else if (filters.sort_by === 'price' && filters.sort_order === 'desc') {
+			sortByDisplay = 'price_desc';
+		} else {
+			sortByDisplay = filters.sort_by || 'created_at';
+			sortOrder = filters.sort_order || 'desc';
+		}
+		// Collapse filters after loading
+		filtersExpanded = false;
 		// load() will be triggered by $effect when these values change
 	}
 
@@ -744,29 +906,55 @@
 						</div>
 					</div>
 
-					<!-- Active Filters Indicator and Clear Button -->
+					<!-- Active Filters Indicator, Saved Filters, and Clear Button -->
 					{#if searchTerm || selectedCategory || minPrice || maxPrice || acceptsBestOfferFilter || priceReducedFilter || isFreeFilter || adminPostedFilter || cityFilter || stateFilter || zipCodeFilter || statusFilter !== 'active' || sortByDisplay !== 'created_at' || sortOrder !== 'desc'}
 						<div
-							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700"
+							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 dark:border-gray-700"
 						>
-							<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-								<FontAwesomeIcon icon={faFilter} class="h-4 w-4" />
-								<span>Filters applied</span>
+							<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+								<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+									<FontAwesomeIcon icon={faFilter} class="h-4 w-4" />
+									<span>Filters applied</span>
+								</div>
+								<div class="flex items-center gap-2">
+									{#if currentUser}
+										<SavedFilters
+											filterType="market_item"
+											currentFilters={getCurrentFilters()}
+											onLoadFilter={loadSavedFilter}
+											{currentUser}
+										/>
+									{/if}
+									<button
+										onclick={clearFilters}
+										class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+									>
+										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M6 18L18 6M6 6l12 12"
+											></path>
+										</svg>
+										Clear All Filters
+									</button>
+								</div>
 							</div>
-							<button
-								onclick={clearFilters}
-								class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-							>
-								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M6 18L18 6M6 6l12 12"
-									></path>
-								</svg>
-								Clear All Filters
-							</button>
+						</div>
+					{:else if currentUser}
+						<!-- Show saved filters even when no filters are applied -->
+						<div
+							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 dark:border-gray-700"
+						>
+							<div class="flex items-center justify-end">
+								<SavedFilters
+									filterType="market_item"
+									currentFilters={getCurrentFilters()}
+									onLoadFilter={loadSavedFilter}
+									{currentUser}
+								/>
+							</div>
 						</div>
 					{/if}
 				</div>

@@ -1,15 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		getEvents,
-		type Event,
-		getCurrentUser,
-		type CurrentUser,
-		isAdmin
-	} from '$lib/api';
+	import { getEvents, type Event, getCurrentUser, type CurrentUser, isAdmin } from '$lib/api';
 	import { goto } from '$app/navigation';
 	import EventCard from '$lib/EventCard.svelte';
 	import CreateEventModal from '$lib/CreateEventModal.svelte';
+	import SavedFilters from '$lib/SavedFilters.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import {
 		faFilter,
@@ -44,11 +39,11 @@
 	let statusFilter = $state<string>('');
 	let cityFilter = $state('');
 	let stateFilter = $state('');
+	let zipCodeFilter = $state('');
 	let locationTypeFilter = $state<string>('');
 	let isFreeFilter = $state<boolean | null>(null);
 	let categoryFilter = $state('');
 	let tagsFilter = $state('');
-	let ageRestrictionFilter = $state('');
 
 	// Event types
 	const eventTypes = [
@@ -134,37 +129,111 @@
 				status?: string;
 				city?: string;
 				state?: string;
+				zip_code?: string;
 				location_type?: string;
 				is_free?: boolean;
 				category?: string;
 				tags?: string;
-				age_restriction?: string;
 			} = {};
 
-			if (typeFilter) params.type = typeFilter;
-			if (statusFilter) params.status = statusFilter;
-			if (cityFilter.trim()) params.city = cityFilter.trim();
-			if (stateFilter) params.state = stateFilter;
-			if (locationTypeFilter) params.location_type = locationTypeFilter;
+			if (typeFilter && typeFilter.trim() !== '') params.type = typeFilter.trim();
+			if (statusFilter && statusFilter.trim() !== '') params.status = statusFilter.trim();
+			if (cityFilter && cityFilter.trim() !== '') params.city = cityFilter.trim();
+			if (stateFilter && stateFilter.trim() !== '') params.state = stateFilter.trim();
+			if (zipCodeFilter && zipCodeFilter.trim() !== '') params.zip_code = zipCodeFilter.trim();
+			if (locationTypeFilter && locationTypeFilter.trim() !== '')
+				params.location_type = locationTypeFilter.trim();
 			if (isFreeFilter !== null) params.is_free = isFreeFilter;
-			if (categoryFilter.trim()) params.category = categoryFilter.trim();
-			if (tagsFilter.trim()) params.tags = tagsFilter.trim();
-			if (ageRestrictionFilter.trim()) params.age_restriction = ageRestrictionFilter.trim();
+			if (categoryFilter && categoryFilter.trim() !== '') params.category = categoryFilter.trim();
+			if (tagsFilter && tagsFilter.trim() !== '') params.tags = tagsFilter.trim();
 
 			const response = await getEvents(params);
 
-			// Filter by search term if provided
+			// Client-side filtering (fallback if backend doesn't filter properly)
 			let filteredEvents = response;
-			if (searchTerm.trim()) {
+
+			// Search term filter (client-side fallback)
+			if (searchTerm && searchTerm.trim() !== '') {
 				const search = searchTerm.toLowerCase().trim();
-				filteredEvents = response.filter(
+				filteredEvents = filteredEvents.filter(
 					(event) =>
 						event.title.toLowerCase().includes(search) ||
 						event.description?.toLowerCase().includes(search) ||
 						event.organizer_name?.toLowerCase().includes(search) ||
+						event.organizer_username?.toLowerCase().includes(search) ||
 						event.category?.toLowerCase().includes(search) ||
 						event.tags?.some((tag) => tag.toLowerCase().includes(search))
 				);
+			}
+
+			// Type filter (client-side fallback)
+			if (typeFilter && typeFilter.trim() !== '') {
+				filteredEvents = filteredEvents.filter((event) => event.type === typeFilter.trim());
+			}
+
+			// Status filter (client-side fallback)
+			if (statusFilter && statusFilter.trim() !== '') {
+				filteredEvents = filteredEvents.filter((event) => event.status === statusFilter.trim());
+			}
+
+			// City filter (client-side fallback)
+			if (cityFilter && cityFilter.trim() !== '') {
+				const city = cityFilter.toLowerCase().trim();
+				filteredEvents = filteredEvents.filter((event) => event.city?.toLowerCase().includes(city));
+			}
+
+			// State filter (client-side fallback)
+			if (stateFilter && stateFilter.trim() !== '') {
+				filteredEvents = filteredEvents.filter(
+					(event) => event.state?.toLowerCase() === stateFilter.toLowerCase()
+				);
+			}
+
+			// Zip code filter (client-side fallback)
+			if (zipCodeFilter && zipCodeFilter.trim() !== '') {
+				const zipCode = zipCodeFilter.trim();
+				filteredEvents = filteredEvents.filter((event) => {
+					// Match if zip code is included in the event's zip field
+					return event.zip && event.zip.includes(zipCode);
+				});
+			}
+
+			// Location type filter (client-side fallback)
+			if (locationTypeFilter && locationTypeFilter.trim() !== '') {
+				filteredEvents = filteredEvents.filter(
+					(event) => event.location_type === locationTypeFilter.trim()
+				);
+			}
+
+			// Free events filter (client-side fallback)
+			if (isFreeFilter !== null) {
+				filteredEvents = filteredEvents.filter((event) => event.is_free === isFreeFilter);
+			}
+
+			// Category filter (client-side fallback)
+			if (categoryFilter && categoryFilter.trim() !== '') {
+				const category = categoryFilter.toLowerCase().trim();
+				filteredEvents = filteredEvents.filter((event) =>
+					event.category?.toLowerCase().includes(category)
+				);
+			}
+
+			// Tags filter (client-side fallback)
+			if (tagsFilter && tagsFilter.trim() !== '') {
+				const tags = tagsFilter
+					.split(',')
+					.map((tag) => tag.trim().toLowerCase())
+					.filter((tag) => tag.length > 0);
+				if (tags.length > 0) {
+					filteredEvents = filteredEvents.filter((event) => {
+						if (!event.tags || event.tags.length === 0) return false;
+						const eventTags = event.tags.map((tag) => tag.toLowerCase());
+						// Check if any of the filter tags match any event tag
+						return tags.some((filterTag) =>
+							eventTags.some((eventTag) => eventTag.includes(filterTag))
+						);
+					});
+				}
 			}
 
 			// Sort events: upcoming/ongoing first, then ended/cancelled last
@@ -213,12 +282,46 @@
 		statusFilter = '';
 		cityFilter = '';
 		stateFilter = '';
+		zipCodeFilter = '';
 		locationTypeFilter = '';
 		isFreeFilter = null;
 		categoryFilter = '';
 		tagsFilter = '';
-		ageRestrictionFilter = '';
 		load();
+	}
+
+	// Get current filter state as an object
+	function getCurrentFilters(): Record<string, any> {
+		const filters: Record<string, any> = {};
+		if (searchTerm && searchTerm.trim() !== '') filters.search = searchTerm.trim();
+		if (typeFilter && typeFilter.trim() !== '') filters.type = typeFilter.trim();
+		if (statusFilter && statusFilter.trim() !== '') filters.status = statusFilter.trim();
+		if (cityFilter && cityFilter.trim() !== '') filters.city = cityFilter.trim();
+		if (stateFilter && stateFilter.trim() !== '') filters.state = stateFilter.trim();
+		if (zipCodeFilter && zipCodeFilter.trim() !== '') filters.zip_code = zipCodeFilter.trim();
+		if (locationTypeFilter && locationTypeFilter.trim() !== '')
+			filters.location_type = locationTypeFilter.trim();
+		if (isFreeFilter !== null) filters.is_free = isFreeFilter;
+		if (categoryFilter && categoryFilter.trim() !== '') filters.category = categoryFilter.trim();
+		if (tagsFilter && tagsFilter.trim() !== '') filters.tags = tagsFilter.trim();
+		return filters;
+	}
+
+	// Load a saved filter
+	function loadSavedFilter(filters: Record<string, any>) {
+		searchTerm = filters.search || '';
+		typeFilter = filters.type || '';
+		statusFilter = filters.status || '';
+		cityFilter = filters.city || '';
+		stateFilter = filters.state || '';
+		zipCodeFilter = filters.zip_code || '';
+		locationTypeFilter = filters.location_type || '';
+		isFreeFilter = filters.is_free !== undefined ? filters.is_free : null;
+		categoryFilter = filters.category || '';
+		tagsFilter = filters.tags || '';
+		// Collapse filters after loading
+		filtersExpanded = false;
+		// load() will be triggered by $effect when these values change
 	}
 
 	const hasActiveFilters = $derived(
@@ -226,11 +329,11 @@
 			statusFilter !== '' ||
 			cityFilter.trim() !== '' ||
 			stateFilter !== '' ||
+			zipCodeFilter.trim() !== '' ||
 			locationTypeFilter !== '' ||
 			isFreeFilter !== null ||
 			categoryFilter.trim() !== '' ||
-			tagsFilter.trim() !== '' ||
-			ageRestrictionFilter.trim() !== ''
+			tagsFilter.trim() !== ''
 	);
 
 	// Function to refresh message unread count
@@ -248,6 +351,17 @@
 
 	// React to filter changes
 	$effect(() => {
+		// Track all filter dependencies
+		typeFilter;
+		statusFilter;
+		cityFilter;
+		stateFilter;
+		zipCodeFilter;
+		locationTypeFilter;
+		isFreeFilter;
+		categoryFilter;
+		tagsFilter;
+		searchTerm;
 		load();
 	});
 
@@ -282,7 +396,8 @@
 			});
 		}
 		if (currentUser) {
-			const totalMessages = $unreadYardSaleMessages + $unreadMarketItemMessages + $unreadEventMessages;
+			const totalMessages =
+				$unreadYardSaleMessages + $unreadMarketItemMessages + $unreadEventMessages;
 			items.push({
 				label: 'Messages',
 				icon: faMessage,
@@ -485,19 +600,19 @@
 								</select>
 							</div>
 
-							<!-- Age Restriction Filter -->
+							<!-- Zip Code Filter -->
 							<div>
 								<label
-									for="ageRestriction"
+									for="zipCode"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 								>
-									Age Restriction
+									Zip Code
 								</label>
 								<input
 									type="text"
-									id="ageRestriction"
-									bind:value={ageRestrictionFilter}
-									placeholder="all, 18+, 21+..."
+									id="zipCode"
+									bind:value={zipCodeFilter}
+									placeholder="Zip code..."
 									class="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-500 dark:focus:ring-blue-400"
 								/>
 							</div>
@@ -540,18 +655,58 @@
 							</div>
 						</div>
 					</div>
-				</div>
-			{/if}
 
-			<!-- Clear Filters Button -->
-			{#if hasActiveFilters}
-				<div class="mt-4 flex justify-end">
-					<button
-						onclick={clearFilters}
-						class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-					>
-						Clear Filters
-					</button>
+					<!-- Active Filters Indicator, Saved Filters, and Clear Button -->
+					{#if hasActiveFilters}
+						<div
+							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 dark:border-gray-700"
+						>
+							<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+								<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+									<FontAwesomeIcon icon={faFilter} class="h-4 w-4" />
+									<span>Filters applied</span>
+								</div>
+								<div class="flex items-center gap-2">
+									{#if currentUser}
+										<SavedFilters
+											filterType="event"
+											currentFilters={getCurrentFilters()}
+											onLoadFilter={loadSavedFilter}
+											{currentUser}
+										/>
+									{/if}
+									<button
+										onclick={clearFilters}
+										class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+									>
+										<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M6 18L18 6M6 6l12 12"
+											></path>
+										</svg>
+										Clear Filters
+									</button>
+								</div>
+							</div>
+						</div>
+					{:else if currentUser}
+						<!-- Show saved filters even when no filters are applied -->
+						<div
+							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 dark:border-gray-700"
+						>
+							<div class="flex items-center justify-end">
+								<SavedFilters
+									filterType="event"
+									currentFilters={getCurrentFilters()}
+									onLoadFilter={loadSavedFilter}
+									{currentUser}
+								/>
+							</div>
+						</div>
+					{/if}
 				</div>
 			{/if}
 		</div>

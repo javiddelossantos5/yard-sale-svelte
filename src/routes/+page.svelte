@@ -12,6 +12,7 @@
 	} from '$lib/api';
 	import YardSaleCard from '$lib/YardSaleCard.svelte';
 	import YardSaleModal from '$lib/YardSaleModal.svelte';
+	import SavedFilters from '$lib/SavedFilters.svelte';
 	import { logout } from '$lib/auth';
 	import { getYardSaleStatus, isYardSaleActive, isYardSaleActiveOnDate } from '$lib/yardSaleUtils';
 	import {
@@ -271,6 +272,31 @@
 		searchTerm = '';
 		statusFilter = 'active';
 		// No need to call loadYardSales() - filtering is handled by $derived
+	}
+
+	// Get current filter state as an object
+	function getCurrentFilters(): Record<string, any> {
+		const filters: Record<string, any> = {};
+		if (searchTerm) filters.search = searchTerm;
+		if (selectedCity) filters.city = selectedCity;
+		if (selectedDate) filters.date = selectedDate;
+		if (selectedCategory) filters.category = selectedCategory;
+		if (zipCodeSearch) filters.zip_code = zipCodeSearch;
+		if (statusFilter !== 'active') filters.status = statusFilter;
+		return filters;
+	}
+
+	// Load a saved filter
+	function loadSavedFilter(filters: Record<string, any>) {
+		searchTerm = filters.search || '';
+		selectedCity = filters.city || '';
+		selectedDate = filters.date || '';
+		selectedCategory = filters.category || '';
+		zipCodeSearch = filters.zip_code || '';
+		statusFilter = filters.status || 'active';
+		// Collapse filters after loading
+		filtersExpanded = false;
+		// Filtering is handled by $derived
 	}
 
 	function handleLogout() {
@@ -585,29 +611,55 @@
 						</div>
 					</div>
 
-					<!-- Active Filters Indicator and Clear Button -->
-					{#if selectedCity || zipCodeSearch || selectedDate || selectedCategory || statusFilter !== 'active'}
+					<!-- Active Filters Indicator, Saved Filters, and Clear Button -->
+					{#if selectedCity || zipCodeSearch || selectedDate || selectedCategory || statusFilter !== 'active' || searchTerm}
 						<div
-							class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-700"
+							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 dark:border-gray-700"
 						>
-							<div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-								<FontAwesomeIcon icon={faFilter} class="h-3 w-3" />
-								<span>Filters applied</span>
+							<div class="flex items-center justify-between">
+								<div class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+									<FontAwesomeIcon icon={faFilter} class="h-3 w-3" />
+									<span>Filters applied</span>
+								</div>
+								<div class="flex items-center gap-2">
+									{#if currentUser}
+										<SavedFilters
+											filterType="yard_sale"
+											currentFilters={getCurrentFilters()}
+											onLoadFilter={loadSavedFilter}
+											{currentUser}
+										/>
+									{/if}
+									<button
+										onclick={clearFilters}
+										class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+									>
+										<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M6 18L18 6M6 6l12 12"
+											></path>
+										</svg>
+										Clear All
+									</button>
+								</div>
 							</div>
-							<button
-								onclick={clearFilters}
-								class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-							>
-								<svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M6 18L18 6M6 6l12 12"
-									></path>
-								</svg>
-								Clear All
-							</button>
+						</div>
+					{:else if currentUser}
+						<!-- Show saved filters even when no filters are applied -->
+						<div
+							class="mt-4 flex flex-col gap-3 border-t border-gray-200 pt-4 dark:border-gray-700"
+						>
+							<div class="flex items-center justify-end">
+								<SavedFilters
+									filterType="yard_sale"
+									currentFilters={getCurrentFilters()}
+									onLoadFilter={loadSavedFilter}
+									{currentUser}
+								/>
+							</div>
 						</div>
 					{/if}
 				</div>

@@ -2829,11 +2829,11 @@ export async function getEvents(
 		status?: string;
 		city?: string;
 		state?: string;
+		zip_code?: string;
 		location_type?: string;
 		is_free?: boolean;
 		category?: string;
 		tags?: string;
-		age_restriction?: string;
 	} = {}
 ): Promise<Event[]> {
 	const query = new URLSearchParams();
@@ -2843,11 +2843,11 @@ export async function getEvents(
 	if (params.status) query.set('status', params.status);
 	if (params.city) query.set('city', params.city);
 	if (params.state) query.set('state', params.state);
+	if (params.zip_code) query.set('zip_code', params.zip_code);
 	if (params.location_type) query.set('location_type', params.location_type);
 	if (params.is_free !== undefined) query.set('is_free', String(params.is_free));
 	if (params.category) query.set('category', params.category);
 	if (params.tags) query.set('tags', params.tags);
-	if (params.age_restriction) query.set('age_restriction', params.age_restriction);
 
 	const token = localStorage.getItem('access_token');
 	const url = `/api/events${query.toString() ? `?${query}` : ''}`;
@@ -3177,6 +3177,177 @@ export async function removeEventFeaturedImage(eventId: string): Promise<void> {
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => ({}));
 		throw new Error(errorData.detail || errorData.message || 'Failed to remove featured image');
+	}
+}
+
+// ============================================================================
+// Saved Filters API
+// ============================================================================
+
+export interface SavedFilter {
+	id: string;
+	user_id: string;
+	filter_type: 'yard_sale' | 'market_item' | 'event';
+	name: string;
+	filters: Record<string, any>; // JSON object storing filter parameters
+	created_at: string;
+	updated_at: string;
+}
+
+export interface SavedFilterCreate {
+	filter_type: 'yard_sale' | 'market_item' | 'event';
+	name: string;
+	filters: Record<string, any>;
+}
+
+export interface SavedFilterUpdate {
+	name?: string;
+	filters?: Record<string, any>;
+}
+
+// Create a new saved filter
+export async function createSavedFilter(data: SavedFilterCreate): Promise<SavedFilter> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch('/api/saved-filters', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(data)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to create saved filter');
+	}
+
+	return response.json();
+}
+
+// Get all saved filters (optionally filtered by type)
+export async function getSavedFilters(
+	filterType?: 'yard_sale' | 'market_item' | 'event'
+): Promise<SavedFilter[]> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const url = filterType ? `/api/saved-filters?filter_type=${filterType}` : '/api/saved-filters';
+	const response = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to fetch saved filters');
+	}
+
+	return response.json();
+}
+
+// Get a specific saved filter
+export async function getSavedFilterById(filterId: string): Promise<SavedFilter> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/saved-filters/${filterId}`, {
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to fetch saved filter');
+	}
+
+	return response.json();
+}
+
+// Update a saved filter
+export async function updateSavedFilter(
+	filterId: string,
+	data: SavedFilterUpdate
+): Promise<SavedFilter> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/saved-filters/${filterId}`, {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		},
+		body: JSON.stringify(data)
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to update saved filter');
+	}
+
+	return response.json();
+}
+
+// Delete a saved filter
+export async function deleteSavedFilter(filterId: string): Promise<void> {
+	const token = localStorage.getItem('access_token');
+	if (!token) {
+		throw new Error('Authentication required');
+	}
+
+	const response = await fetch(`/api/saved-filters/${filterId}`, {
+		method: 'DELETE',
+		headers: {
+			Authorization: `Bearer ${token}`
+		}
+	});
+
+	if (response.status === 401 || response.status === 403) {
+		const { handleTokenExpiration } = await import('./auth');
+		handleTokenExpiration();
+		throw new Error('Token expired or insufficient permissions');
+	}
+
+	if (!response.ok) {
+		const errorData = await response.json().catch(() => ({}));
+		throw new Error(errorData.detail || errorData.message || 'Failed to delete saved filter');
 	}
 }
 
