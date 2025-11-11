@@ -12,11 +12,12 @@ import {
 // Re-export the API Notification interface for compatibility
 export type Notification = APINotification;
 
-export interface MessageNotification extends Notification {
+export interface MessageNotification
+	extends Omit<Notification, 'related_user_id' | 'related_yard_sale_id' | 'related_message_id'> {
 	type: 'message';
-	related_user_id: number;
-	related_yard_sale_id?: number;
-	related_message_id?: number;
+	related_user_id?: string | number;
+	related_yard_sale_id?: string | number;
+	related_message_id?: string | number;
 }
 
 // Notification store
@@ -25,6 +26,12 @@ export const unreadCount = writable<number>(0);
 
 // Derived store for message-specific unread count
 export const unreadMessageCount = writable<number>(0);
+
+// Detailed message counts from notification endpoint
+export const unreadYardSaleMessages = writable<number>(0);
+export const unreadMarketItemMessages = writable<number>(0);
+export const unreadEventMessages = writable<number>(0);
+export const pendingReports = writable<number>(0);
 
 // Sound notification settings
 export const soundEnabled = writable<boolean>(true);
@@ -51,31 +58,47 @@ export async function loadNotifications(page: number = 1, limit: number = 50) {
 		const notificationsArray = response.notifications || [];
 		notifications.set(notificationsArray);
 
-		// Handle both field name formats
-		const unreadCountValue = response.unread_count || response.unread_notifications || 0;
-		unreadCount.set(unreadCountValue);
+		// Extract counts from response
+		if (response.counts) {
+			const counts = response.counts;
+			unreadCount.set(counts.unread_notifications || 0);
 
-		// Calculate message-specific unread count
-		const messageUnreadCount = notificationsArray.filter(
-			(n) => n.type === 'message' && !n.is_read
-		).length;
-		unreadMessageCount.set(messageUnreadCount);
+			// Set detailed message counts
+			unreadYardSaleMessages.set(counts.unread_yard_sale_messages || 0);
+			unreadMarketItemMessages.set(counts.unread_market_item_messages || 0);
+			unreadEventMessages.set(counts.unread_event_messages || 0);
+			pendingReports.set(counts.pending_reports || 0);
+
+			// Calculate total message unread count
+			const totalMessageCount =
+				(counts.unread_yard_sale_messages || 0) +
+				(counts.unread_market_item_messages || 0) +
+				(counts.unread_event_messages || 0);
+			unreadMessageCount.set(totalMessageCount);
+		} else {
+			// Fallback for backward compatibility
+			const unreadCountValue =
+				(response as any).unread_count || (response as any).unread_notifications || 0;
+			unreadCount.set(unreadCountValue);
+
+			// Calculate message-specific unread count from notifications
+			const messageUnreadCount = notificationsArray.filter(
+				(n) => n.type === 'message' && !n.is_read
+			).length;
+			unreadMessageCount.set(messageUnreadCount);
+		}
 	} catch (error) {
 		console.warn('Failed to load notifications:', error);
 	}
 }
 
 // Load notification counts
+// This now uses loadNotifications which includes counts in the response
 export async function loadNotificationCounts() {
 	if (!browser) return;
 
 	try {
-		const counts = await getNotificationCounts();
-		// Handle both field name formats
-		const unreadCountValue = counts.unread || counts.unread_notifications || 0;
-		unreadCount.set(unreadCountValue);
-
-		// Also load notifications to calculate message-specific count
+		// loadNotifications now includes counts in the response, so we can use it directly
 		await loadNotifications(1, 50);
 	} catch (error) {
 		console.warn('Failed to load notification counts:', error);
@@ -113,7 +136,7 @@ export function addMessageNotification(
 }
 
 // Remove a notification
-export async function removeNotification(id: number) {
+export async function removeNotification(id: string) {
 	try {
 		await deleteAPI(id);
 		// Refresh notifications from backend
@@ -124,7 +147,7 @@ export async function removeNotification(id: number) {
 }
 
 // Mark notification as read
-export async function markNotificationAsRead(id: number) {
+export async function markNotificationAsRead(id: string) {
 	try {
 		await markReadAPI(id);
 		// Update local state

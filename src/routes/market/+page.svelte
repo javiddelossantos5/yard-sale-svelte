@@ -23,8 +23,13 @@
 		faPlus
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
-	import { unreadMessageCount } from '$lib/notifications';
-	import { getMarketItemUnreadCount, getYardSaleUnreadCount, getEventUnreadCount } from '$lib/api';
+	import {
+		unreadMessageCount,
+		unreadYardSaleMessages,
+		unreadMarketItemMessages,
+		unreadEventMessages,
+		loadNotificationCounts
+	} from '$lib/notifications';
 	import AppHeader from '$lib/AppHeader.svelte';
 
 	let filtersExpanded = $state(false);
@@ -137,9 +142,8 @@
 		loading = true;
 		error = null;
 		try {
-			getCurrentUser()
-				.then((u) => (currentUser = u))
-				.catch(() => (currentUser = null));
+			const user = await getCurrentUser().catch(() => null);
+			currentUser = user;
 
 			// Build params for API call
 			const params: {
@@ -265,16 +269,14 @@
 			items = sortedItems;
 			totalItems = response.total;
 
-			// Load unread message counts from both yard sales and marketplace
-			try {
-				const [yardSaleResult, marketResult] = await Promise.all([
-					getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
-					getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
-				]);
-				messageUnreadCount = (yardSaleResult.unread_count || 0) + (marketResult.unread_count || 0);
-			} catch {
-				// Ignore errors loading unread count
-				messageUnreadCount = 0;
+			// Load unread message counts using unified endpoint after user is loaded
+			// This will populate the stores that AppHeader reads from
+			if (currentUser) {
+				try {
+					await loadNotificationCounts();
+				} catch {
+					// Ignore errors loading unread count
+				}
 			}
 		} catch (e: any) {
 			console.error('[Market Page] Error loading items:', e);
@@ -289,16 +291,11 @@
 		if (!currentUser) return;
 
 		try {
-			const [yardSaleResult, marketResult, eventResult] = await Promise.all([
-				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
-				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 })),
-				getEventUnreadCount().catch(() => ({ unread_count: 0 }))
-			]);
-			yardSaleMessageUnreadCount = yardSaleResult.unread_count || 0;
-			marketMessageUnreadCount = marketResult.unread_count || 0;
-			eventMessageUnreadCount = eventResult.unread_count || 0;
-			messageUnreadCount =
-				yardSaleMessageUnreadCount + marketMessageUnreadCount + eventMessageUnreadCount;
+			// Use unified notification counts endpoint
+			// This will populate the stores that AppHeader reads from
+			await loadNotificationCounts();
+			// Also update local state for mobile menu badge
+			messageUnreadCount = $unreadMessageCount;
 		} catch {
 			// Ignore errors loading unread count
 		}
@@ -329,16 +326,27 @@
 					void goto('/market/watched');
 				}
 			});
+			// Use stores directly for reactive updates
+			const totalMessages = $unreadYardSaleMessages + $unreadMarketItemMessages + $unreadEventMessages;
 			items.push({
 				label: 'Messages',
 				icon: faMessage,
 				action: () => {
 					void goto('/messages?tab=market');
 				},
-				badge: messageUnreadCount > 0 ? messageUnreadCount : undefined
+				badge: totalMessages > 0 ? totalMessages : undefined
 			});
 		}
 		return items;
+	});
+
+	// Load notification counts when currentUser changes
+	$effect(() => {
+		if (currentUser) {
+			loadNotificationCounts().catch(() => {
+				// Ignore errors
+			});
+		}
 	});
 
 	onMount(() => {
@@ -423,9 +431,6 @@
 		primaryActionLabel="New Item"
 		primaryActionIcon={faPlus}
 		{currentUser}
-		{marketMessageUnreadCount}
-		{yardSaleMessageUnreadCount}
-		{eventMessageUnreadCount}
 		{mobileMenuItems}
 	/>
 

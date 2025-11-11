@@ -15,6 +15,11 @@
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import type { CurrentUser } from '$lib/api';
+	import {
+		unreadYardSaleMessages,
+		unreadMarketItemMessages,
+		unreadEventMessages
+	} from '$lib/notifications';
 
 	let {
 		title,
@@ -28,9 +33,9 @@
 		primaryActionLabel,
 		primaryActionIcon,
 		currentUser,
-		marketMessageUnreadCount = 0,
-		yardSaleMessageUnreadCount = 0,
-		eventMessageUnreadCount = 0,
+		marketMessageUnreadCount,
+		yardSaleMessageUnreadCount,
+		eventMessageUnreadCount,
 		mobileMenuItems = []
 	}: {
 		title: string;
@@ -65,8 +70,12 @@
 		logout(); // logout() now handles redirect automatically
 	}
 
-	const totalUnreadCount =
-		marketMessageUnreadCount + yardSaleMessageUnreadCount + eventMessageUnreadCount;
+	// Use stores if props not provided, otherwise use props (for backward compatibility)
+	const yardSaleCount = $derived(yardSaleMessageUnreadCount ?? $unreadYardSaleMessages);
+	const marketCount = $derived(marketMessageUnreadCount ?? $unreadMarketItemMessages);
+	const eventCount = $derived(eventMessageUnreadCount ?? $unreadEventMessages);
+
+	const totalUnreadCount = $derived(yardSaleCount + marketCount + eventCount);
 
 	// Get current pathname to conditionally show/hide navigation buttons
 	const currentPath = $derived($page.url.pathname);
@@ -267,13 +276,6 @@
 									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
 								/>
 								My Profile
-								{#if totalUnreadCount > 0}
-									<span
-										class="ml-auto rounded-full bg-red-500 px-2.5 py-0.5 text-sm font-semibold text-white"
-									>
-										{totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-									</span>
-								{/if}
 							</button>
 						{/if}
 						<button
@@ -424,13 +426,6 @@
 								aria-label="My Profile"
 							>
 								<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-600 dark:text-gray-400" />
-								{#if totalUnreadCount > 0}
-									<span
-										class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white shadow-lg ring-1 ring-red-600/20 dark:border-gray-900"
-									>
-										{totalUnreadCount > 99 ? '99+' : totalUnreadCount}
-									</span>
-								{/if}
 							</button>
 						{/if}
 						<button

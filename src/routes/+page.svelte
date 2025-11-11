@@ -6,9 +6,6 @@
 		getYardSalesByCity,
 		getYardSalesByCategory,
 		getCurrentUser,
-		getYardSaleUnreadCount,
-		getMarketItemUnreadCount,
-		getEventUnreadCount,
 		isAdmin,
 		type YardSale,
 		type CurrentUser
@@ -33,7 +30,13 @@
 		faShieldAlt,
 		faPlus
 	} from '@fortawesome/free-solid-svg-icons';
-	import { unreadMessageCount } from '$lib/notifications';
+	import {
+		unreadMessageCount,
+		unreadYardSaleMessages,
+		unreadMarketItemMessages,
+		unreadEventMessages,
+		loadNotificationCounts
+	} from '$lib/notifications';
 	import AppHeader from '$lib/AppHeader.svelte';
 
 	let filtersExpanded = $state(false);
@@ -89,16 +92,13 @@
 		if (!currentUser) return;
 
 		try {
-			const [yardSaleResult, marketResult, eventResult] = await Promise.all([
-				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
-				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 })),
-				getEventUnreadCount().catch(() => ({ unread_count: 0 }))
-			]);
-			yardSaleMessageUnreadCount = yardSaleResult.unread_count || 0;
-			marketMessageUnreadCount = marketResult.unread_count || 0;
-			eventMessageUnreadCount = eventResult.unread_count || 0;
-			messageUnreadCount =
-				yardSaleMessageUnreadCount + marketMessageUnreadCount + eventMessageUnreadCount;
+			// Use unified notification counts endpoint
+			await loadNotificationCounts();
+			// Update local state from stores
+			yardSaleMessageUnreadCount = $unreadYardSaleMessages;
+			marketMessageUnreadCount = $unreadMarketItemMessages;
+			eventMessageUnreadCount = $unreadEventMessages;
+			messageUnreadCount = $unreadMessageCount;
 		} catch {
 			// Ignore errors loading unread count
 		}
@@ -190,14 +190,13 @@
 			// Sync visited status with backend when user is loaded
 			if (currentUser) {
 				await syncVisitedStatus();
-				// Load unread message counts from both yard sales and marketplace
+				// Load unread message counts using unified endpoint
 				try {
-					const [yardSaleResult, marketResult] = await Promise.all([
-						getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
-						getMarketItemUnreadCount().catch(() => ({ unread_count: 0 }))
-					]);
-					messageUnreadCount =
-						(yardSaleResult.unread_count || 0) + (marketResult.unread_count || 0);
+					await loadNotificationCounts();
+					yardSaleMessageUnreadCount = $unreadYardSaleMessages;
+					marketMessageUnreadCount = $unreadMarketItemMessages;
+					eventMessageUnreadCount = $unreadEventMessages;
+					messageUnreadCount = $unreadMessageCount;
 				} catch {
 					// Ignore errors loading unread count
 					messageUnreadCount = 0;

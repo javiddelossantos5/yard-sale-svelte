@@ -11,6 +11,12 @@ const config = {
 			// Ensure all routes are handled by the Node.js server
 			// This is important when SSR is disabled
 		})
+	},
+	vitePlugin: {
+		inspector: {
+			showToggleButton: 'always',
+			toggleButtonPos: 'bottom-left'
+		}
 	}
 };
 

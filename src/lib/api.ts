@@ -1036,16 +1036,27 @@ export async function requestVerification(
 // ===== NOTIFICATION API FUNCTIONS =====
 
 // Get user's notifications with pagination and filtering
+export interface NotificationsWithCountsResponse {
+	notifications: Notification[];
+	total: number;
+	limit: number;
+	offset: number;
+	has_more: boolean;
+	counts: {
+		total_notifications: number;
+		unread_notifications: number;
+		unread_yard_sale_messages: number;
+		unread_market_item_messages: number;
+		unread_event_messages: number;
+		pending_reports: number;
+	};
+}
+
 export async function getNotifications(
 	page: number = 1,
 	limit: number = 50,
 	unreadOnly: boolean = false
-): Promise<{
-	notifications: Notification[];
-	total: number;
-	unread_count: number;
-	unread_notifications: number;
-}> {
+): Promise<NotificationsWithCountsResponse> {
 	const params = new URLSearchParams({
 		page: page.toString(),
 		limit: limit.toString(),
@@ -1072,12 +1083,16 @@ export async function getNotifications(
 }
 
 // Get notification counts
-export async function getNotificationCounts(): Promise<{
-	total: number;
-	unread: number;
+export interface NotificationCountResponse {
 	total_notifications: number;
 	unread_notifications: number;
-}> {
+	unread_yard_sale_messages: number;
+	unread_market_item_messages: number;
+	unread_event_messages: number;
+	pending_reports: number;
+}
+
+export async function getNotificationCounts(): Promise<NotificationCountResponse> {
 	const response = await fetch('/api/notifications/count', {
 		headers: {
 			Authorization: `Bearer ${localStorage.getItem('access_token')}`

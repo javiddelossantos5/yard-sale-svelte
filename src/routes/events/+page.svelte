@@ -5,10 +5,7 @@
 		type Event,
 		getCurrentUser,
 		type CurrentUser,
-		isAdmin,
-		getYardSaleUnreadCount,
-		getMarketItemUnreadCount,
-		getEventUnreadCount
+		isAdmin
 	} from '$lib/api';
 	import { goto } from '$app/navigation';
 	import EventCard from '$lib/EventCard.svelte';
@@ -23,6 +20,12 @@
 		faMessage
 	} from '@fortawesome/free-solid-svg-icons';
 	import AppHeader from '$lib/AppHeader.svelte';
+	import {
+		unreadYardSaleMessages,
+		unreadMarketItemMessages,
+		unreadEventMessages,
+		loadNotificationCounts
+	} from '$lib/notifications';
 
 	let filtersExpanded = $state(false);
 
@@ -235,14 +238,9 @@
 		if (!currentUser) return;
 
 		try {
-			const [yardSaleResult, marketResult, eventResult] = await Promise.all([
-				getYardSaleUnreadCount().catch(() => ({ unread_count: 0 })),
-				getMarketItemUnreadCount().catch(() => ({ unread_count: 0 })),
-				getEventUnreadCount().catch(() => ({ unread_count: 0 }))
-			]);
-			yardSaleMessageUnreadCount = yardSaleResult.unread_count || 0;
-			marketMessageUnreadCount = marketResult.unread_count || 0;
-			eventMessageUnreadCount = eventResult.unread_count || 0;
+			// Use unified notification counts endpoint
+			// This will populate the stores that AppHeader reads from
+			await loadNotificationCounts();
 		} catch {
 			// Ignore errors loading unread count
 		}
@@ -253,10 +251,12 @@
 		load();
 	});
 
-	// Refresh message counts when currentUser changes
+	// Load notification counts when currentUser changes
 	$effect(() => {
 		if (currentUser) {
-			refreshMessageCount();
+			loadNotificationCounts().catch(() => {
+				// Ignore errors
+			});
 		}
 	});
 
@@ -282,11 +282,12 @@
 			});
 		}
 		if (currentUser) {
+			const totalMessages = $unreadYardSaleMessages + $unreadMarketItemMessages + $unreadEventMessages;
 			items.push({
 				label: 'Messages',
 				icon: faMessage,
 				action: () => goto('/messages'),
-				badge: undefined
+				badge: totalMessages > 0 ? totalMessages : undefined
 			});
 		}
 		return items;
@@ -314,9 +315,6 @@
 		primaryActionLabel="New Event"
 		primaryActionIcon={faPlus}
 		{currentUser}
-		{marketMessageUnreadCount}
-		{yardSaleMessageUnreadCount}
-		{eventMessageUnreadCount}
 		{mobileMenuItems}
 	/>
 
