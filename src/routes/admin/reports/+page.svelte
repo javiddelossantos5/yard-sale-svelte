@@ -23,10 +23,10 @@
 		faFlag,
 		faEye,
 		faEyeSlash,
-		faClock
+		faClock,
+		faHeart
 	} from '@fortawesome/free-solid-svg-icons';
-	import { logout } from '$lib/auth';
-	import { unreadMessageCount } from '$lib/notifications';
+	import { unreadMessageCount, loadNotificationCounts } from '$lib/notifications';
 	import AppHeader from '$lib/AppHeader.svelte';
 
 	let currentUser = $state<CurrentUser | null>(null);
@@ -34,7 +34,6 @@
 	let totalReports = $state(0);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
-	let mobileMenuOpen = $state(false);
 	let unreadFilter = $state<'all' | 'unread'>('unread');
 
 	onMount(async () => {
@@ -46,6 +45,10 @@
 		error = null;
 		try {
 			currentUser = await getCurrentUser();
+			// Load notification counts when user is loaded
+			if (currentUser) {
+				await loadNotificationCounts();
+			}
 
 			if (!isAdmin(currentUser)) {
 				error = 'Access denied. Admin permissions required.';
@@ -65,12 +68,10 @@
 	async function loadReports() {
 		try {
 			const response = await getNotifications(1, 100, unreadFilter === 'unread');
-			
+
 			// Filter notifications to only show reports
-			let reportNotifications = response.notifications.filter(
-				(notif) => notif.type === 'report'
-			);
-			
+			let reportNotifications = response.notifications.filter((notif) => notif.type === 'report');
+
 			// Filter by user ID if provided in URL
 			const userId = $page.url.searchParams.get('user');
 			if (userId) {
@@ -78,7 +79,7 @@
 					(notif) => notif.related_user_id === userId
 				);
 			}
-			
+
 			// Sort by created_at descending (newest first)
 			reportNotifications.sort((a, b) => {
 				const dateA = new Date(a.created_at).getTime();
@@ -95,7 +96,7 @@
 
 	async function handleMarkAsRead(report: Notification) {
 		if (report.is_read) return;
-		
+
 		try {
 			await markNotificationAsRead(report.id);
 			// Update local state
@@ -133,20 +134,35 @@
 	});
 
 	const mobileMenuItems = $derived.by(() => {
-		const items = [];
+		const items: Array<{
+			label: string;
+			icon: any;
+			action: () => void;
+			badge?: number;
+		}> = [];
 		if (currentUser && isAdmin(currentUser)) {
 			items.push({
 				label: 'Admin',
 				icon: faShieldAlt,
-				action: () => goto('/admin'),
-				badge: undefined
+				action: () => {
+					void goto('/admin');
+				}
 			});
 		}
 		if (currentUser) {
 			items.push({
+				label: 'Watched Items',
+				icon: faHeart,
+				action: () => {
+					void goto('/market/watched');
+				}
+			});
+			items.push({
 				label: 'Messages',
 				icon: faMessage,
-				action: () => goto('/messages'),
+				action: () => {
+					void goto('/messages');
+				},
 				badge: $unreadMessageCount > 0 ? $unreadMessageCount : undefined
 			});
 		}
@@ -162,8 +178,10 @@
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	<AppHeader
 		title={$page.url.searchParams.get('user') ? 'User Reports' : 'Reported Users'}
-		subtitle={$page.url.searchParams.get('user') ? 'Reports for this user' : 'View and manage user reports'}
-		currentUser={currentUser}
+		subtitle={$page.url.searchParams.get('user')
+			? 'Reports for this user'
+			: 'View and manage user reports'}
+		{currentUser}
 		showBackButton={true}
 		backUrl={$page.url.searchParams.get('user') ? '/admin/users' : '/admin'}
 		backLabel={$page.url.searchParams.get('user') ? 'Back to Users' : 'Admin Dashboard'}
@@ -174,7 +192,9 @@
 		{#if loading}
 			<div class="flex items-center justify-center py-12">
 				<div class="text-center">
-					<div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+					<div
+						class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"
+					></div>
 					<p class="mt-4 text-gray-600 dark:text-gray-400">Loading reports...</p>
 				</div>
 			</div>
@@ -200,13 +220,17 @@
 					</button>
 				</div>
 				<div class="text-sm text-gray-600 dark:text-gray-400">
-					Total: <span class="font-semibold">{totalReports}</span> report{totalReports !== 1 ? 's' : ''}
+					Total: <span class="font-semibold">{totalReports}</span> report{totalReports !== 1
+						? 's'
+						: ''}
 				</div>
 			</div>
 
 			<!-- Reports List -->
 			{#if reports.length === 0}
-				<div class="rounded-lg bg-white p-12 text-center shadow-sm dark:bg-gray-800 dark:ring-1 dark:ring-gray-700">
+				<div
+					class="rounded-lg bg-white p-12 text-center shadow-sm dark:bg-gray-800 dark:ring-1 dark:ring-gray-700"
+				>
 					<FontAwesomeIcon
 						icon={faFlag}
 						class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
@@ -246,7 +270,9 @@
 												</span>
 											{/if}
 										</div>
-										<div class="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+										<div
+											class="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400"
+										>
 											<FontAwesomeIcon icon={faClock} class="h-3 w-3" />
 											<span>{formatDate(report.created_at)}</span>
 										</div>
@@ -263,7 +289,7 @@
 
 								<!-- Message -->
 								<div class="mt-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-900/50">
-									<p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+									<p class="text-sm whitespace-pre-wrap text-gray-700 dark:text-gray-300">
 										{report.message}
 									</p>
 								</div>
@@ -288,4 +314,3 @@
 		{/if}
 	</div>
 </div>
-

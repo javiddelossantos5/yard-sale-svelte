@@ -14,8 +14,11 @@ const config = {
 	},
 	vitePlugin: {
 		inspector: {
-			showToggleButton: 'always',
-			toggleButtonPos: 'bottom-left'
+			enabled: true, // ✅ ensures inspector is injected
+			toggleKeyCombo: 'meta-shift', // ✅ macOS Command + Shift shortcut
+			showToggleButton: 'always', // ✅ always show toggle button
+			toggleButtonPos: 'bottom-left', // ✅ button position
+			holdMode: false // ✅ click mode (not hold mode)
 		}
 	}
 };

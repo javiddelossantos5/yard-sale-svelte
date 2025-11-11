@@ -22,23 +22,21 @@
 	import RatingModal from '$lib/RatingModal.svelte';
 	import ReportModal from '$lib/ReportModal.svelte';
 	import EditProfileModal from '$lib/EditProfileModal.svelte';
+	import AppHeader from '$lib/AppHeader.svelte';
 	import { unreadMessageCount, loadNotificationCounts } from '$lib/notifications';
 	import {
-		faBars,
 		faHome,
 		faStore,
 		faHeart,
 		faUser,
-		faArrowRightFromBracket,
 		faChevronLeft,
 		faShieldAlt,
 		faPencil,
 		faTag,
-		faBuilding
+		faBuilding,
+		faMessage
 	} from '@fortawesome/free-solid-svg-icons';
-	import { logout } from '$lib/auth';
 
-	let mobileMenuOpen = $state(false);
 	let profileUser = $state<CurrentUser | null>(null);
 	let currentUser = $state<CurrentUser | null>(null);
 	let ratings = $state<Rating[]>([]);
@@ -136,6 +134,10 @@
 	async function loadCurrentUser() {
 		try {
 			currentUser = await getCurrentUser();
+			// Load notification counts when user is loaded
+			if (currentUser) {
+				await loadNotificationCounts();
+			}
 		} catch (error) {
 			console.warn('Failed to load current user:', error);
 			currentUser = null;
@@ -335,6 +337,42 @@
 		logout(); // logout() now handles redirect automatically
 	}
 
+	const mobileMenuItems = $derived.by(() => {
+		const items: Array<{
+			label: string;
+			icon: any;
+			action: () => void;
+			badge?: number;
+		}> = [];
+		if (currentUser && isAdmin(currentUser)) {
+			items.push({
+				label: 'Admin',
+				icon: faShieldAlt,
+				action: () => {
+					void goto('/admin');
+				}
+			});
+		}
+		if (currentUser) {
+			items.push({
+				label: 'Watched Items',
+				icon: faHeart,
+				action: () => {
+					void goto('/market/watched');
+				}
+			});
+			items.push({
+				label: 'Messages',
+				icon: faMessage,
+				action: () => {
+					void goto('/messages');
+				},
+				badge: $unreadMessageCount > 0 ? $unreadMessageCount : undefined
+			});
+		}
+		return items;
+	});
+
 	async function handleEditProfileSuccess() {
 		// Reload current user and profile user data
 		if (userId) {
@@ -353,243 +391,15 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-	<!-- Header -->
-	<header
-		class="sticky top-0 z-50 border-b border-gray-200/80 bg-white/80 backdrop-blur-xl dark:border-gray-800/80 dark:bg-gray-900/80"
-	>
-		<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-			<!-- Mobile Layout -->
-			<div class="block sm:hidden">
-				<div class="flex h-16 items-center justify-between">
-					<!-- Logo and Title -->
-					<div class="flex items-center space-x-3">
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-full p-1.5 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-							aria-label="Back"
-						>
-							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
-						</button>
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-lg transition-opacity hover:opacity-80 active:scale-95"
-							aria-label="Go to home"
-						>
-							<img
-								src="/icon2.png"
-								alt="Yard Sale Finder Logo"
-								class="h-8 w-8 rounded-lg object-cover"
-							/>
-						</button>
-						<div>
-							<h1 class="text-lg font-semibold text-gray-900 dark:text-white">
-								{displayName || 'Profile'}
-							</h1>
-							<p class="text-xs text-gray-500 dark:text-gray-400">User profile</p>
-						</div>
-					</div>
-
-					<!-- Right side: Menu button -->
-					<div class="flex items-center gap-2">
-						<button
-							onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
-							class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
-							aria-label="Menu"
-						>
-							<FontAwesomeIcon icon={faBars} class="h-5 w-5 text-gray-700 dark:text-gray-300" />
-						</button>
-					</div>
-				</div>
-
-				<!-- Mobile Menu Dropdown -->
-				{#if mobileMenuOpen}
-					<div class="border-t border-gray-200 pt-4 pb-4 dark:border-gray-800">
-						<div class="space-y-1">
-							<button
-								onclick={() => {
-									goto('/');
-									mobileMenuOpen = false;
-								}}
-								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-							>
-								<FontAwesomeIcon
-									icon={faHome}
-									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-								/>
-								Home
-							</button>
-							<button
-								onclick={() => {
-									goto('/market');
-									mobileMenuOpen = false;
-								}}
-								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-							>
-								<FontAwesomeIcon
-									icon={faStore}
-									class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-								/>
-								Marketplace
-							</button>
-							{#if currentUser}
-								<button
-									onclick={() => {
-										goto('/market/watched');
-										mobileMenuOpen = false;
-									}}
-									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-								>
-									<FontAwesomeIcon
-										icon={faHeart}
-										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-									/>
-									Watched Items
-								</button>
-								<button
-									onclick={() => {
-										goto('/messages');
-										mobileMenuOpen = false;
-									}}
-									class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-								>
-									<FontAwesomeIcon
-										icon="message"
-										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-									/>
-									Messages
-								</button>
-								<button
-									onclick={() => {
-										goToProfile();
-										mobileMenuOpen = false;
-									}}
-									class="relative flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-								>
-									<FontAwesomeIcon
-										icon={faUser}
-										class="mr-3 h-5 w-5 text-gray-500 dark:text-gray-400"
-									/>
-									My Profile
-									{#if $unreadMessageCount > 0}
-										<span
-											class="ml-auto rounded-full bg-red-500 px-2.5 py-0.5 text-sm font-semibold text-white"
-										>
-											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
-										</span>
-									{/if}
-								</button>
-							{/if}
-							<button
-								onclick={() => {
-									handleLogout();
-									mobileMenuOpen = false;
-								}}
-								class="flex w-full items-center rounded-xl px-4 py-3 text-left text-base font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-							>
-								<FontAwesomeIcon icon={faArrowRightFromBracket} class="mr-3 h-5 w-5" />
-								Logout
-							</button>
-						</div>
-					</div>
-				{/if}
-			</div>
-
-			<!-- Desktop Layout -->
-			<div class="hidden sm:block">
-				<div class="flex h-20 items-center justify-between">
-					<!-- Left: Logo and Title -->
-					<div class="flex items-center space-x-4">
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-full p-2 transition hover:bg-gray-100 dark:hover:bg-gray-700"
-							aria-label="Back"
-						>
-							<FontAwesomeIcon icon={faChevronLeft} class="h-5 w-5" />
-						</button>
-						<button
-							onclick={() => goto('/')}
-							class="shrink-0 rounded-xl transition-opacity hover:opacity-80 active:scale-95"
-							aria-label="Go to home"
-						>
-							<img
-								src="/icon2.png"
-								alt="Yard Sale Finder Logo"
-								class="h-12 w-12 rounded-xl object-cover shadow-sm"
-							/>
-						</button>
-						<div>
-							<h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-								{displayName || 'Profile'}
-							</h1>
-							<div class="mt-0.5 flex items-center gap-3">
-								<p class="text-sm text-gray-600 dark:text-gray-400">
-									{profileUser?.bio || 'User profile'}
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<!-- Right: Actions -->
-					<div class="flex items-center gap-3">
-						<!-- Secondary Actions -->
-						<div class="flex items-center gap-2">
-							<button
-								onclick={() => goto('/')}
-								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-							>
-								<FontAwesomeIcon icon={faHome} class="mr-2 h-4 w-4" />
-								Home
-							</button>
-							<button
-								onclick={() => goto('/market')}
-								class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-							>
-								<FontAwesomeIcon icon={faStore} class="mr-2 h-4 w-4" />
-								Marketplace
-							</button>
-							{#if currentUser}
-								<button
-									onclick={() => goto('/market/watched')}
-									class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-								>
-									<FontAwesomeIcon icon={faHeart} class="mr-2 h-4 w-4" />
-									Watched
-								</button>
-								<button
-									onclick={() => goto('/messages')}
-									class="flex items-center rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-								>
-									<FontAwesomeIcon icon="message" class="mr-2 h-4 w-4" />
-									Messages
-								</button>
-								<button
-									onclick={goToProfile}
-									class="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:hover:bg-gray-700"
-									aria-label="My Profile"
-								>
-									<FontAwesomeIcon icon={faUser} class="h-5 w-5 text-gray-700 dark:text-gray-200" />
-									{#if $unreadMessageCount > 0}
-										<span
-											class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-semibold text-white dark:border-gray-900"
-										>
-											{$unreadMessageCount > 99 ? '99+' : $unreadMessageCount}
-										</span>
-									{/if}
-								</button>
-							{/if}
-							<button
-								onclick={handleLogout}
-								class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-all duration-200 hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
-								aria-label="Logout"
-							>
-								<FontAwesomeIcon icon={faArrowRightFromBracket} class="h-5 w-5" />
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</header>
+	<AppHeader
+		title={displayName || 'Profile'}
+		subtitle={profileUser?.bio || 'User profile'}
+		currentUser={currentUser}
+		showBackButton={true}
+		backUrl="/"
+		backLabel="Back"
+		{mobileMenuItems}
+	/>
 
 	<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
 		{#if loading}
@@ -625,9 +435,9 @@
 							{:else}
 								<div
 									class="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white"
-								>
-									{profileUser.full_name?.charAt(0).toUpperCase() || '?'}
-								</div>
+							>
+								{profileUser.full_name?.charAt(0).toUpperCase() || '?'}
+							</div>
 							{/if}
 						</div>
 
@@ -648,7 +458,7 @@
 										</div>
 									{/if}
 								</div>
-								<p class="text-gray-600 dark:text-gray-300">@{profileUser.username || 'unknown'}</p>
+									<p class="text-gray-600 dark:text-gray-300">@{profileUser.username || 'unknown'}</p>
 
 								<!-- Trust Metrics -->
 								<div class="mt-3 flex flex-wrap items-center gap-4">
@@ -664,7 +474,7 @@
 													{@const isFullyFilled = starIndex <= floorRating}
 													{@const isHalfFilled = starIndex === floorRating + 1 && hasDecimal}
 													{#if isFullyFilled}
-														<FontAwesomeIcon
+													<FontAwesomeIcon
 															icon="star"
 															class="h-4 w-4 text-yellow-400"
 														/>
@@ -834,21 +644,21 @@
 											<!-- Header: Name, Stars, Date -->
 											<div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 												<div class="flex items-center gap-3 flex-wrap">
-													{#if rating.reviewer_id}
-														<button
-															onclick={(e) => {
-																e.stopPropagation();
-																goto(`/profile/${rating.reviewer_id}`);
-															}}
+												{#if rating.reviewer_id}
+													<button
+														onclick={(e) => {
+															e.stopPropagation();
+															goto(`/profile/${rating.reviewer_id}`);
+														}}
 															class="text-base font-semibold text-gray-900 hover:text-blue-600 hover:underline focus:outline-none focus:underline dark:text-white dark:hover:text-blue-400"
-														>
-															{rating.reviewer_username || 'Anonymous'}
-														</button>
-													{:else}
+													>
+														{rating.reviewer_username || 'Anonymous'}
+													</button>
+												{:else}
 														<span class="text-base font-semibold text-gray-900 dark:text-white">
-															{rating.reviewer_username || 'Anonymous'}
-														</span>
-													{/if}
+														{rating.reviewer_username || 'Anonymous'}
+													</span>
+												{/if}
 													<div class="flex items-center gap-1">
 														{#each Array(5) as _, i}
 															<FontAwesomeIcon

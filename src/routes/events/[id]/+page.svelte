@@ -36,15 +36,16 @@
 		faCommentDots,
 		faStar,
 		faMessage,
-		faLink
+		faLink,
+		faHeart
 	} from '@fortawesome/free-solid-svg-icons';
 	import EditEventModal from '$lib/EditEventModal.svelte';
 	import DeleteConfirmationModal from '$lib/DeleteConfirmationModal.svelte';
 	import EventFeaturedImageModal from '$lib/EventFeaturedImageModal.svelte';
 	import EventMessageModal from '$lib/EventMessageModal.svelte';
 	import AppHeader from '$lib/AppHeader.svelte';
-	import { logout } from '$lib/auth';
 	import { openDirections, getPlatformName } from '$lib/mapsUtils';
+	import { unreadMessageCount, loadNotificationCounts } from '$lib/notifications';
 
 	let event = $state<Event | null>(null);
 	let comments = $state<EventComment[]>([]);
@@ -297,6 +298,10 @@
 			// Load user first (non-critical, can fail silently)
 			try {
 				currentUser = await getCurrentUser();
+				// Load notification counts when user is loaded
+				if (currentUser) {
+					await loadNotificationCounts();
+				}
 			} catch (err) {
 				currentUser = null;
 			}
@@ -553,21 +558,36 @@
 	});
 
 	const mobileMenuItems = $derived.by(() => {
-		const items = [];
+		const items: Array<{
+			label: string;
+			icon: any;
+			action: () => void;
+			badge?: number;
+		}> = [];
 		if (currentUser && isAdmin(currentUser)) {
 			items.push({
 				label: 'Admin',
 				icon: faShieldAlt,
-				action: () => goto('/admin/users'),
-				badge: undefined
+				action: () => {
+					void goto('/admin');
+				}
 			});
 		}
 		if (currentUser) {
 			items.push({
+				label: 'Watched Items',
+				icon: faHeart,
+				action: () => {
+					void goto('/market/watched');
+				}
+			});
+			items.push({
 				label: 'Messages',
 				icon: faMessage,
-				action: () => goto('/messages'),
-				badge: undefined
+				action: () => {
+					void goto('/messages?tab=events');
+				},
+				badge: $unreadMessageCount > 0 ? $unreadMessageCount : undefined
 			});
 		}
 		return items;
