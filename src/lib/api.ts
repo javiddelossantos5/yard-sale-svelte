@@ -168,9 +168,12 @@ export interface Notification {
 	message: string;
 	is_read: boolean;
 	created_at: string;
+	read_at?: string | null;
 	user_id: string;
 	related_user_id?: string;
+	related_user_username?: string;
 	related_yard_sale_id?: string;
+	related_yard_sale_title?: string | null;
 	related_market_item_id?: string;
 	related_event_id?: string;
 	related_message_id?: string;

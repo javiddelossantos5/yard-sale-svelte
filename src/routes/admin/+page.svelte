@@ -21,7 +21,8 @@
 		faArrowRightFromBracket,
 		faMessage,
 		faHeart,
-		faCalendar
+		faCalendar,
+		faFlag
 	} from '@fortawesome/free-solid-svg-icons';
 	import { logout } from '$lib/auth';
 	import { unreadMessageCount } from '$lib/notifications';
@@ -501,6 +502,27 @@
 							<FontAwesomeIcon
 								icon={faArrowRight}
 								class="h-5 w-5 text-gray-400 transition-colors group-hover:text-purple-600 dark:group-hover:text-purple-400"
+							/>
+						</button>
+
+						<button
+							onclick={() => goto('/admin/reports')}
+							class="group flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 transition-all hover:border-red-500 hover:bg-red-50 dark:border-gray-700 dark:bg-gray-700 dark:hover:border-red-500 dark:hover:bg-red-900/20"
+						>
+							<div class="flex items-center gap-3">
+								<div
+									class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/20"
+								>
+									<FontAwesomeIcon icon={faFlag} class="h-5 w-5 text-red-600 dark:text-red-400" />
+								</div>
+								<div class="text-left">
+									<p class="font-semibold text-gray-900 dark:text-white">Reported Users</p>
+									<p class="text-xs text-gray-500 dark:text-gray-400">View all reports</p>
+								</div>
+							</div>
+							<FontAwesomeIcon
+								icon={faArrowRight}
+								class="h-5 w-5 text-gray-400 transition-colors group-hover:text-red-600 dark:group-hover:text-red-400"
 							/>
 						</button>
 					</div>
