@@ -243,7 +243,7 @@
 								Events
 							</button>
 						{/if}
-						{#each mobileMenuItems as item}
+						{#each mobileMenuItems.filter((item) => item.label !== 'Watched Items' || isMarketPage) as item}
 							<button
 								onclick={() => {
 									item.action();
@@ -399,7 +399,7 @@
 								<span class="whitespace-nowrap">Events</span>
 							</button>
 						{/if}
-						{#each mobileMenuItems as item}
+						{#each mobileMenuItems.filter((item) => item.label !== 'Watched Items' || isMarketPage) as item}
 							<button
 								onclick={item.action}
 								class="group relative flex items-center gap-2 rounded-xl bg-gray-100/80 {item.label ===
