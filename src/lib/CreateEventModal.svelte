@@ -285,6 +285,14 @@
 			return false;
 		}
 
+		// Category, Start Date, and End Date should not show for lost_found type
+		if (
+			(fieldName === 'category' || fieldName === 'start_date' || fieldName === 'end_date') &&
+			type === 'lost_found'
+		) {
+			return false;
+		}
+
 		switch (type) {
 			case 'informational':
 				return [
@@ -349,7 +357,6 @@
 
 			case 'lost_found':
 				return [
-					'category',
 					'address',
 					'city',
 					'state',
@@ -359,9 +366,7 @@
 					'tags',
 					'featured_image',
 					'gallery_urls',
-					'status',
-					'start_date',
-					'end_date'
+					'status'
 				].includes(fieldName);
 
 			case 'request_help':
@@ -459,7 +464,7 @@
 			case 'advertisement':
 				return ['category', 'price', 'is_free', 'company'].includes(fieldName);
 			case 'lost_found':
-				return ['category', 'contact_phone', 'contact_email'].includes(fieldName);
+				return ['contact_phone', 'contact_email'].includes(fieldName);
 			case 'request_help':
 				return ['contact_phone', 'contact_email'].includes(fieldName);
 			case 'offer_help':
