@@ -2528,6 +2528,7 @@ export interface UserUpdateData {
 	profile_picture?: string | null;
 	is_active?: boolean;
 	permissions?: 'admin' | 'user';
+	password?: string; // Admin can change user password
 }
 
 // Update current user's own profile

@@ -3,12 +3,7 @@
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faShieldAlt, faUser, faTrash } from '@fortawesome/free-solid-svg-icons';
 
-	let {
-		isOpen,
-		onClose,
-		onSuccess,
-		user
-	} = $props<{
+	let { isOpen, onClose, onSuccess, user } = $props<{
 		isOpen: boolean;
 		onClose: () => void;
 		onSuccess: () => void;
@@ -28,6 +23,10 @@
 		permissions: 'user'
 	});
 
+	let newPassword = $state('');
+	let confirmPassword = $state('');
+	let showPasswordFields = $state(false);
+
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let showDeleteConfirm = $state(false);
@@ -46,8 +45,11 @@
 				zip_code: user.location?.zip || '',
 				bio: user.bio || '',
 				is_active: (user as any).is_active ?? true,
-				permissions: (user.permissions === 'admin' ? 'admin' : 'user')
+				permissions: user.permissions === 'admin' ? 'admin' : 'user'
 			};
+			newPassword = '';
+			confirmPassword = '';
+			showPasswordFields = false;
 			error = null;
 		}
 	});
@@ -58,6 +60,18 @@
 		if (!user) {
 			error = 'No user selected';
 			return;
+		}
+
+		// Validate password if password fields are shown
+		if (showPasswordFields) {
+			if (newPassword && newPassword.length < 8) {
+				error = 'Password must be at least 8 characters long';
+				return;
+			}
+			if (newPassword && newPassword !== confirmPassword) {
+				error = 'Passwords do not match';
+				return;
+			}
 		}
 
 		loading = true;
@@ -74,9 +88,19 @@
 				zip_code: formData.zip_code?.trim() || undefined,
 				bio: formData.bio?.trim() || undefined
 			};
+
+			// Only include password if it was provided
+			if (showPasswordFields && newPassword && newPassword.trim() !== '') {
+				cleanedData.password = newPassword.trim();
+			}
+
 			await updateUser(user.id, cleanedData);
 			onSuccess();
 			onClose();
+			// Reset password fields
+			newPassword = '';
+			confirmPassword = '';
+			showPasswordFields = false;
 		} catch (e: any) {
 			error = e?.message || 'Failed to update user';
 		} finally {
@@ -186,7 +210,7 @@
 							<label
 								for="full_name"
 								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-							>Full Name</label
+								>Full Name</label
 							>
 							<input
 								id="full_name"
@@ -203,7 +227,7 @@
 							<label
 								for="email"
 								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-							>Email</label
+								>Email</label
 							>
 							<input
 								id="email"
@@ -220,7 +244,7 @@
 							<label
 								for="phone_number"
 								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-							>Phone Number <span class="font-normal text-gray-400">(Optional)</span></label
+								>Phone Number <span class="font-normal text-gray-400">(Optional)</span></label
 							>
 							<input
 								id="phone_number"
@@ -236,7 +260,7 @@
 							<label
 								for="company"
 								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-							>Company <span class="font-normal text-gray-400">(Optional)</span></label
+								>Company <span class="font-normal text-gray-400">(Optional)</span></label
 							>
 							<input
 								id="company"
@@ -255,7 +279,7 @@
 								<label
 									for="city"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-								>City</label
+									>City</label
 								>
 								<input
 									id="city"
@@ -271,7 +295,7 @@
 								<label
 									for="state"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-								>State</label
+									>State</label
 								>
 								<input
 									id="state"
@@ -288,7 +312,7 @@
 								<label
 									for="zip_code"
 									class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-								>Zip Code</label
+									>Zip Code</label
 								>
 								<input
 									id="zip_code"
@@ -304,8 +328,7 @@
 						<div>
 							<label
 								for="bio"
-								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-							>Bio</label
+								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">Bio</label
 							>
 							<textarea
 								id="bio"
@@ -324,9 +347,11 @@
 									bind:checked={formData.is_active}
 									class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
 								/>
-								<span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Active User</span>
+								<span class="text-sm font-semibold text-gray-700 dark:text-gray-300"
+									>Active User</span
+								>
 							</label>
-							<p class="ml-7 mt-1 text-xs text-gray-500 dark:text-gray-400">
+							<p class="mt-1 ml-7 text-xs text-gray-500 dark:text-gray-400">
 								Inactive users cannot log in or use the platform.
 							</p>
 						</div>
@@ -336,7 +361,7 @@
 							<label
 								for="permissions"
 								class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-							>Permissions</label
+								>Permissions</label
 							>
 							<select
 								id="permissions"
@@ -349,6 +374,72 @@
 							<p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
 								Admin users have full access to manage users, items, and yard sales.
 							</p>
+						</div>
+
+						<!-- Password Change Section -->
+						<div class="border-t border-gray-200 pt-6 dark:border-gray-700">
+							<div class="mb-4 flex items-center justify-between">
+								<div>
+									<h4 class="text-base font-semibold text-gray-900 dark:text-white">
+										Change Password
+									</h4>
+									<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+										Leave blank to keep current password
+									</p>
+								</div>
+								<button
+									type="button"
+									onclick={() => {
+										showPasswordFields = !showPasswordFields;
+										if (!showPasswordFields) {
+											newPassword = '';
+											confirmPassword = '';
+										}
+									}}
+									class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+								>
+									{showPasswordFields ? 'Cancel' : 'Change Password'}
+								</button>
+							</div>
+
+							{#if showPasswordFields}
+								<div class="space-y-4">
+									<!-- New Password -->
+									<div>
+										<label
+											for="new_password"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>New Password <span class="font-normal text-gray-400">(Optional)</span></label
+										>
+										<input
+											id="new_password"
+											type="password"
+											bind:value={newPassword}
+											placeholder="Enter new password (min 8 characters)"
+											minlength="8"
+											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										/>
+									</div>
+
+									<!-- Confirm Password -->
+									<div>
+										<label
+											for="confirm_password"
+											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+											>Confirm Password <span class="font-normal text-gray-400">(Optional)</span
+											></label
+										>
+										<input
+											id="confirm_password"
+											type="password"
+											bind:value={confirmPassword}
+											placeholder="Confirm new password"
+											minlength="8"
+											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+										/>
+									</div>
+								</div>
+							{/if}
 						</div>
 					</div>
 
@@ -369,11 +460,7 @@
 							>
 								{#if loading}
 									<span class="flex items-center justify-center gap-2">
-										<svg
-											class="h-4 w-4 animate-spin"
-											fill="none"
-											viewBox="0 0 24 24"
-										>
+										<svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
 											<circle
 												class="opacity-25"
 												cx="12"
@@ -416,11 +503,7 @@
 
 	<!-- Delete Confirmation Modal -->
 	{#if showDeleteConfirm}
-		<div
-			class="fixed inset-0 z-[60] overflow-y-auto"
-			role="dialog"
-			aria-modal="true"
-		>
+		<div class="fixed inset-0 z-[60] overflow-y-auto" role="dialog" aria-modal="true">
 			<div
 				class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0"
 			>
@@ -473,7 +556,9 @@
 
 						<div class="space-y-4">
 							<p class="text-sm text-gray-700 dark:text-gray-300">
-								Are you sure you want to delete <strong>{user?.full_name || user?.username || 'this user'}</strong>? This action cannot be undone.
+								Are you sure you want to delete <strong
+									>{user?.full_name || user?.username || 'this user'}</strong
+								>? This action cannot be undone.
 							</p>
 							<p class="text-xs text-gray-500 dark:text-gray-400">
 								This will permanently delete the user account and all associated data.
@@ -500,11 +585,7 @@
 							>
 								{#if deleting}
 									<span class="flex items-center justify-center gap-2">
-										<svg
-											class="h-4 w-4 animate-spin"
-											fill="none"
-											viewBox="0 0 24 24"
-										>
+										<svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
 											<circle
 												class="opacity-25"
 												cx="12"
