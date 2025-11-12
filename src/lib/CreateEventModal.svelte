@@ -242,6 +242,244 @@
 			formData.tags = formData.tags.filter((_, i) => i !== index);
 		}
 	}
+
+	// Helper functions to determine which fields to show based on event type
+	function shouldShowField(fieldName: string): boolean {
+		const type = formData.type;
+
+		// Weather conditions should only show for weather type
+		if (fieldName === 'weather_conditions' && type !== 'weather') {
+			return false;
+		}
+
+		// Job fields should only show for job_posting type
+		if ((fieldName === 'job_title' || fieldName === 'employment_type') && type !== 'job_posting') {
+			return false;
+		}
+
+		// Start and End Date should not show for weather and job_posting types
+		if (
+			(fieldName === 'start_date' || fieldName === 'end_date') &&
+			(type === 'weather' || type === 'job_posting')
+		) {
+			return false;
+		}
+
+		// Start and End Time should not show for weather type
+		if ((fieldName === 'start_time' || fieldName === 'end_time') && type === 'weather') {
+			return false;
+		}
+
+		// Address should not show for weather type
+		if (fieldName === 'address' && type === 'weather') {
+			return false;
+		}
+
+		// Location Type should not show for weather type
+		if (fieldName === 'location_type' && type === 'weather') {
+			return false;
+		}
+
+		// Category should not show for weather type
+		if (fieldName === 'category' && type === 'weather') {
+			return false;
+		}
+
+		switch (type) {
+			case 'informational':
+				return [
+					'category',
+					'status',
+					'is_public',
+					'address',
+					'city',
+					'state',
+					'zip',
+					'location_type',
+					'start_date',
+					'end_date',
+					'start_time',
+					'end_time',
+					'timezone',
+					'price',
+					'is_free',
+					'tags',
+					'organizer_name',
+					'company',
+					'contact_phone',
+					'contact_email',
+					'website',
+					'facebook_url',
+					'instagram_url',
+					'comments_enabled',
+					'gallery_urls',
+					'featured_image'
+				].includes(fieldName);
+
+			case 'advertisement':
+				return [
+					'category',
+					'price',
+					'is_free',
+					'tags',
+					'company',
+					'website',
+					'contact_email',
+					'contact_phone',
+					'gallery_urls',
+					'featured_image',
+					'comments_enabled'
+				].includes(fieldName);
+
+			case 'announcement':
+				return [
+					'category',
+					'status',
+					'tags',
+					'company',
+					'organizer_name',
+					'start_date',
+					'end_date',
+					'start_time',
+					'end_time',
+					'comments_enabled',
+					'featured_image',
+					'gallery_urls'
+				].includes(fieldName);
+
+			case 'lost_found':
+				return [
+					'category',
+					'address',
+					'city',
+					'state',
+					'zip',
+					'contact_phone',
+					'contact_email',
+					'tags',
+					'featured_image',
+					'gallery_urls',
+					'status',
+					'start_date',
+					'end_date'
+				].includes(fieldName);
+
+			case 'request_help':
+				return [
+					'category',
+					'address',
+					'city',
+					'state',
+					'zip',
+					'contact_phone',
+					'contact_email',
+					'tags',
+					'status',
+					'price',
+					'is_free',
+					'gallery_urls',
+					'featured_image'
+				].includes(fieldName);
+
+			case 'offer_help':
+				return [
+					'category',
+					'contact_phone',
+					'contact_email',
+					'price',
+					'is_free',
+					'tags',
+					'company',
+					'organizer_name',
+					'status',
+					'gallery_urls',
+					'featured_image'
+				].includes(fieldName);
+
+			case 'service_offer':
+				return [
+					'category',
+					'price',
+					'is_free',
+					'tags',
+					'company',
+					'website',
+					'contact_email',
+					'contact_phone',
+					'gallery_urls',
+					'featured_image'
+				].includes(fieldName);
+
+			case 'weather':
+				return [
+					'city',
+					'state',
+					'zip',
+					'weather_conditions',
+					'tags',
+					'comments_enabled',
+					'gallery_urls',
+					'featured_image'
+				].includes(fieldName);
+
+			case 'job_posting':
+				return [
+					'category',
+					'job_title',
+					'employment_type',
+					'company',
+					'contact_email',
+					'contact_phone',
+					'address',
+					'city',
+					'state',
+					'zip',
+					'website',
+					'tags',
+					'comments_enabled',
+					'gallery_urls',
+					'featured_image'
+				].includes(fieldName);
+
+			case 'event':
+			default:
+				// Show all fields for default 'event' type
+				return true;
+		}
+	}
+
+	// Check if field is required for the current event type
+	function isFieldRequired(fieldName: string): boolean {
+		const type = formData.type;
+
+		// Title is always required
+		if (fieldName === 'title') return true;
+
+		switch (type) {
+			case 'advertisement':
+				return ['category', 'price', 'is_free', 'company'].includes(fieldName);
+			case 'lost_found':
+				return ['category', 'contact_phone', 'contact_email'].includes(fieldName);
+			case 'request_help':
+				return ['contact_phone', 'contact_email'].includes(fieldName);
+			case 'offer_help':
+				return ['contact_phone', 'contact_email', 'price', 'is_free'].includes(fieldName);
+			case 'service_offer':
+				return ['category', 'price', 'is_free', 'company'].includes(fieldName);
+			case 'weather':
+				return ['city', 'state', 'zip', 'weather_conditions'].includes(fieldName);
+			case 'job_posting':
+				return [
+					'job_title',
+					'employment_type',
+					'company',
+					'contact_email',
+					'contact_phone'
+				].includes(fieldName);
+			default:
+				return false;
+		}
+	}
 </script>
 
 {#if isOpen}
@@ -343,6 +581,27 @@
 								</select>
 							</div>
 
+							<!-- Status Field (shown for informational, announcement, lost_found, request_help, offer_help) -->
+							{#if shouldShowField('status')}
+								<div>
+									<label
+										for="status"
+										class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
+										>Status <span class="text-red-500">*</span></label
+									>
+									<select
+										id="status"
+										bind:value={formData.status}
+										required
+										class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+									>
+										{#each eventStatuses as status}
+											<option value={status.value}>{status.label}</option>
+										{/each}
+									</select>
+								</div>
+							{/if}
+
 							<!-- More Options Button -->
 							<button
 								type="button"
@@ -360,510 +619,598 @@
 							{#if showOptionalFields}
 								<div class="space-y-6 border-t border-gray-200 pt-6 dark:border-gray-700">
 									<!-- Date & Time -->
-									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-										<div>
-											<label
-												for="start_date"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>Start Date <span class="font-normal text-gray-400">(Optional)</span></label
-											>
-											<input
-												id="start_date"
-												type="date"
-												bind:value={formData.start_date}
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-										<div>
-											<label
-												for="end_date"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>End Date <span class="font-normal text-gray-400">(Optional)</span></label
-											>
-											<input
-												id="end_date"
-												type="date"
-												bind:value={formData.end_date}
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-									</div>
+									{#if shouldShowField('start_date') || shouldShowField('end_date') || shouldShowField('start_time') || shouldShowField('end_time')}
+										{#if shouldShowField('start_date') || shouldShowField('end_date')}
+											<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+												{#if shouldShowField('start_date')}
+													<div>
+														<label
+															for="start_date"
+															class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+															>Start Date <span class="font-normal text-gray-400">(Optional)</span
+															></label
+														>
+														<input
+															id="start_date"
+															type="date"
+															bind:value={formData.start_date}
+															class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+														/>
+													</div>
+												{/if}
+												{#if shouldShowField('end_date')}
+													<div>
+														<label
+															for="end_date"
+															class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+															>End Date <span class="font-normal text-gray-400">(Optional)</span
+															></label
+														>
+														<input
+															id="end_date"
+															type="date"
+															bind:value={formData.end_date}
+															class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+														/>
+													</div>
+												{/if}
+											</div>
+										{/if}
 
-									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-										<div>
-											<label
-												for="start_time"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>Start Time <span class="font-normal text-gray-400">(Optional)</span></label
-											>
-											<input
-												id="start_time"
-												type="time"
-												bind:value={formData.start_time}
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-										<div>
-											<label
-												for="end_time"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>End Time <span class="font-normal text-gray-400">(Optional)</span></label
-											>
-											<input
-												id="end_time"
-												type="time"
-												bind:value={formData.end_time}
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-									</div>
+										{#if shouldShowField('start_time') || shouldShowField('end_time')}
+											<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+												{#if shouldShowField('start_time')}
+													<div>
+														<label
+															for="start_time"
+															class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+															>Start Time <span class="font-normal text-gray-400">(Optional)</span
+															></label
+														>
+														<input
+															id="start_time"
+															type="time"
+															bind:value={formData.start_time}
+															class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+														/>
+													</div>
+												{/if}
+												{#if shouldShowField('end_time')}
+													<div>
+														<label
+															for="end_time"
+															class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+															>End Time <span class="font-normal text-gray-400">(Optional)</span
+															></label
+														>
+														<input
+															id="end_time"
+															type="time"
+															bind:value={formData.end_time}
+															class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+														/>
+													</div>
+												{/if}
+											</div>
+										{/if}
 
-									<div>
-										<label
-											for="timezone"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Timezone <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<input
-											id="timezone"
-											type="text"
-											bind:value={formData.timezone}
-											placeholder="America/Denver"
-											maxlength="50"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
+										{#if shouldShowField('timezone')}
+											<div>
+												<label
+													for="timezone"
+													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+													>Timezone <span class="font-normal text-gray-400">(Optional)</span></label
+												>
+												<input
+													id="timezone"
+													type="text"
+													bind:value={formData.timezone}
+													placeholder="America/Denver"
+													maxlength="50"
+													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												/>
+											</div>
+										{/if}
+									{/if}
 
 									<!-- Location -->
-									<div>
-										<label
-											for="address"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Address <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<input
-											id="address"
-											type="text"
-											bind:value={formData.address}
-											placeholder="123 Main St"
-											maxlength="255"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
+									{#if shouldShowField('address') || shouldShowField('city') || shouldShowField('state') || shouldShowField('zip')}
+										{#if shouldShowField('address')}
+											<div>
+												<label
+													for="address"
+													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+													>Address {#if isFieldRequired('address')}<span class="text-red-500"
+															>*</span
+														>{:else}<span class="font-normal text-gray-400">(Optional)</span
+														>{/if}</label
+												>
+												<input
+													id="address"
+													type="text"
+													bind:value={formData.address}
+													placeholder="123 Main St"
+													maxlength="255"
+													required={isFieldRequired('address')}
+													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+												/>
+											</div>
+										{/if}
 
-									<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+										{#if shouldShowField('city') || shouldShowField('state') || shouldShowField('zip')}
+											<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+												{#if shouldShowField('city')}
+													<div>
+														<label
+															for="city"
+															class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+															>City {#if isFieldRequired('city')}<span class="text-red-500">*</span
+																>{:else}<span class="font-normal text-gray-400">(Optional)</span
+																>{/if}</label
+														>
+														<input
+															id="city"
+															type="text"
+															bind:value={formData.city}
+															placeholder="City"
+															maxlength="100"
+															required={isFieldRequired('city')}
+															class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+														/>
+													</div>
+												{/if}
+												{#if shouldShowField('state')}
+													<div>
+														<label
+															for="state"
+															class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+															>State {#if isFieldRequired('state')}<span class="text-red-500"
+																	>*</span
+																>{:else}<span class="font-normal text-gray-400">(Optional)</span
+																>{/if}</label
+														>
+														<select
+															id="state"
+															bind:value={formData.state}
+															required={isFieldRequired('state')}
+															class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+														>
+															<option value="">Select State</option>
+															{#each states as state}
+																<option value={state}>{state}</option>
+															{/each}
+														</select>
+													</div>
+												{/if}
+												{#if shouldShowField('zip')}
+													<div>
+														<label
+															for="zip"
+															class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+															>ZIP {#if isFieldRequired('zip')}<span class="text-red-500">*</span
+																>{:else}<span class="font-normal text-gray-400">(Optional)</span
+																>{/if}</label
+														>
+														<input
+															id="zip"
+															type="text"
+															bind:value={formData.zip}
+															placeholder="84078"
+															maxlength="10"
+															required={isFieldRequired('zip')}
+															class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+														/>
+													</div>
+												{/if}
+											</div>
+										{/if}
+									{/if}
+
+									{#if shouldShowField('location_type')}
 										<div>
 											<label
-												for="city"
+												for="location_type"
 												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>City <span class="font-normal text-gray-400">(Optional)</span></label
-											>
-											<input
-												id="city"
-												type="text"
-												bind:value={formData.city}
-												placeholder="City"
-												maxlength="100"
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-										<div>
-											<label
-												for="state"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>State <span class="font-normal text-gray-400">(Optional)</span></label
+												>Location Type {#if isFieldRequired('location_type')}<span
+														class="text-red-500">*</span
+													>{:else}<span class="font-normal text-gray-400">(Optional)</span
+													>{/if}</label
 											>
 											<select
-												id="state"
-												bind:value={formData.state}
+												id="location_type"
+												bind:value={formData.location_type}
+												required={isFieldRequired('location_type')}
 												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 											>
-												<option value="">Select State</option>
-												{#each states as state}
-													<option value={state}>{state}</option>
+												<option value="">Select Location Type</option>
+												{#each locationTypes as locationType}
+													<option value={locationType.value}>{locationType.label}</option>
 												{/each}
 											</select>
 										</div>
+									{/if}
+
+									<!-- Pricing -->
+									{#if shouldShowField('is_free') || shouldShowField('price')}
+										{#if shouldShowField('is_free')}
+											<div>
+												<label
+													class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
+												>
+													<input
+														type="checkbox"
+														bind:checked={formData.is_free}
+														class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+													/>
+													<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+														>This event is free</span
+													>
+												</label>
+											</div>
+										{/if}
+										{#if shouldShowField('price') && !formData.is_free}
+											<div>
+												<label
+													for="price"
+													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+													>Price {#if isFieldRequired('price')}<span class="text-red-500">*</span
+														>{:else}<span class="font-normal text-gray-400">(Optional)</span
+														>{/if}</label
+												>
+												<input
+													id="price"
+													type="number"
+													min="0"
+													step="0.01"
+													bind:value={formData.price}
+													placeholder="0.00"
+													required={isFieldRequired('price')}
+													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+												/>
+											</div>
+										{/if}
+									{/if}
+
+									<!-- Category & Tags -->
+									{#if shouldShowField('category')}
 										<div>
 											<label
-												for="zip"
+												for="category"
 												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>ZIP <span class="font-normal text-gray-400">(Optional)</span></label
+												>Category {#if isFieldRequired('category')}<span class="text-red-500"
+														>*</span
+													>{:else}<span class="font-normal text-gray-400">(Optional)</span
+													>{/if}</label
 											>
 											<input
-												id="zip"
+												id="category"
 												type="text"
-												bind:value={formData.zip}
-												placeholder="84078"
-												maxlength="10"
+												bind:value={formData.category}
+												placeholder="e.g., community, music, sports"
+												maxlength="50"
+												required={isFieldRequired('category')}
 												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 											/>
 										</div>
-									</div>
+									{/if}
 
-									<div>
-										<label
-											for="location_type"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Location Type <span class="font-normal text-gray-400">(Optional)</span
-											></label
-										>
-										<select
-											id="location_type"
-											bind:value={formData.location_type}
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-										>
-											<option value="">Select Location Type</option>
-											{#each locationTypes as locationType}
-												<option value={locationType.value}>{locationType.label}</option>
-											{/each}
-										</select>
-									</div>
+									{#if shouldShowField('tags')}
+										<div>
+											<label
+												for="tag-input"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Tags <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<div class="flex gap-2">
+												<input
+													id="tag-input"
+													type="text"
+													placeholder="Add a tag"
+													class="block flex-1 rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+													onkeydown={(e) => {
+														if (e.key === 'Enter') {
+															e.preventDefault();
+															addTag();
+														}
+													}}
+												/>
+												<button
+													type="button"
+													onclick={addTag}
+													class="rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:scale-95"
+												>
+													Add
+												</button>
+											</div>
+											{#if formData.tags && formData.tags.length > 0}
+												<div class="mt-2 flex flex-wrap gap-2">
+													{#each formData.tags as tag, index}
+														<span
+															class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+														>
+															{tag}
+															<button
+																type="button"
+																onclick={() => removeTag(index)}
+																class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200"
+															>
+																×
+															</button>
+														</span>
+													{/each}
+												</div>
+											{/if}
+										</div>
+									{/if}
 
-									<!-- Pricing -->
-									<div>
+									<!-- Weather Conditions (for weather type) -->
+									{#if shouldShowField('weather_conditions')}
+										<div>
+											<label
+												for="weather_conditions"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Weather Conditions {#if isFieldRequired('weather_conditions')}<span
+														class="text-red-500">*</span
+													>{:else}<span class="font-normal text-gray-400">(Optional)</span
+													>{/if}</label
+											>
+											<input
+												id="weather_conditions"
+												type="text"
+												bind:value={formData.weather_conditions}
+												placeholder="e.g., Sunny, 75°F or Rainy, 60°F with light winds"
+												maxlength="255"
+												required={isFieldRequired('weather_conditions')}
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									<!-- Organizer Info -->
+									{#if shouldShowField('organizer_name')}
+										<div>
+											<label
+												for="organizer_name"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Organizer Name <span class="font-normal text-gray-400">(Optional)</span
+												></label
+											>
+											<input
+												id="organizer_name"
+												type="text"
+												bind:value={formData.organizer_name}
+												placeholder="Your name or organization"
+												maxlength="150"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									{#if shouldShowField('company')}
+										<div>
+											<label
+												for="company"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Company/Organization {#if isFieldRequired('company')}<span
+														class="text-red-500">*</span
+													>{:else}<span class="font-normal text-gray-400">(Optional)</span
+													>{/if}</label
+											>
+											<input
+												id="company"
+												type="text"
+												bind:value={formData.company}
+												placeholder="Company or organization name"
+												maxlength="150"
+												required={isFieldRequired('company')}
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									{#if shouldShowField('contact_phone') || shouldShowField('contact_email')}
+										<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+											{#if shouldShowField('contact_phone')}
+												<div>
+													<label
+														for="contact_phone"
+														class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+														>Contact Phone {#if isFieldRequired('contact_phone')}<span
+																class="text-red-500">*</span
+															>{:else}<span class="font-normal text-gray-400">(Optional)</span
+															>{/if}</label
+													>
+													<input
+														id="contact_phone"
+														type="tel"
+														bind:value={formData.contact_phone}
+														placeholder="(555) 123-4567"
+														maxlength="20"
+														required={isFieldRequired('contact_phone')}
+														class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+													/>
+												</div>
+											{/if}
+											{#if shouldShowField('contact_email')}
+												<div>
+													<label
+														for="contact_email"
+														class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+														>Contact Email {#if isFieldRequired('contact_email')}<span
+																class="text-red-500">*</span
+															>{:else}<span class="font-normal text-gray-400">(Optional)</span
+															>{/if}</label
+													>
+													<input
+														id="contact_email"
+														type="email"
+														bind:value={formData.contact_email}
+														placeholder="contact@example.com"
+														maxlength="150"
+														required={isFieldRequired('contact_email')}
+														class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+													/>
+												</div>
+											{/if}
+										</div>
+									{/if}
+
+									{#if shouldShowField('facebook_url')}
+										<div>
+											<label
+												for="facebook_url"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Facebook URL <span class="font-normal text-gray-400">(Optional)</span
+												></label
+											>
+											<input
+												id="facebook_url"
+												type="url"
+												bind:value={formData.facebook_url}
+												placeholder="https://facebook.com/..."
+												maxlength="255"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									{#if shouldShowField('instagram_url')}
+										<div>
+											<label
+												for="instagram_url"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Instagram URL <span class="font-normal text-gray-400">(Optional)</span
+												></label
+											>
+											<input
+												id="instagram_url"
+												type="url"
+												bind:value={formData.instagram_url}
+												placeholder="https://instagram.com/..."
+												maxlength="255"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									{#if shouldShowField('website')}
+										<div>
+											<label
+												for="website"
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Website <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<input
+												id="website"
+												type="url"
+												bind:value={formData.website}
+												placeholder="https://example.com"
+												maxlength="255"
+												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+											/>
+										</div>
+									{/if}
+
+									<!-- Job Posting Fields (for job_posting type) -->
+									{#if shouldShowField('job_title') || shouldShowField('employment_type')}
+										<div class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
+											<h4 class="text-base font-semibold text-gray-900 dark:text-white">
+												Job Posting Details
+											</h4>
+											{#if shouldShowField('job_title')}
+												<div>
+													<label
+														for="job_title"
+														class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+														>Job Title {#if isFieldRequired('job_title')}<span class="text-red-500"
+																>*</span
+															>{:else}<span class="font-normal text-gray-400">(Optional)</span
+															>{/if}</label
+													>
+													<input
+														id="job_title"
+														type="text"
+														bind:value={formData.job_title}
+														placeholder="e.g., Software Engineer, Marketing Manager"
+														maxlength="150"
+														required={isFieldRequired('job_title')}
+														class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
+													/>
+												</div>
+											{/if}
+											{#if shouldShowField('employment_type')}
+												<div>
+													<label
+														for="employment_type"
+														class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+														>Employment Type {#if isFieldRequired('employment_type')}<span
+																class="text-red-500">*</span
+															>{:else}<span class="font-normal text-gray-400">(Optional)</span
+															>{/if}</label
+													>
+													<select
+														id="employment_type"
+														bind:value={formData.employment_type}
+														required={isFieldRequired('employment_type')}
+														class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
+													>
+														<option value="">Select employment type</option>
+														{#each employmentTypes as empType}
+															<option value={empType.value}>{empType.label}</option>
+														{/each}
+													</select>
+												</div>
+											{/if}
+										</div>
+									{/if}
+
+									<!-- Image Upload -->
+									{#if shouldShowField('gallery_urls') || shouldShowField('featured_image')}
+										<div>
+											<label
+												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+												>Images <span class="font-normal text-gray-400">(Optional)</span></label
+											>
+											<ImageUpload
+												images={formData.gallery_urls || []}
+												maxImages={10}
+												onImagesChange={(urls) => {
+													formData.gallery_urls = urls;
+												}}
+											/>
+										</div>
+									{/if}
+
+									<!-- Settings -->
+									{#if shouldShowField('is_public')}
 										<label
 											class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
 										>
 											<input
 												type="checkbox"
-												bind:checked={formData.is_free}
+												bind:checked={formData.is_public}
 												class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
 											/>
 											<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-												>This event is free</span
+												>Make this event publicly visible</span
 											>
 										</label>
-									</div>
-
-									{#if !formData.is_free}
-										<div>
-											<label
-												for="price"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>Price <span class="font-normal text-gray-400">(Optional)</span></label
-											>
-											<input
-												id="price"
-												type="number"
-												min="0"
-												step="0.01"
-												bind:value={formData.price}
-												placeholder="0.00"
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
 									{/if}
 
-									<!-- Category & Tags -->
-									<div>
+									{#if shouldShowField('comments_enabled')}
 										<label
-											for="category"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Category <span class="font-normal text-gray-400">(Optional)</span></label
+											class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
 										>
-										<input
-											id="category"
-											type="text"
-											bind:value={formData.category}
-											placeholder="e.g., community, music, sports"
-											maxlength="50"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-
-									<div>
-										<label
-											for="tag-input"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Tags <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<div class="flex gap-2">
 											<input
-												id="tag-input"
-												type="text"
-												placeholder="Add a tag"
-												class="block flex-1 rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-												onkeydown={(e) => {
-													if (e.key === 'Enter') {
-														e.preventDefault();
-														addTag();
-													}
-												}}
+												type="checkbox"
+												bind:checked={formData.comments_enabled}
+												class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
 											/>
-											<button
-												type="button"
-												onclick={addTag}
-												class="rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 active:scale-95"
+											<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
+												>Enable comments</span
 											>
-												Add
-											</button>
-										</div>
-										{#if formData.tags && formData.tags.length > 0}
-											<div class="mt-2 flex flex-wrap gap-2">
-												{#each formData.tags as tag, index}
-													<span
-														class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
-													>
-														{tag}
-														<button
-															type="button"
-															onclick={() => removeTag(index)}
-															class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-200"
-														>
-															×
-														</button>
-													</span>
-												{/each}
-											</div>
-										{/if}
-									</div>
-
-									<div>
-										<label
-											for="age_restriction"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Age Restriction <span class="font-normal text-gray-400">(Optional)</span
-											></label
-										>
-										<input
-											id="age_restriction"
-											type="text"
-											bind:value={formData.age_restriction}
-											placeholder="e.g., all, 18+, 21+"
-											maxlength="20"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-
-									<!-- Organizer Info -->
-									<div>
-										<label
-											for="organizer_name"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Organizer Name <span class="font-normal text-gray-400">(Optional)</span
-											></label
-										>
-										<input
-											id="organizer_name"
-											type="text"
-											bind:value={formData.organizer_name}
-											placeholder="Your name or organization"
-											maxlength="150"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-
-									<div>
-										<label
-											for="company"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Company/Organization <span class="font-normal text-gray-400">(Optional)</span
-											></label
-										>
-										<input
-											id="company"
-											type="text"
-											bind:value={formData.company}
-											placeholder="Company or organization name"
-											maxlength="150"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-
-									<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-										<div>
-											<label
-												for="contact_phone"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>Contact Phone <span class="font-normal text-gray-400">(Optional)</span
-												></label
-											>
-											<input
-												id="contact_phone"
-												type="tel"
-												bind:value={formData.contact_phone}
-												placeholder="(555) 123-4567"
-												maxlength="20"
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-										<div>
-											<label
-												for="contact_email"
-												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>Contact Email <span class="font-normal text-gray-400">(Optional)</span
-												></label
-											>
-											<input
-												id="contact_email"
-												type="email"
-												bind:value={formData.contact_email}
-												placeholder="contact@example.com"
-												maxlength="150"
-												class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-											/>
-										</div>
-									</div>
-
-									<div>
-										<label
-											for="facebook_url"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Facebook URL <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<input
-											id="facebook_url"
-											type="url"
-											bind:value={formData.facebook_url}
-											placeholder="https://facebook.com/..."
-											maxlength="255"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-
-									<div>
-										<label
-											for="instagram_url"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Instagram URL <span class="font-normal text-gray-400">(Optional)</span
-											></label
-										>
-										<input
-											id="instagram_url"
-											type="url"
-											bind:value={formData.instagram_url}
-											placeholder="https://instagram.com/..."
-											maxlength="255"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-
-									<div>
-										<label
-											for="website"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Website <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<input
-											id="website"
-											type="url"
-											bind:value={formData.website}
-											placeholder="https://example.com"
-											maxlength="255"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
-
-									<!-- Job Posting Fields (for job_posting type) -->
-									{#if formData.type === 'job_posting'}
-										<div class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
-											<h4 class="text-base font-semibold text-gray-900 dark:text-white">
-												Job Posting Details
-											</h4>
-											<div>
-												<label
-													for="job_title"
-													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-													>Job Title <span class="font-normal text-gray-400">(Optional)</span
-													></label
-												>
-												<input
-													id="job_title"
-													type="text"
-													bind:value={formData.job_title}
-													placeholder="e.g., Software Engineer, Marketing Manager"
-													maxlength="150"
-													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-												/>
-											</div>
-											<div>
-												<label
-													for="employment_type"
-													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-													>Employment Type <span class="font-normal text-gray-400">(Optional)</span
-													></label
-												>
-												<select
-													id="employment_type"
-													bind:value={formData.employment_type}
-													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
-												>
-													<option value="">Select employment type</option>
-													{#each employmentTypes as empType}
-														<option value={empType.value}>{empType.label}</option>
-													{/each}
-												</select>
-											</div>
-										</div>
+										</label>
 									{/if}
-
-									<!-- Weather Fields (for weather type) -->
-									{#if formData.type === 'weather'}
-										<div class="space-y-4 border-t border-gray-200 pt-6 dark:border-gray-700">
-											<h4 class="text-base font-semibold text-gray-900 dark:text-white">
-												Weather Details
-											</h4>
-											<div>
-												<label
-													for="weather_conditions"
-													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-													>Weather Conditions <span class="font-normal text-gray-400"
-														>(Optional)</span
-													></label
-												>
-												<input
-													id="weather_conditions"
-													type="text"
-													bind:value={formData.weather_conditions}
-													placeholder="e.g., Sunny, 75°F or Rainy, 60°F with light winds"
-													maxlength="255"
-													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-												/>
-											</div>
-										</div>
-									{/if}
-
-									<!-- Image Upload -->
-									<div>
-										<label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Images <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<ImageUpload
-											images={formData.gallery_urls || []}
-											maxImages={10}
-											onImagesChange={(urls) => {
-												formData.gallery_urls = urls;
-											}}
-										/>
-									</div>
-
-									<!-- Settings -->
-									<label
-										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
-									>
-										<input
-											type="checkbox"
-											bind:checked={formData.is_public}
-											class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-										/>
-										<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-											>Make this event publicly visible</span
-										>
-									</label>
-
-									<label
-										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
-									>
-										<input
-											type="checkbox"
-											bind:checked={formData.comments_enabled}
-											class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
-										/>
-										<span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300"
-											>Enable comments</span
-										>
-									</label>
 								</div>
 							{/if}
 						</div>
