@@ -293,6 +293,11 @@
 			return false;
 		}
 
+		// Category should not show for service_offer type
+		if (fieldName === 'category' && type === 'service_offer') {
+			return false;
+		}
+
 		switch (type) {
 			case 'informational':
 				return [
@@ -403,7 +408,6 @@
 
 			case 'service_offer':
 				return [
-					'category',
 					'price',
 					'is_free',
 					'tags',
@@ -448,7 +452,7 @@
 
 			case 'event':
 			default:
-				// Show all fields for default 'event' type
+				// Show all fields for default 'event' type (all optional except title, description, type)
 				return true;
 		}
 	}
@@ -460,27 +464,26 @@
 		// Title is always required
 		if (fieldName === 'title') return true;
 
+		// For event type, only title, description, and type are required
+		if (type === 'event' || type === undefined) {
+			return fieldName === 'description' || fieldName === 'type';
+		}
+
 		switch (type) {
 			case 'advertisement':
-				return ['category', 'price', 'is_free', 'company'].includes(fieldName);
+				return false;
 			case 'lost_found':
-				return ['contact_phone', 'contact_email'].includes(fieldName);
+				return false; // No required fields for lost_found
 			case 'request_help':
-				return ['contact_phone', 'contact_email'].includes(fieldName);
+				return false; // No required fields for request_help (all optional)
 			case 'offer_help':
-				return ['contact_phone', 'contact_email', 'price', 'is_free'].includes(fieldName);
+				return false; // No required fields for offer_help (all optional)
 			case 'service_offer':
-				return ['category', 'price', 'is_free', 'company'].includes(fieldName);
+				return false; // Price and company are optional
 			case 'weather':
-				return ['city', 'state', 'zip', 'weather_conditions'].includes(fieldName);
+				return false; // No required fields for weather (all optional)
 			case 'job_posting':
-				return [
-					'job_title',
-					'employment_type',
-					'company',
-					'contact_email',
-					'contact_phone'
-				].includes(fieldName);
+				return false; // No required fields for job_posting (all optional)
 			default:
 				return false;
 		}
@@ -557,13 +560,16 @@
 								<label
 									for="description"
 									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
-									>Description <span class="font-normal text-gray-400">(Optional)</span></label
+									>Description {#if isFieldRequired('description')}<span class="text-red-500"
+											>*</span
+										>{:else}<span class="font-normal text-gray-400">(Optional)</span>{/if}</label
 								>
 								<textarea
 									id="description"
 									rows="4"
 									bind:value={formData.description}
 									placeholder="Describe the event..."
+									required={isFieldRequired('description')}
 									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
 								></textarea>
 							</div>
