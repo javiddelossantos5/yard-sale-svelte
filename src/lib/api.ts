@@ -2764,45 +2764,46 @@ export interface EventUpdate {
 		| 'weather'
 		| 'job_posting';
 	title?: string;
-	description?: string;
-	category?: string;
+	description?: string | null;
+	category?: string | null;
 	status?: 'upcoming' | 'ongoing' | 'ended' | 'cancelled';
 	is_public?: boolean;
-	address?: string;
-	city?: string;
-	state?: string;
-	zip?: string;
-	location_type?: 'indoor' | 'outdoor' | 'virtual';
-	start_date?: string;
-	end_date?: string;
-	start_time?: string;
-	end_time?: string;
-	timezone?: string;
+	address?: string | null;
+	city?: string | null;
+	state?: string | null;
+	zip?: string | null;
+	location_type?: 'indoor' | 'outdoor' | 'virtual' | null;
+	start_date?: string | null;
+	end_date?: string | null;
+	start_time?: string | null;
+	end_time?: string | null;
+	timezone?: string | null;
 	price?: number;
 	is_free?: boolean;
 	tags?: string[];
-	age_restriction?: string;
+	age_restriction?: string | null;
 	// Job Posting Fields (for job_posting type)
-	job_title?: string;
+	job_title?: string | null;
 	employment_type?:
 		| 'full_time'
 		| 'part_time'
 		| 'contract'
 		| 'temporary'
 		| 'seasonal'
-		| 'internship';
+		| 'internship'
+		| null;
 	// Weather Fields (for weather type)
-	weather_conditions?: string;
-	organizer_name?: string;
-	company?: string;
-	contact_phone?: string;
-	contact_email?: string;
-	facebook_url?: string;
-	instagram_url?: string;
-	website?: string;
+	weather_conditions?: string | null;
+	organizer_name?: string | null;
+	company?: string | null;
+	contact_phone?: string | null;
+	contact_email?: string | null;
+	facebook_url?: string | null;
+	instagram_url?: string | null;
+	website?: string | null;
 	comments_enabled?: boolean;
 	gallery_urls?: string[];
-	featured_image?: string;
+	featured_image?: string | null;
 }
 
 export interface EventComment {

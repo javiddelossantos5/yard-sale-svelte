@@ -139,6 +139,16 @@
 		return !!(event?.address && event?.city && event?.state && event?.zip);
 	}
 
+	function formatAddress(): string {
+		if (!event) return '';
+		const parts: string[] = [];
+		if (event.address && event.address.trim()) parts.push(event.address.trim());
+		if (event.city && event.city.trim()) parts.push(event.city.trim());
+		if (event.state && event.state.trim()) parts.push(event.state.trim());
+		if (event.zip && event.zip.trim()) parts.push(event.zip.trim());
+		return parts.join(', ');
+	}
+
 	function handleAddressClick() {
 		if (event && hasCompleteAddress()) {
 			const fullAddress = `${event.address}, ${event.city}, ${event.state} ${event.zip}`;
@@ -933,7 +943,7 @@
 							</div>
 
 							<!-- Location -->
-							{#if event.address || event.city || event.state}
+							{#if formatAddress()}
 								<div class="flex items-center text-gray-600 dark:text-gray-300">
 									<svg
 										class="mr-3 h-5 w-5 text-gray-400"
@@ -960,19 +970,11 @@
 											class="text-left text-lg font-medium text-blue-600 hover:text-blue-700 hover:underline focus:underline focus:outline-none dark:text-blue-400 dark:hover:text-blue-300"
 											title={`Click to open in ${getPlatformName()}`}
 										>
-											{#if event.address}
-												{event.address},
-											{/if}
-											{event.city}, {event.state}
-											{event.zip}
+											{formatAddress()}
 										</button>
 									{:else}
 										<span class="text-lg font-medium">
-											{#if event.address}
-												{event.address},
-											{/if}
-											{event.city}, {event.state}
-											{event.zip}
+											{formatAddress()}
 										</span>
 									{/if}
 								</div>

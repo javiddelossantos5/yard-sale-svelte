@@ -61,11 +61,56 @@
 	];
 
 	const states = [
-		'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-		'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-		'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-		'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-		'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+		'AL',
+		'AK',
+		'AZ',
+		'AR',
+		'CA',
+		'CO',
+		'CT',
+		'DE',
+		'FL',
+		'GA',
+		'HI',
+		'ID',
+		'IL',
+		'IN',
+		'IA',
+		'KS',
+		'KY',
+		'LA',
+		'ME',
+		'MD',
+		'MA',
+		'MI',
+		'MN',
+		'MS',
+		'MO',
+		'MT',
+		'NE',
+		'NV',
+		'NH',
+		'NJ',
+		'NM',
+		'NY',
+		'NC',
+		'ND',
+		'OH',
+		'OK',
+		'OR',
+		'PA',
+		'RI',
+		'SC',
+		'SD',
+		'TN',
+		'TX',
+		'UT',
+		'VT',
+		'VA',
+		'WA',
+		'WV',
+		'WI',
+		'WY'
 	];
 
 	function normalizeUrl(url: string): string {
@@ -143,9 +188,9 @@
 			const galleryUrls = (formData.gallery_urls || []).filter((url) => url && url.trim() !== '');
 			const tags = formData.tags?.filter((tag) => tag && tag.trim() !== '') || [];
 
-			// Helper function to convert empty strings to undefined
-			const cleanValue = (value: string | undefined | null): string | undefined => {
-				return value && value.trim() !== '' ? value.trim() : undefined;
+			// Helper function to convert empty strings to null (so backend can clear fields)
+			const cleanValue = (value: string | undefined | null): string | null => {
+				return value && value.trim() !== '' ? value.trim() : null;
 			};
 
 			const payload: EventUpdate = {
@@ -161,7 +206,12 @@
 				city: cleanValue(formData.city),
 				state: cleanValue(formData.state),
 				zip: cleanValue(formData.zip),
-				location_type: cleanValue(formData.location_type) as 'indoor' | 'outdoor' | 'virtual' | undefined,
+				location_type: cleanValue(formData.location_type) as
+					| 'indoor'
+					| 'outdoor'
+					| 'virtual'
+					| null
+					| undefined,
 				// Date & Time
 				start_date: cleanValue(formData.start_date),
 				end_date: cleanValue(formData.end_date),
@@ -183,6 +233,7 @@
 					| 'temporary'
 					| 'seasonal'
 					| 'internship'
+					| null
 					| undefined,
 				// Weather Fields
 				weather_conditions: cleanValue(formData.weather_conditions),
@@ -192,9 +243,9 @@
 				contact_phone: cleanValue(formData.contact_phone),
 				contact_email: cleanValue(formData.contact_email),
 				// Social Links
-				facebook_url: formData.facebook_url ? normalizeUrl(formData.facebook_url) : undefined,
-				instagram_url: formData.instagram_url ? normalizeUrl(formData.instagram_url) : undefined,
-				website: formData.website ? normalizeUrl(formData.website) : undefined,
+				facebook_url: formData.facebook_url ? normalizeUrl(formData.facebook_url) : null,
+				instagram_url: formData.instagram_url ? normalizeUrl(formData.instagram_url) : null,
+				website: formData.website ? normalizeUrl(formData.website) : null,
 				// Images
 				gallery_urls: galleryUrls.length > 0 ? galleryUrls : undefined,
 				featured_image: galleryUrls[0] || cleanValue(formData.featured_image)
@@ -241,7 +292,7 @@
 				class="relative inline-block w-full transform overflow-hidden rounded-t-2xl bg-white/95 text-left align-bottom shadow-2xl ring-1 ring-white/20 backdrop-blur-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:rounded-2xl sm:align-middle dark:bg-gray-800/95 dark:ring-gray-700/50"
 			>
 				<div
-					class="border-b border-gray-200/50 bg-white/80 px-6 py-6 dark:border-gray-700/50 dark:bg-gray-800/80 sm:py-5"
+					class="border-b border-gray-200/50 bg-white/80 px-6 py-6 sm:py-5 dark:border-gray-700/50 dark:bg-gray-800/80"
 				>
 					<div class="flex items-center justify-between">
 						<h3 class="text-xl font-semibold text-gray-900 dark:text-white">Edit Event</h3>
@@ -264,7 +315,7 @@
 				</div>
 
 				<form onsubmit={handleSubmit} class="max-h-[85vh] overflow-y-auto sm:max-h-[70vh]">
-					<div class="bg-white/80 px-6 py-8 dark:bg-gray-800/80 sm:px-6 sm:py-6">
+					<div class="bg-white/80 px-6 py-8 sm:px-6 sm:py-6 dark:bg-gray-800/80">
 						{#if error}
 							<div
 								class="mb-6 rounded-xl bg-red-50 p-4 ring-1 ring-red-200 dark:bg-red-900/20 dark:ring-red-800"
@@ -278,7 +329,7 @@
 							<div>
 								<label
 									for="title"
-									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
 									>Title <span class="text-red-500">*</span></label
 								>
 								<input
@@ -287,35 +338,35 @@
 									bind:value={formData.title}
 									required
 									maxlength="150"
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								/>
 							</div>
 
 							<div>
 								<label
 									for="description"
-									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
 									>Description <span class="font-normal text-gray-400">(Optional)</span></label
 								>
 								<textarea
 									id="description"
 									rows="4"
 									bind:value={formData.description}
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								></textarea>
 							</div>
 
 							<div>
 								<label
 									for="type"
-									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
 									>Event Type <span class="text-red-500">*</span></label
 								>
 								<select
 									id="type"
 									bind:value={formData.type}
 									required
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								>
 									{#each eventTypes as type}
 										<option value={type.value}>{type.label}</option>
@@ -326,14 +377,14 @@
 							<div>
 								<label
 									for="status"
-									class="mb-3 block text-sm font-semibold text-gray-700 dark:text-gray-300 sm:mb-2"
+									class="mb-3 block text-sm font-semibold text-gray-700 sm:mb-2 dark:text-gray-300"
 									>Status <span class="text-red-500">*</span></label
 								>
 								<select
 									id="status"
 									bind:value={formData.status}
 									required
-									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400 sm:py-3.5"
+									class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-4 text-gray-900 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3.5 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:focus:ring-blue-400"
 								>
 									{#each eventStatuses as status}
 										<option value={status.value}>{status.label}</option>
@@ -345,7 +396,7 @@
 							<button
 								type="button"
 								onclick={() => (showOptionalFields = !showOptionalFields)}
-								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-4 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:py-3"
+								class="flex w-full items-center justify-between rounded-xl border border-gray-300 bg-white px-4 py-4 text-sm font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none sm:py-3 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
 							>
 								<span>More Options</span>
 								<FontAwesomeIcon
@@ -503,7 +554,8 @@
 										<label
 											for="location_type"
 											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Location Type <span class="font-normal text-gray-400">(Optional)</span></label
+											>Location Type <span class="font-normal text-gray-400">(Optional)</span
+											></label
 										>
 										<select
 											id="location_type"
@@ -520,7 +572,7 @@
 									<!-- Pricing -->
 									<div>
 										<label
-											class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 sm:p-4"
+											class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
 										>
 											<input
 												type="checkbox"
@@ -620,7 +672,8 @@
 										<label
 											for="age_restriction"
 											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Age Restriction <span class="font-normal text-gray-400">(Optional)</span></label
+											>Age Restriction <span class="font-normal text-gray-400">(Optional)</span
+											></label
 										>
 										<input
 											id="age_restriction"
@@ -637,7 +690,8 @@
 										<label
 											for="organizer_name"
 											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Organizer Name <span class="font-normal text-gray-400">(Optional)</span></label
+											>Organizer Name <span class="font-normal text-gray-400">(Optional)</span
+											></label
 										>
 										<input
 											id="organizer_name"
@@ -653,7 +707,8 @@
 										<label
 											for="company"
 											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Company/Organization <span class="font-normal text-gray-400">(Optional)</span></label
+											>Company/Organization <span class="font-normal text-gray-400">(Optional)</span
+											></label
 										>
 										<input
 											id="company"
@@ -670,7 +725,8 @@
 											<label
 												for="contact_phone"
 												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>Contact Phone <span class="font-normal text-gray-400">(Optional)</span></label
+												>Contact Phone <span class="font-normal text-gray-400">(Optional)</span
+												></label
 											>
 											<input
 												id="contact_phone"
@@ -685,7 +741,8 @@
 											<label
 												for="contact_email"
 												class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-												>Contact Email <span class="font-normal text-gray-400">(Optional)</span></label
+												>Contact Email <span class="font-normal text-gray-400">(Optional)</span
+												></label
 											>
 											<input
 												id="contact_email"
@@ -718,7 +775,8 @@
 										<label
 											for="instagram_url"
 											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Instagram URL <span class="font-normal text-gray-400">(Optional)</span></label
+											>Instagram URL <span class="font-normal text-gray-400">(Optional)</span
+											></label
 										>
 										<input
 											id="instagram_url"
@@ -756,7 +814,8 @@
 												<label
 													for="job_title"
 													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-													>Job Title <span class="font-normal text-gray-400">(Optional)</span></label
+													>Job Title <span class="font-normal text-gray-400">(Optional)</span
+													></label
 												>
 												<input
 													id="job_title"
@@ -771,7 +830,8 @@
 												<label
 													for="employment_type"
 													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-													>Employment Type <span class="font-normal text-gray-400">(Optional)</span></label
+													>Employment Type <span class="font-normal text-gray-400">(Optional)</span
+													></label
 												>
 												<select
 													id="employment_type"
@@ -797,7 +857,9 @@
 												<label
 													for="weather_conditions"
 													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-													>Weather Conditions <span class="font-normal text-gray-400">(Optional)</span></label
+													>Weather Conditions <span class="font-normal text-gray-400"
+														>(Optional)</span
+													></label
 												>
 												<input
 													id="weather_conditions"
@@ -813,8 +875,7 @@
 
 									<!-- Image Upload -->
 									<div>
-										<label
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
+										<label class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
 											>Images <span class="font-normal text-gray-400">(Optional)</span></label
 										>
 										<ImageUpload
@@ -828,7 +889,7 @@
 
 									<!-- Settings -->
 									<label
-										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 sm:p-4"
+										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
 									>
 										<input
 											type="checkbox"
@@ -841,7 +902,7 @@
 									</label>
 
 									<label
-										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 sm:p-4"
+										class="flex items-center rounded-lg bg-gray-50 p-5 transition-colors duration-200 hover:bg-gray-100 sm:p-4 dark:bg-gray-700 dark:hover:bg-gray-600"
 									>
 										<input
 											type="checkbox"
@@ -858,7 +919,7 @@
 					</div>
 
 					<div
-						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-6 sm:flex sm:flex-row-reverse dark:border-gray-700/50 dark:bg-gray-700/80 sm:py-4"
+						class="border-t border-gray-200/50 bg-gray-50/80 px-6 py-6 sm:flex sm:flex-row-reverse sm:py-4 dark:border-gray-700/50 dark:bg-gray-700/80"
 					>
 						<button
 							type="submit"
@@ -898,4 +959,3 @@
 		</div>
 	</div>
 {/if}
-
