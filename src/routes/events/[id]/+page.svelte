@@ -931,7 +931,7 @@
 												</div>
 											{/if}
 										</div>
-										{#if event.company}
+										{#if event.company && event.company.trim()}
 											<p class="text-xs text-gray-600 dark:text-gray-400">{event.company}</p>
 										{/if}
 									</div>
