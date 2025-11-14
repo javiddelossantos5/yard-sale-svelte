@@ -7,9 +7,10 @@ import type { YardSale } from './api';
  * 2. The status is 'active' or 'on_break' (not 'closed')
  */
 export function isYardSaleActive(yardSale: YardSale): boolean {
-	// Use Mountain Time for all date comparisons
+	// Use yard sale's timezone if available, otherwise default to Mountain Time
+	const timezone = yardSale.timezone || 'America/Denver';
 	const now = new Date();
-	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+	const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
 
 	// Parse the yard sale end date in Mountain Time
 	const endDateStr = yardSale.end_date || '';
@@ -25,7 +26,7 @@ export function isYardSaleActive(yardSale: YardSale): boolean {
 	}
 
 	// Check if the event has ended by date
-	const hasEndedByDate = endDate <= nowMountain;
+	const hasEndedByDate = endDate <= nowInTimezone;
 
 	// Check if the event is closed by status
 	const isClosedByStatus = yardSale.status === 'closed';
@@ -38,9 +39,10 @@ export function isYardSaleActive(yardSale: YardSale): boolean {
  * A yard sale is considered started if the start date has passed
  */
 export function hasYardSaleStarted(yardSale: YardSale): boolean {
-	// Use Mountain Time for all date comparisons
+	// Use yard sale's timezone if available, otherwise default to Mountain Time
+	const timezone = yardSale.timezone || 'America/Denver';
 	const now = new Date();
-	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+	const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
 
 	// Parse the yard sale start date in Mountain Time
 	const startDateStr = yardSale.start_date || '';
@@ -55,7 +57,7 @@ export function hasYardSaleStarted(yardSale: YardSale): boolean {
 		startDate.setHours(hours, minutes, 0, 0);
 	}
 
-	return startDate <= nowMountain;
+	return startDate <= nowInTimezone;
 }
 
 /**
@@ -115,9 +117,10 @@ export function getYardSaleStatusMessage(yardSale: YardSale): string {
  * Get the number of days until a yard sale starts or ends
  */
 export function getDaysUntilEvent(yardSale: YardSale): number {
-	// Use Mountain Time for all date comparisons
+	// Use yard sale's timezone if available, otherwise default to Mountain Time
+	const timezone = yardSale.timezone || 'America/Denver';
 	const now = new Date();
-	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+	const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
 
 	// Parse dates in Mountain Time
 	const startDateStr = yardSale.start_date || '';
@@ -130,18 +133,18 @@ export function getDaysUntilEvent(yardSale: YardSale): number {
 
 	// If it hasn't started, return days until start
 	if (!hasYardSaleStarted(yardSale)) {
-		const diffTime = startDate.getTime() - nowMountain.getTime();
+		const diffTime = startDate.getTime() - nowInTimezone.getTime();
 		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 	}
 
 	// If it's active, return days until end
 	if (isYardSaleActive(yardSale)) {
-		const diffTime = endDate.getTime() - nowMountain.getTime();
+		const diffTime = endDate.getTime() - nowInTimezone.getTime();
 		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 	}
 
 	// If it's expired, return negative days since it ended
-	const diffTime = nowMountain.getTime() - endDate.getTime();
+	const diffTime = nowInTimezone.getTime() - endDate.getTime();
 	return -Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
@@ -149,9 +152,10 @@ export function getDaysUntilEvent(yardSale: YardSale): number {
  * Check if a yard sale is happening today
  */
 export function isYardSaleToday(yardSale: YardSale): boolean {
-	// Use Mountain Time for all date comparisons
+	// Use yard sale's timezone if available, otherwise default to Mountain Time
+	const timezone = yardSale.timezone || 'America/Denver';
 	const now = new Date();
-	const todayMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+	const todayInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
 
 	// Parse dates in Mountain Time
 	const startDateStr = yardSale.start_date || '';
@@ -163,7 +167,7 @@ export function isYardSaleToday(yardSale: YardSale): boolean {
 	const endDate = new Date(endDateStr + 'T00:00:00');
 
 	// Check if today is between start and end date (inclusive)
-	return todayMountain >= startDate && todayMountain <= endDate;
+	return todayInTimezone >= startDate && todayInTimezone <= endDate;
 }
 
 /**
@@ -214,8 +218,10 @@ export function isYardSaleActiveOnDate(yardSale: YardSale, targetDate: string): 
  * Get hours remaining until yard sale ends (for today only)
  */
 function getHoursRemaining(yardSale: YardSale): number | null {
+	// Use yard sale's timezone if available, otherwise default to Mountain Time
+	const timezone = yardSale.timezone || 'America/Denver';
 	const now = new Date();
-	const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+	const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
 
 	const endDateStr = yardSale.end_date || '';
 	const endTimeStr = yardSale.end_time || '';
@@ -228,17 +234,17 @@ function getHoursRemaining(yardSale: YardSale): number | null {
 	endDate.setHours(hours, minutes, 0, 0);
 
 	// Check if it ends today
-	const todayMountain = new Date(nowMountain);
-	todayMountain.setHours(0, 0, 0, 0);
+	const todayInTimezone = new Date(nowInTimezone);
+	todayInTimezone.setHours(0, 0, 0, 0);
 	const endDateOnly = new Date(endDate);
 	endDateOnly.setHours(0, 0, 0, 0);
 
-	if (endDateOnly.getTime() !== todayMountain.getTime()) {
+	if (endDateOnly.getTime() !== todayInTimezone.getTime()) {
 		return null; // Not ending today
 	}
 
 	// Calculate hours remaining
-	const diffTime = endDate.getTime() - nowMountain.getTime();
+	const diffTime = endDate.getTime() - nowInTimezone.getTime();
 	const hoursRemaining = Math.floor(diffTime / (1000 * 60 * 60));
 
 	return hoursRemaining >= 0 ? hoursRemaining : null;
@@ -267,15 +273,16 @@ export function getTimeRemainingMessage(yardSale: YardSale): string {
 				if (hoursRemaining !== null && hoursRemaining >= 0) {
 					if (hoursRemaining === 0) {
 						// Less than 1 hour, calculate minutes
+						const timezone = yardSale.timezone || 'America/Denver';
 						const now = new Date();
-						const nowMountain = new Date(now.toLocaleString('en-US', { timeZone: 'America/Denver' }));
+						const nowInTimezone = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
 						const endDateStr = yardSale.end_date || '';
 						const endTimeStr = yardSale.end_time || '';
 						if (endDateStr && endTimeStr) {
 							const endDate = new Date(endDateStr + 'T00:00:00');
 							const [hours, minutes] = endTimeStr.split(':').map(Number);
 							endDate.setHours(hours, minutes, 0, 0);
-							const diffTime = endDate.getTime() - nowMountain.getTime();
+							const diffTime = endDate.getTime() - nowInTimezone.getTime();
 							const minutesRemaining = Math.floor(diffTime / (1000 * 60));
 							if (minutesRemaining > 0) {
 								return `${minutesRemaining} min left`;

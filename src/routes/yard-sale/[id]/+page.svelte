@@ -224,22 +224,50 @@
 	}
 
 	function formatDate(dateString: string): string {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			weekday: 'long',
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			timeZone: 'America/Denver'
-		});
+		// Use yard sale's timezone if available, otherwise default to Mountain Time
+		const timezone = yardSale?.timezone || 'America/Denver';
+		try {
+			// Parse date-only strings (YYYY-MM-DD) as local date to avoid timezone issues
+			if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+				// Date-only format: parse as local date to avoid timezone shifts
+				const [year, month, day] = dateString.split('-').map(Number);
+				const date = new Date(year, month - 1, day);
+				return date.toLocaleDateString('en-US', {
+					weekday: 'long',
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric'
+					// Don't use timeZone for date-only strings to avoid day shifts
+				});
+			} else {
+				// Already has time component, parse normally and use timezone
+				const date = new Date(dateString);
+				return date.toLocaleDateString('en-US', {
+					weekday: 'long',
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+					timeZone: timezone
+				});
+			}
+		} catch {
+			return '';
+		}
 	}
 
 	function formatTime(timeString: string): string {
-		return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
-			hour: 'numeric',
-			minute: '2-digit',
-			hour12: true,
-			timeZone: 'America/Denver'
-		});
+		// Use yard sale's timezone if available, otherwise default to Mountain Time
+		const timezone = yardSale?.timezone || 'America/Denver';
+		try {
+			return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
+				hour: 'numeric',
+				minute: '2-digit',
+				hour12: true,
+				timeZone: timezone
+			});
+		} catch {
+			return '';
+		}
 	}
 
 	function getDateRange(): string {

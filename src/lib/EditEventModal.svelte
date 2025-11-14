@@ -3,6 +3,7 @@
 	import ImageUpload from './ImageUpload.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+	import { getTimezoneFromLocation } from './timezoneUtils';
 
 	let { isOpen, onClose, onSuccess, event } = $props<{
 		isOpen: boolean;
@@ -121,6 +122,16 @@
 	// Load event data when modal opens or event changes
 	$effect(() => {
 		if (isOpen && event) {
+			const state = event.state || '';
+			// Auto-detect timezone if state is present but timezone is missing
+			let timezone = event.timezone || '';
+			if (state && !timezone) {
+				const detectedTimezone = getTimezoneFromLocation(state, event.city, event.zip);
+				if (detectedTimezone) {
+					timezone = detectedTimezone;
+				}
+			}
+
 			formData = {
 				type: event.type,
 				title: event.title,
@@ -131,14 +142,14 @@
 				price: event.price ?? undefined,
 				address: event.address || '',
 				city: event.city || '',
-				state: event.state || '',
+				state: state,
 				zip: event.zip || '',
 				location_type: event.location_type || undefined,
 				start_date: event.start_date || '',
 				end_date: event.end_date || '',
 				start_time: event.start_time || '',
 				end_time: event.end_time || '',
-				timezone: event.timezone || '',
+				timezone: timezone,
 				category: event.category || '',
 				tags: event.tags ? [...event.tags] : [],
 				age_restriction: event.age_restriction || '',
@@ -164,6 +175,19 @@
 	$effect(() => {
 		if (formData.is_free) {
 			formData.price = undefined;
+		}
+	});
+
+	// Auto-detect timezone from location
+	$effect(() => {
+		if (formData.state) {
+			const detectedTimezone = getTimezoneFromLocation(formData.state, formData.city, formData.zip);
+			if (detectedTimezone) {
+				formData.timezone = detectedTimezone;
+			}
+		} else if (!formData.state && formData.timezone) {
+			// Clear timezone if state is removed
+			formData.timezone = null;
 		}
 	});
 
@@ -467,21 +491,7 @@
 										</div>
 									</div>
 
-									<div>
-										<label
-											for="timezone"
-											class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-											>Timezone <span class="font-normal text-gray-400">(Optional)</span></label
-										>
-										<input
-											id="timezone"
-											type="text"
-											bind:value={formData.timezone}
-											placeholder="America/Denver"
-											maxlength="50"
-											class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-										/>
-									</div>
+									<!-- Timezone is now automatically determined from state/city/zip -->
 
 									<!-- Location -->
 									<div>

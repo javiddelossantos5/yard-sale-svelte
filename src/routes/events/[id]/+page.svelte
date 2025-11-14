@@ -46,6 +46,7 @@
 	import AppHeader from '$lib/AppHeader.svelte';
 	import { openDirections, getPlatformName } from '$lib/mapsUtils';
 	import { unreadMessageCount, loadNotificationCounts } from '$lib/notifications';
+	import { getEventTimeRemainingMessage } from '$lib/eventUtils';
 
 	let event = $state<Event | null>(null);
 	let comments = $state<EventComment[]>([]);
@@ -677,6 +678,11 @@
 											)}"
 										>
 											{getStatusLabel(event.status)}
+											{#if event.status === 'ongoing' && getEventTimeRemainingMessage(event)}
+												<span class="ml-2 text-xs opacity-90">
+													• {getEventTimeRemainingMessage(event)}
+												</span>
+											{/if}
 										</span>
 										{#if event.is_free}
 											<span

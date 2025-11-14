@@ -9,6 +9,7 @@
 	import ImageUpload from './ImageUpload.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+	import { getTimezoneFromLocation } from './timezoneUtils';
 
 	let {
 		isOpen,
@@ -36,6 +37,7 @@
 		city: '',
 		state: '',
 		zip_code: '',
+		timezone: undefined,
 		contact_name: '',
 		contact_phone: '',
 		contact_email: '',
@@ -161,6 +163,16 @@
 	// Initialize form data when yardSale changes
 	$effect(() => {
 		if (yardSale && isOpen) {
+			const state = yardSale.state || '';
+			// Auto-detect timezone if state is present but timezone is missing
+			let timezone = yardSale.timezone || undefined;
+			if (state && !timezone) {
+				const detectedTimezone = getTimezoneFromLocation(state, yardSale.city, yardSale.zip_code);
+				if (detectedTimezone) {
+					timezone = detectedTimezone;
+				}
+			}
+
 			formData = {
 				title: yardSale.title,
 				description: yardSale.description || '',
@@ -170,8 +182,9 @@
 				end_time: yardSale.end_time,
 				address: yardSale.address,
 				city: yardSale.city,
-				state: yardSale.state,
+				state: state,
 				zip_code: yardSale.zip_code,
+				timezone: timezone,
 				contact_name: yardSale.contact_name,
 				contact_phone: yardSale.contact_phone || '',
 				contact_email: yardSale.contact_email || '',
@@ -188,6 +201,23 @@
 			};
 		} else if (!yardSale && isOpen) {
 			resetForm();
+		}
+	});
+
+	// Auto-detect timezone from location
+	$effect(() => {
+		if (formData.state) {
+			const detectedTimezone = getTimezoneFromLocation(
+				formData.state,
+				formData.city,
+				formData.zip_code
+			);
+			if (detectedTimezone) {
+				formData.timezone = detectedTimezone;
+			}
+		} else if (!formData.state && formData.timezone) {
+			// Clear timezone if state is removed
+			formData.timezone = undefined;
 		}
 	});
 
@@ -280,6 +310,7 @@
 			city: '',
 			state: '',
 			zip_code: '',
+			timezone: undefined,
 			contact_name: '',
 			contact_phone: '',
 			contact_email: '',

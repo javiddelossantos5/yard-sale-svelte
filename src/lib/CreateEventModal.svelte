@@ -3,6 +3,7 @@
 	import ImageUpload from './ImageUpload.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+	import { getTimezoneFromLocation } from './timezoneUtils';
 
 	let { isOpen, onClose, onSuccess } = $props<{
 		isOpen: boolean;
@@ -121,6 +122,19 @@
 	$effect(() => {
 		if (formData.is_free) {
 			formData.price = undefined;
+		}
+	});
+
+	// Auto-detect timezone from location
+	$effect(() => {
+		if (formData.state) {
+			const detectedTimezone = getTimezoneFromLocation(formData.state, formData.city, formData.zip);
+			if (detectedTimezone) {
+				formData.timezone = detectedTimezone;
+			}
+		} else if (!formData.state && formData.timezone) {
+			// Clear timezone if state is removed
+			formData.timezone = undefined;
 		}
 	});
 
@@ -705,23 +719,7 @@
 											</div>
 										{/if}
 
-										{#if shouldShowField('timezone')}
-											<div>
-												<label
-													for="timezone"
-													class="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300"
-													>Timezone <span class="font-normal text-gray-400">(Optional)</span></label
-												>
-												<input
-													id="timezone"
-													type="text"
-													bind:value={formData.timezone}
-													placeholder="America/Denver"
-													maxlength="50"
-													class="block w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-gray-900 placeholder-gray-500 shadow-sm ring-1 ring-gray-300 transition-all duration-200 ring-inset focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:ring-gray-600 dark:focus:ring-blue-400"
-												/>
-											</div>
-										{/if}
+										<!-- Timezone is now automatically determined from state/city/zip -->
 									{/if}
 
 									<!-- Location -->

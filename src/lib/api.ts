@@ -19,6 +19,7 @@ export interface YardSale {
 	zip_code: string;
 	latitude: number | null;
 	longitude: number | null;
+	timezone?: string | null;
 	contact_name: string;
 	contact_phone: string;
 	contact_email: string;
@@ -578,6 +579,7 @@ export interface YardSaleCreate {
 	zip_code: string;
 	latitude?: number;
 	longitude?: number;
+	timezone?: string;
 	contact_name: string;
 	contact_phone?: string;
 	contact_email?: string;
