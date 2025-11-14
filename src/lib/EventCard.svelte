@@ -197,7 +197,7 @@
 	tabindex="0"
 	onclick={(e) => openEvent(e)}
 	onkeydown={handleKeydown}
-	class="group cursor-pointer overflow-hidden rounded-3xl z-0 bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.6),0_20px_40px_rgba(0,0,0,0.06)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:shadow-[0_1px_0_rgba(255,255,255,0.7),0_30px_60px_rgba(0,0,0,0.1)] focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-blue-500/70 active:scale-[0.99] dark:bg-gray-800/80 dark:ring-gray-700"
+	class="group z-0 cursor-pointer overflow-hidden rounded-3xl bg-white/80 shadow-[0_1px_0_rgba(255,255,255,0.6),0_20px_40px_rgba(0,0,0,0.06)] ring-1 ring-black/5 backdrop-blur-xl transition-all duration-300 ease-out outline-none hover:-translate-y-1 hover:shadow-[0_1px_0_rgba(255,255,255,0.7),0_30px_60px_rgba(0,0,0,0.1)] focus-visible:-translate-y-1 focus-visible:ring-2 focus-visible:ring-blue-500/70 active:scale-[0.99] dark:bg-gray-800/80 dark:ring-gray-700"
 	data-event-id={event.id}
 >
 	<!-- Image Section -->
@@ -238,7 +238,7 @@
 
 				<!-- Image Counter -->
 				<div
-					class="absolute top-2 right-2 z-10 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white dark:bg-white/20"
+					class="absolute right-2 bottom-2 z-10 rounded-full bg-black/50 px-2.5 py-1 text-xs font-medium text-white dark:bg-white/20"
 					onclick={(e) => e.stopPropagation()}
 					onmousedown={(e) => e.stopPropagation()}
 					onkeydown={(e) => e.stopPropagation()}
@@ -251,17 +251,19 @@
 
 			<!-- Overlay Badges -->
 			<div class="absolute inset-0 flex items-start justify-between p-3">
-				<!-- Comment Count -->
-				{#if event.comment_count > 0}
-					<div
-						class="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-md"
-					>
-						<FontAwesomeIcon icon={faCommentDots} class="h-3 w-3" />
-						<span>{event.comment_count}</span>
-					</div>
-				{/if}
+				<!-- Left side: Comment Count -->
+				<div>
+					{#if event.comment_count > 0}
+						<div
+							class="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1.5 text-xs font-medium text-white backdrop-blur-md"
+						>
+							<FontAwesomeIcon icon={faCommentDots} class="h-3 w-3" />
+							<span>{event.comment_count}</span>
+						</div>
+					{/if}
+				</div>
 
-				<!-- Status Badge -->
+				<!-- Right side: Status Badge -->
 				<div
 					class="rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-md {getStatusColor(
 						event.status
