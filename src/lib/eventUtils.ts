@@ -14,7 +14,7 @@ export function getEventTimeRemainingMessage(event: Event): string {
 	const now = new Date();
 
 	// Get current time components in the event's timezone
-	const nowInTz = new Intl.DateTimeFormat('en-US', {
+	const nowInTzParts = new Intl.DateTimeFormat('en-US', {
 		timeZone: timezone,
 		year: 'numeric',
 		month: '2-digit',
@@ -26,7 +26,7 @@ export function getEventTimeRemainingMessage(event: Event): string {
 	}).formatToParts(now);
 
 	const nowObj: Record<string, string> = {};
-	nowInTz.forEach((part) => {
+	nowInTzParts.forEach((part) => {
 		nowObj[part.type] = part.value;
 	});
 
@@ -37,23 +37,32 @@ export function getEventTimeRemainingMessage(event: Event): string {
 	const nowMin = parseInt(nowObj.minute || '0');
 	const nowSec = parseInt(nowObj.second || '0');
 
-	// Parse end date and time (these are already in the event's timezone)
+	// Parse end date and time (these represent wall-clock time in the event's timezone)
 	const [endYear, endMonth, endDay] = event.end_date.split('-').map(Number);
 	const [endHour, endMin] = event.end_time.split(':').map(Number);
 
-	// Create Date objects for comparison (using local time representation)
-	// Both dates are created as if they're in the same timezone (local)
-	// but we're comparing the wall-clock times in the event's timezone
-	const nowDate = new Date(nowYear, nowMonth - 1, nowDay, nowHour, nowMin, nowSec);
-	const endDate = new Date(endYear, endMonth - 1, endDay, endHour, endMin, 0);
+	// Since both "now" and "end" times are in the same timezone (event's timezone),
+	// we can compare them directly by calculating the difference in minutes
 
-	// Calculate difference
-	const diffTime = endDate.getTime() - nowDate.getTime();
-	const diffMinutes = Math.floor(diffTime / (1000 * 60));
-	const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-	const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+	// Calculate total minutes from start of day for both times
+	const nowTotalMinutes = nowHour * 60 + nowMin;
+	const endTotalMinutes = endHour * 60 + endMin;
 
-	if (diffTime < 0) {
+	// Calculate days difference using Date objects (accounts for month/year boundaries)
+	const nowDateObj = new Date(nowYear, nowMonth - 1, nowDay);
+	const endDateObj = new Date(endYear, endMonth - 1, endDay);
+	const daysDiff = Math.floor(
+		(endDateObj.getTime() - nowDateObj.getTime()) / (1000 * 60 * 60 * 24)
+	);
+
+	// Calculate total minutes difference
+	const totalMinutesDiff = daysDiff * 24 * 60 + (endTotalMinutes - nowTotalMinutes);
+
+	const diffMinutes = totalMinutesDiff;
+	const diffHours = Math.floor(diffMinutes / 60);
+	const diffDays = Math.floor(diffMinutes / (60 * 24));
+
+	if (diffMinutes < 0) {
 		// Event has ended
 		if (Math.abs(diffDays) === 0) {
 			return 'Ended today';

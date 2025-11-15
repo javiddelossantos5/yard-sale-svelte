@@ -350,8 +350,10 @@
 					return priorityA - priorityB; // Lower priority (active) comes first
 				}
 
-				// If same status, maintain original order (or sort by created_at desc)
-				return 0;
+				// If same status, sort by created_at (newest first) to show newly created at top
+				const createdA = new Date(a.created_at || '').getTime();
+				const createdB = new Date(b.created_at || '').getTime();
+				return createdB - createdA; // Newest first
 			});
 
 			items = sortedItems;

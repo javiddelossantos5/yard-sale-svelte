@@ -431,7 +431,14 @@
 					return aVisited ? 1 : -1; // unvisited first (return -1), visited last (return 1)
 				}
 
-				// If both have same visited status, sort by start date: closest starting date first
+				// If both have same visited status, sort by created_at (newest first)
+				const createdA = new Date(a.created_at || '').getTime();
+				const createdB = new Date(b.created_at || '').getTime();
+				if (createdA !== createdB) {
+					return createdB - createdA; // Newest first
+				}
+
+				// If same created_at, sort by start date: closest starting date first
 				// Sort by date using Mountain Time
 				const dateA = new Date(a.start_date || '').toLocaleString('en-US', {
 					timeZone: 'America/Denver'

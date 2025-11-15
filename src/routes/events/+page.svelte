@@ -251,15 +251,21 @@
 					return priorityA - priorityB;
 				}
 
-				// If same status, sort by start_date (closest first)
+				// If same status, sort by created_at (newest first) to show newly created at top
+				const createdA = new Date(a.created_at || '').getTime();
+				const createdB = new Date(b.created_at || '').getTime();
+				if (createdA !== createdB) {
+					return createdB - createdA; // Newest first
+				}
+
+				// If same created_at, sort by start_date (closest first)
 				if (a.start_date && b.start_date) {
 					return new Date(a.start_date).getTime() - new Date(b.start_date).getTime();
 				}
 				if (a.start_date) return -1;
 				if (b.start_date) return 1;
 
-				// Default: sort by created_at (newest first)
-				return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+				return 0;
 			});
 
 			events = sortedEvents;
